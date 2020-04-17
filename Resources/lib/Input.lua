@@ -1,292 +1,368 @@
+local baton = {
+	_VERSION = 'Baton v1.0.1',
+	_DESCRIPTION = 'Input library for LÖVE.',
+	_URL = 'https://github.com/tesselode/baton',
+	_LICENSE = [[
+		MIT License
+
+		Copyright (c) 2019 Andrew Minnich
+
+		Permission is hereby granted, free of charge, to any person obtaining a copy
+		of this software and associated documentation files (the "Software"), to deal
+		in the Software without restriction, including without limitation the rights
+		to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+		copies of the Software, and to permit persons to whom the Software is
+		furnished to do so, subject to the following conditions:
+
+		The above copyright notice and this permission notice shall be included in all
+		copies or substantial portions of the Software.
+
+		THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+		IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+		FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+		AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+		LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+		OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+		SOFTWARE.
+	]]
+}
+
+-- string parsing functions --
+
+-- splits a source definition into type and value
+-- example: 'button:a' -> 'button', 'a'
+local function parseSource(source)
+	return source:match '(.+):(.+)'
+end
+
+-- splits an axis value into axis and direction
+-- example: 'leftx-' -> 'leftx', '-'
+local function parseAxis(value)
+	return value:match '(.+)([%+%-])'
+end
+
+-- splits a joystick hat value into hat number and direction
+-- example: '2rd' -> '2', 'rd'
+local function parseHat(value)
+	return value:match '(%d)(.+)'
+end
+
 --[[
-Copyright (c) 2018 SSYGEN
+	-- source functions --
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+	each source function checks the state of one type of input
+	and returns a value from 0 to 1. for binary controls, such
+	as keyboard keys and gamepad buttons, they return 1 if the
+	input is held down and 0 if not. for analog controls, such
+	as "leftx+" (the left analog stick held to the right), they
+	return a number from 0 to 1.
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+	source functions are split into keyboard/mouse functions
+	and joystick/gamepad functions. baton treats these two
+	categories slightly differently.
+]]
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-]]--
+local sourceFunction = {keyboardMouse = {}, joystick = {}}
 
-local input_path = (...):match('(.-)[^%.]+$') .. '.'
-local Input = {}
-Input.__index = Input
-
-Input.all_keys = {
-    " ", "return", "escape", "backspace", "tab", "space", "!", "\"", "#", "$", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/", "0", "1", "2", "3", "4",
-    "5", "6", "7", "8", "9", ":", ";", "<", "=", ">", "?", "@", "[", "\\", "]", "^", "", "`", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
-    "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "capslock", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11", "f12", "printscreen",
-    "scrolllock", "pause", "insert", "home", "pageup", "delete", "end", "pagedown", "right", "left", "down", "up", "numlock", "kp/", "kp*", "kp-", "kp+", "kpenter",
-    "kp0", "kp1", "kp2", "kp3", "kp4", "kp5", "kp6", "kp7", "kp8", "kp9", "kp.", "kp,", "kp=", "application", "power", "f13", "f14", "f15", "f16", "f17", "f18", "f19",
-    "f20", "f21", "f22", "f23", "f24", "execute", "help", "menu", "select", "stop", "again", "undo", "cut", "copy", "paste", "find", "mute", "volumeup", "volumedown",
-    "alterase", "sysreq", "cancel", "clear", "prior", "return2", "separator", "out", "oper", "clearagain", "thsousandsseparator", "decimalseparator", "currencyunit",
-    "currencysubunit", "lctrl", "lshift", "lalt", "lgui", "rctrl", "rshift", "ralt", "rgui", "mode", "audionext", "audioprev", "audiostop", "audioplay", "audiomute",
-    "mediaselect", "brightnessdown", "brightnessup", "displayswitch", "kbdillumtoggle", "kbdillumdown", "kbdillumup", "eject", "sleep", "mouse1", "mouse2", "mouse3",
-    "mouse4", "mouse5", "wheelup", "wheeldown", "fdown", "fup", "fleft", "fright", "back", "guide", "start", "leftstick", "rightstick", "l1", "r1", "l2", "r2", "dpup",
-    "dpdown", "dpleft", "dpright", "leftx", "lefty", "rightx", "righty",
-}
-
-function Input.new()
-    local self = {}
-
-    self.prev_state = {}
-    self.state = {}
-    self.binds = {}
-    self.functions = {}
-    self.repeat_state = {}
-    self.sequences = {}
-
-    -- Gamepads... currently only supports 1 gamepad, adding support for more is not that hard, just lazy.
-    self.joysticks = love.joystick.getJoysticks()
-
-    -- Register callbacks automagically
-    local callbacks = {'keypressed', 'keyreleased', 'mousepressed', 'mousereleased', 'gamepadpressed', 'gamepadreleased', 'gamepadaxis', 'wheelmoved', 'update'}
-    local old_functions = {}
-    local empty_function = function() end
-    for _, f in ipairs(callbacks) do
-        old_functions[f] = love[f] or empty_function
-        love[f] = function(...)
-            old_functions[f](...)
-            self[f](self, ...)
-        end
-    end
-
-    return setmetatable(self, Input)
+-- checks whether a keyboard key is down or not
+function sourceFunction.keyboardMouse.key(key)
+	return love.keyboard.isDown(key) and 1 or 0
 end
 
-function Input:bind(key, action)
-    if type(action) == 'function' then self.functions[key] = action; return end
-    if not self.binds[action] then self.binds[action] = {} end
-    table.insert(self.binds[action], key)
+-- checks whether a keyboard key is down or not,
+-- but it takes a scancode as an input
+function sourceFunction.keyboardMouse.sc(sc)
+	return love.keyboard.isScancodeDown(sc) and 1 or 0
 end
 
-function Input:pressed(action)
-    if action then
-        for _, key in ipairs(self.binds[action]) do
-            if self.state[key] and not self.prev_state[key] then
-                return true
-            end
-        end
-
-    else
-        for _, key in ipairs(Input.all_keys) do
-            if self.state[key] and not self.prev_state[key] then
-                if self.functions[key] then
-                    self.functions[key]()
-                end
-            end
-        end
-    end
+-- checks whether a mouse buttons is down or not.
+-- note that baton doesn't detect mouse movement, just the buttons
+function sourceFunction.keyboardMouse.mouse(button)
+	return love.mouse.isDown(tonumber(button)) and 1 or 0
 end
 
-function Input:released(action)
-    for _, key in ipairs(self.binds[action]) do
-        if self.prev_state[key] and not self.state[key] then
-            return true
-        end
-    end
+-- checks the position of a joystick axis
+function sourceFunction.joystick.axis(joystick, value)
+	local axis, direction = parseAxis(value)
+	-- "a and b or c" is ok here because b will never be boolean
+	value = tonumber(axis) and joystick:getAxis(tonumber(axis))
+	                        or joystick:getGamepadAxis(axis)
+	if direction == '-' then value = -value end
+	return value > 0 and value or 0
 end
 
-function Input:sequence(...)
-    local sequence = {...}
-    if #sequence <= 1 then error("Use :pressed instead if you only need to check 1 action") end
-    if type(sequence[#sequence]) ~= 'string' then error("The last argument must be an action") end
-    if #sequence % 2 == 0 then error("The number of arguments passed in must be odd") end
-
-    local sequence_key = ''
-    for _, seq in ipairs(sequence) do sequence_key = sequence_key .. tostring(seq) end
-
-    if not self.sequences[sequence_key] then
-        self.sequences[sequence_key] = {sequence = sequence, current_index = 1}
-
-    else
-        if self.sequences[sequence_key].current_index == 1 then
-            local action = self.sequences[sequence_key].sequence[self.sequences[sequence_key].current_index]
-            for _, key in ipairs(self.binds[action]) do
-                if self.state[key] and not self.prev_state[key] then
-                    self.sequences[sequence_key].last_pressed = love.timer.getTime()
-                    self.sequences[sequence_key].current_index = self.sequences[sequence_key].current_index + 1
-                end
-            end
-
-        else
-            local delay = self.sequences[sequence_key].sequence[self.sequences[sequence_key].current_index]
-            local action = self.sequences[sequence_key].sequence[self.sequences[sequence_key].current_index + 1]
-
-            if (love.timer.getTime() - self.sequences[sequence_key].last_pressed) > delay then self.sequences[sequence_key] = nil end
-            for _, key in ipairs(self.binds[action]) do
-                if self.state[key] and not self.prev_state[key] then
-                    if (love.timer.getTime() - self.sequences[sequence_key].last_pressed) <= delay then
-                        if self.sequences[sequence_key].current_index + 1 == #self.sequences[sequence_key].sequence then
-                            self.sequences[sequence_key] = nil
-                            return true
-                        else
-                            self.sequences[sequence_key].last_pressed = love.timer.getTime()
-                            self.sequences[sequence_key].current_index = self.sequences[sequence_key].current_index + 2
-                        end
-                    else
-                        self.sequences[sequence_key] = nil
-                    end
-                end
-            end
-        end
-    end
+-- checks whether a joystick button is held down or not
+-- can take a number or a GamepadButton string
+function sourceFunction.joystick.button(joystick, button)
+	-- i'm intentionally not using the "a and b or c" idiom here
+	-- because joystick.isDown returns a boolean
+	if tonumber(button) then
+		return joystick:isDown(tonumber(button)) and 1 or 0
+	else
+		return joystick:isGamepadDown(button) and 1 or 0
+	end
 end
 
-local key_to_button = {mouse1 = '1', mouse2 = '2', mouse3 = '3', mouse4 = '4', mouse5 = '5'} 
-local gamepad_to_button = {fdown = 'a', fup = 'y', fleft = 'x', fright = 'b', back = 'back', guide = 'guide', start = 'start',
-                           leftstick = 'leftstick', rightstick = 'rightstick', l1 = 'leftshoulder', r1 = 'rightshoulder',
-                           dpup = 'dpup', dpdown = 'dpdown', dpleft = 'dpleft', dpright = 'dpright'}
-local axis_to_button = {leftx = 'leftx', lefty = 'lefty', rightx = 'rightx', righty = 'righty', l2 = 'triggerleft', r2 = 'triggerright'}
-
-function Input:down(action, interval, delay)
-    if action and delay and interval then
-        for _, key in ipairs(self.binds[action]) do
-            if self.state[key] and not self.prev_state[key] then
-                self.repeat_state[key] = {pressed_time = love.timer.getTime(), delay = delay, interval = interval, delay_stage = true}
-                return true
-            elseif self.repeat_state[key] and self.repeat_state[key].pressed then
-                return true
-            end
-        end
-
-    elseif action and interval and not delay then
-        for _, key in ipairs(self.binds[action]) do
-            if self.state[key] and not self.prev_state[key] then
-                self.repeat_state[key] = {pressed_time = love.timer.getTime(), delay = 0, interval = interval, delay_stage = false}
-                return true
-            elseif self.repeat_state[key] and self.repeat_state[key].pressed then
-                return true
-            end
-        end
-
-    elseif action and not interval and not delay then
-        for _, key in ipairs(self.binds[action]) do
-            if (love.keyboard.isDown(key) or love.mouse.isDown(key_to_button[key] or 0)) then
-                return true
-            end
-            
-            -- Supports only 1 gamepad, add more later...
-            if self.joysticks[1] then
-                if axis_to_button[key] then
-                    return self.state[key]
-                elseif gamepad_to_button[key] then
-                    if self.joysticks[1]:isGamepadDown(gamepad_to_button[key]) then
-                        return true
-                    end
-                end
-            end
-        end
-    end
+-- checks the direction of a joystick hat
+function sourceFunction.joystick.hat(joystick, value)
+	local hat, direction = parseHat(value)
+	return joystick:getHat(hat) == direction and 1 or 0
 end
 
-function Input:unbind(key)
-    for action, keys in pairs(self.binds) do
-        for i = #keys, 1, -1 do
-            if key == self.binds[action][i] then
-                table.remove(self.binds[action], i)
-            end
-        end
-    end
-    if self.functions[key] then
-        self.functions[key] = nil
-    end
+--[[
+	-- player class --
+
+	the player object takes a configuration table and handles input
+	accordingly. it's called a "player" because it makes sense to use
+	multiple of these for each player in a multiplayer game, but
+	you can use separate player objects to organize inputs
+	however you want.
+]]
+
+local Player = {}
+Player.__index = Player
+
+-- internal functions --
+
+-- sets the player's config to a user-defined config table
+-- and sets some defaults if they're not already defined
+function Player:_loadConfig(config)
+	if not config then
+		error('No config table provided', 4)
+	end
+	if not config.controls then
+		error('No controls specified', 4)
+	end
+	config.pairs = config.pairs or {}
+	config.deadzone = config.deadzone or .5
+	config.squareDeadzone = config.squareDeadzone or false
+	self.config = config
 end
 
-function Input:unbindAll()
-    self.binds = {}
-    self.functions = {}
+-- initializes a control object for each control defined in the config
+function Player:_initControls()
+	self._controls = {}
+	for controlName, sources in pairs(self.config.controls) do
+		self._controls[controlName] = {
+			sources = sources,
+			rawValue = 0,
+			value = 0,
+			down = false,
+			downPrevious = false,
+			pressed = false,
+			released = false,
+		}
+	end
 end
 
-local copy = function(t1)
-    local out = {}
-    for k, v in pairs(t1) do out[k] = v end
-    return out
+-- initializes an axis pair object for each axis pair defined in the config
+function Player:_initPairs()
+	self._pairs = {}
+	for pairName, controls in pairs(self.config.pairs) do
+		self._pairs[pairName] = {
+			controls = controls,
+			rawX = 0,
+			rawY = 0,
+			x = 0,
+			y = 0,
+			down = false,
+			downPrevious = false,
+			pressed = false,
+			released = false,
+		}
+	end
 end
 
-function Input:update()
-    self:pressed()
-    self.prev_state = copy(self.state)
-    self.state['wheelup'] = false
-    self.state['wheeldown'] = false
-
-    for k, v in pairs(self.repeat_state) do
-        if v then
-            v.pressed = false 
-            local t = love.timer.getTime() - v.pressed_time
-            if v.delay_stage then 
-                if t > v.delay then 
-                    v.pressed = true 
-                    v.pressed_time = love.timer.getTime()
-                    v.delay_stage = false
-                end
-            else
-                if t > v.interval then
-                    v.pressed = true
-                    v.pressed_time = love.timer.getTime()
-                end
-            end
-        end
-    end
+function Player:_init(config)
+	self:_loadConfig(config)
+	self:_initControls()
+	self:_initPairs()
+	self._activeDevice = 'none'
 end
 
-function Input:keypressed(key)
-    self.state[key] = true
+--[[
+	detects the active device (keyboard/mouse or joystick).
+	if the keyboard or mouse is currently being used, joystick
+	inputs will be ignored. this is to prevent slight axis movements
+	from adding errant inputs when someone's using the keyboard.
+
+	the active device is saved to player._activeDevice, which is then
+	used throughout the rest of the update loop to check only
+	keyboard or joystick inputs.
+]]
+function Player:_setActiveDevice()
+	for _, control in pairs(self._controls) do
+		for _, source in ipairs(control.sources) do
+			local type, value = parseSource(source)
+			if sourceFunction.keyboardMouse[type] then
+				if sourceFunction.keyboardMouse[type](value) > self.config.deadzone then
+					self._activeDevice = 'kbm'
+					return
+				end
+			elseif self.config.joystick and sourceFunction.joystick[type] then
+				if sourceFunction.joystick[type](self.config.joystick, value) > self.config.deadzone then
+					self._activeDevice = 'joy'
+				end
+			end
+		end
+	end
 end
 
-function Input:keyreleased(key)
-    self.state[key] = false
-    self.repeat_state[key] = false
+--[[
+	gets the value of a control by running the appropriate source functions
+	for all of its sources. does not apply deadzone.
+]]
+function Player:_getControlRawValue(control)
+	local rawValue = 0
+	for _, source in ipairs(control.sources) do
+		local type, value = parseSource(source)
+		if sourceFunction.keyboardMouse[type] and self._activeDevice == 'kbm' then
+			if sourceFunction.keyboardMouse[type](value) == 1 then
+				return 1
+			end
+		elseif sourceFunction.joystick[type] and self._activeDevice == 'joy' then
+			rawValue = rawValue + sourceFunction.joystick[type](self.config.joystick, value)
+			if rawValue >= 1 then
+				return 1
+			end
+		end
+	end
+	return rawValue
 end
 
-local button_to_key = {
-    [1] = 'mouse1', [2] = 'mouse2', [3] = 'mouse3', [4] = 'mouse4', [5] = 'mouse5',
-    ['l'] = 'mouse1', ['r'] = 'mouse2', ['m'] = 'mouse3', ['x1'] = 'mouse4', ['x2'] = 'mouse5'
-}
-
-function Input:mousepressed(x, y, button)
-    self.state[button_to_key[button]] = true
+--[[
+	updates each control in a player. saves the value with and without deadzone
+	and the down/pressed/released state.
+]]
+function Player:_updateControls()
+	for _, control in pairs(self._controls) do
+		control.rawValue = self:_getControlRawValue(control)
+		control.value = control.rawValue >= self.config.deadzone and control.rawValue or 0
+		control.downPrevious = control.down
+		control.down = control.value > 0
+		control.pressed = control.down and not control.downPrevious
+		control.released = control.downPrevious and not control.down
+	end
 end
 
-function Input:mousereleased(x, y, button)
-    self.state[button_to_key[button]] = false
-    self.repeat_state[button_to_key[button]] = false
+--[[
+	updates each axis pair in a player. saves the value with and without deadzone
+	and the down/pressed/released state.
+]]
+function Player:_updatePairs()
+	for _, pair in pairs(self._pairs) do
+		-- get raw x and y
+		local l = self._controls[pair.controls[1]].rawValue
+		local r = self._controls[pair.controls[2]].rawValue
+		local u = self._controls[pair.controls[3]].rawValue
+		local d = self._controls[pair.controls[4]].rawValue
+		pair.rawX, pair.rawY = r - l, d - u
+
+		-- limit to 1
+		local len = math.sqrt(pair.rawX^2 + pair.rawY^2)
+		if len > 1 then
+			pair.rawX, pair.rawY = pair.rawX / len, pair.rawY / len
+		end
+
+		-- deadzone
+		if self.config.squareDeadzone then
+			pair.x = math.abs(pair.rawX) > self.config.deadzone and pair.rawX or 0
+			pair.y = math.abs(pair.rawY) > self.config.deadzone and pair.rawY or 0
+		else
+			pair.x = len > self.config.deadzone and pair.rawX or 0
+			pair.y = len > self.config.deadzone and pair.rawY or 0
+		end
+
+		-- down/pressed/released
+		pair.downPrevious = pair.down
+		pair.down = pair.x ~= 0 or pair.y ~= 0
+		pair.pressed = pair.down and not pair.downPrevious
+		pair.released = pair.downPrevious and not pair.down
+	end
 end
 
-function Input:wheelmoved(x, y)
-    if y > 0 then self.state['wheelup'] = true
-    elseif y < 0 then self.state['wheeldown'] = true end
+-- public API --
+
+-- checks for changes in inputs
+function Player:update()
+	self:_setActiveDevice()
+	self:_updateControls()
+	self:_updatePairs()
 end
 
-local button_to_gamepad = {a = 'fdown', y = 'fup', x = 'fleft', b = 'fright', back = 'back', guide = 'guide', start = 'start',
-                           leftstick = 'leftstick', rightstick = 'rightstick', leftshoulder = 'l1', rightshoulder = 'r1',
-                           dpup = 'dpup', dpdown = 'dpdown', dpleft = 'dpleft', dpright = 'dpright'}
-
-function Input:gamepadpressed(joystick, button)
-    self.state[button_to_gamepad[button]] = true 
+-- gets the value of a control or axis pair without deadzone applied
+function Player:getRaw(name)
+	if self._pairs[name] then
+		return self._pairs[name].rawX, self._pairs[name].rawY
+	elseif self._controls[name] then
+		return self._controls[name].rawValue
+	else
+		error('No control with name "' .. name .. '" defined', 3)
+	end
 end
 
-function Input:gamepadreleased(joystick, button)
-    self.state[button_to_gamepad[button]] = false
-    self.repeat_state[button_to_gamepad[button]] = false
+-- gets the value of a control or axis pair with deadzone applied
+function Player:get(name)
+	if self._pairs[name] then
+		return self._pairs[name].x, self._pairs[name].y
+	elseif self._controls[name] then
+		return self._controls[name].value
+	else
+		error('No control with name "' .. name .. '" defined', 3)
+	end
 end
 
-local button_to_axis = {leftx = 'leftx', lefty = 'lefty', rightx = 'rightx', righty = 'righty', triggerleft = 'l2', triggerright = 'r2'}
-
-function Input:gamepadaxis(joystick, axis, newvalue)
-    self.state[button_to_axis[axis]] = newvalue
+-- gets whether a control or axis pair is "held down"
+function Player:down(name)
+	if self._pairs[name] then
+		return self._pairs[name].down
+	elseif self._controls[name] then
+		return self._controls[name].down
+	else
+		error('No control with name "' .. name .. '" defined', 3)
+	end
 end
 
-return setmetatable({}, {__call = function(_, ...) return Input.new(...) end})
+-- gets whether a control or axis pair was pressed this frame
+function Player:pressed(name)
+	if self._pairs[name] then
+		return self._pairs[name].pressed
+	elseif self._controls[name] then
+		return self._controls[name].pressed
+	else
+		error('No control with name "' .. name .. '" defined', 3)
+	end
+end
+
+-- gets whether a control or axis pair was released this frame
+function Player:released(name)
+	if self._pairs[name] then
+		return self._pairs[name].released
+	elseif self._controls[name] then
+		return self._controls[name].released
+	else
+		error('No control with name "' .. name .. '" defined', 3)
+	end
+end
+
+--[[
+	gets the currently active device (either "kbm", "joy", or "none").
+	this is useful for displaying instructional text. you may have
+	a menu that says "press ENTER to confirm" or "press A to confirm"
+	depending on whether the player is using their keyboard or gamepad.
+	this function allows you to detect which they used most recently.
+]]
+function Player:getActiveDevice()
+	return self._activeDevice
+end
+
+-- main functions --
+
+-- creates a new player with the user-provided config table
+function baton.new(config)
+	local player = setmetatable({}, Player)
+	player:_init(config)
+	return player
+end
+
+return baton

@@ -1,6 +1,5 @@
 Player={}
 Player.__index=Player
-print(Input)
 function loadImagesFromDirectory(directory, sort,sortFunction,startIndex,endIndex)
 	local images={}
 	
@@ -19,44 +18,60 @@ function loadImagesFromDirectory(directory, sort,sortFunction,startIndex,endInde
 	for index, file in pairs(files) do
 		if(index>=startIndex) then
 			if(index>endIndex) then
-				print("Breaking")
 				break
 			end
-			table.insert(images,love.graphics.newImage(directory.."."..file))
+			table.insert(images,love.graphics.newImage(directory.."/"..file))
 		end
 	end
 	return images
 end
 
-local vector=require("Resources.lib.HUMP.vector")
-local anim8=require("Resources.lib.anim8")
-local input=Input();
+
 function Player.load()
-	input:bind('a', 'left')
-	input:bind('d', 'right')
-	input:bind('w', 'up')
-	input:bind('s', 'down')
 	local pData=setmetatable({},Player)
 	pData.animations={
-		['idle']={
-			anim8.newAnimation(loadImagesFromDirectory("Resources.graphics.IdleFrames",true,compare,1,7),.5)
-		}		
+		['idle']=
+		blendtree.new({
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,1,8),.1),vector.new(0,-1)}, --up
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,9,16),.1),vector.new(.5,-.5)}, --upright
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,17,24),.1),vector.new(1,0)}, --right
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,25,32),.1),vector.new(.5,.5)}, --downright
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,33,40),.1),vector.new(0,1)}, -- down
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,41,48),.1),vector.new(-.5,.5)}, --downleft
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,49,56),.1),vector.new(-1,0)}, --left
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,57,64),.1),vector.new(-.5,-.5)}, --upleft
+			},
+			vector.new(0,0),
+			"idle"
+		)
 	}
 	pData.moveVector=vector.new(0,0)
-	pData.currentAnimation=currentAnimation
+	pData.currentTree=currentTree
 	pData.statemachine=require("Resources.StateMachine").new(pData)
 	pData.statemachine:addState(require("Resources.states.Idle"))
 	pData.statemachine:addState(require("Resources.states.Walk"))
 	pData.statemachine:changeState("Idle")
 	pData.speed=3;
 	pData.position=vector.new(400,300)
+	pData.input = Input.new {
+		controls = {
+			left = {'key:left', 'key:a', 'axis:leftx-', 'button:dpleft'},
+			right = {'key:right', 'key:d', 'axis:leftx+', 'button:dpright'},
+			up = {'key:up', 'key:w', 'axis:lefty-', 'button:dpup'},
+			down = {'key:down', 'key:s', 'axis:lefty+', 'button:dpdown'},
+			jump = {"key:space"},
+			action = {'key:x', 'button:a'},
+		},
+		pairs = {
+			move = {'left', 'right', 'up', 'down'}
+		},
+		joystick = love.joystick.getJoysticks()[1],
+	}
 	return pData
 end
 
-function Player:loadAnimation(animationName)
-	self.currentAnimation=self.animations['idle'][1]
-	self.currentAnimation:setLooping(true)
-	
+function Player:loadTree(animationName)
+	self.currentTree=self.animations[animationName]
 end
 
 function compare(a,b)
@@ -66,30 +81,14 @@ function compare(a,b)
 end
 
 function Player:draw()
-	self.currentAnimation:draw(self.position.x,self.position.y,0,5,5,self.currentAnimation:getWidth().2,self.currentAnimation:getHeight())
+	self.currentTree.currentAnimation:draw(self.position.x,self.position.y,0,1,1,self.currentTree.currentAnimation:getWidth()/2,self.currentTree.currentAnimation:getHeight())
 end
 
 function Player:update(dt)
-	print(self.statemachine.currentState)
-	if(input:down("left"))then
-		self.moveVector.x=-1*self.speed
-	end
-	if(input:down("right"))then
-		self.moveVector.x=1*self.speed
-	end
-	if(input:down("up"))then
-		self.moveVector.y=-1*self.speed
-	end
-	if(input:down("down"))then
-		self.moveVector.y=1*self.speed
-	end
-	if(not input:down("down") and not input:down("up") and not input:down("left") and not input:down("right") ) then
-		print("Nothing held down")
-		self.moveVector.x=0
-		self.moveVector.y=0
-	end
+	self.input:update(dt)
+	self.moveVector=(vector.new(self.input:get 'move')*self.speed):normalized()
 	self.statemachine:update(dt)
-	self.currentAnimation:update(8.60)
+	self.currentTree:update(dt)
 end
 
 

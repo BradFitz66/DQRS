@@ -1,7 +1,4 @@
 local State = require("Resources.State").new("Idle")
-local Input=require("Resources.lib.Input")
-local input
-local vector=require("Resources.lib.HUMP.vector")
 State.Enter=function(owner)
 end
 

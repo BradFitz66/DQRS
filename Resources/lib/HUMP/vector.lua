@@ -51,6 +51,10 @@ local function randomDirection(len_min, len_max)
 	                 math.random() * (len_max-len_min) + len_min)
 end
 
+function dot(lhs,rhs)
+	return lhs.x * rhs.x + lhs.y * rhs.y; 
+end
+
 local function isvector(v)
 	return type(v) == 'table' and type(v.x) == 'number' and type(v.y) == 'number'
 end
@@ -212,7 +216,8 @@ return setmetatable({
 	fromPolar       = fromPolar,
 	randomDirection = randomDirection,
 	isvector        = isvector,
-	zero            = zero
+	zero            = zero,
+	dot				= dot
 }, {
 	__call = function(_, ...) return new(...) end
 })
