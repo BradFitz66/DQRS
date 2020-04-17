@@ -1,6 +1,6 @@
 Player={}
 Player.__index=Player
-
+print(Input)
 function loadImagesFromDirectory(directory, sort,sortFunction,startIndex,endIndex)
 	local images={}
 	
@@ -22,18 +22,16 @@ function loadImagesFromDirectory(directory, sort,sortFunction,startIndex,endInde
 				print("Breaking")
 				break
 			end
-			table.insert(images,love.graphics.newImage(directory.."/"..file))
+			table.insert(images,love.graphics.newImage(directory.."."..file))
 		end
 	end
 	return images
 end
 
-local vector=require("Resources/lib/HUMP/vector")
-local anim8=require("Resources/lib/anim8")
-local Input=require("Resources/lib/Input")
-local input;
+local vector=require("Resources.lib.HUMP.vector")
+local anim8=require("Resources.lib.anim8")
+local input=Input();
 function Player.load()
-	input=Input()
 	input:bind('a', 'left')
 	input:bind('d', 'right')
 	input:bind('w', 'up')
@@ -41,14 +39,14 @@ function Player.load()
 	local pData=setmetatable({},Player)
 	pData.animations={
 		['idle']={
-			anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,1,7),.5)
+			anim8.newAnimation(loadImagesFromDirectory("Resources.graphics.IdleFrames",true,compare,1,7),.5)
 		}		
 	}
 	pData.moveVector=vector.new(0,0)
 	pData.currentAnimation=currentAnimation
-	pData.statemachine=require("Resources/StateMachine").new(pData)
-	pData.statemachine:addState(require("Resources/states/Idle"))
-	pData.statemachine:addState(require("Resources/states/Walk"))
+	pData.statemachine=require("Resources.StateMachine").new(pData)
+	pData.statemachine:addState(require("Resources.states.Idle"))
+	pData.statemachine:addState(require("Resources.states.Walk"))
 	pData.statemachine:changeState("Idle")
 	pData.speed=3;
 	pData.position=vector.new(400,300)
@@ -68,7 +66,7 @@ function compare(a,b)
 end
 
 function Player:draw()
-	self.currentAnimation:draw(self.position.x,self.position.y,0,5,5,self.currentAnimation:getWidth()/2,self.currentAnimation:getHeight())
+	self.currentAnimation:draw(self.position.x,self.position.y,0,5,5,self.currentAnimation:getWidth().2,self.currentAnimation:getHeight())
 end
 
 function Player:update(dt)
@@ -91,7 +89,7 @@ function Player:update(dt)
 		self.moveVector.y=0
 	end
 	self.statemachine:update(dt)
-	self.currentAnimation:update(8/60)
+	self.currentAnimation:update(8.60)
 end
 
 

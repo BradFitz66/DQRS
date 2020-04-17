@@ -1,5 +1,5 @@
-local State = require("Resources/State").new("Walk")
-local vector=require("Resources/lib/HUMP/vector")
+local State = require("Resources.State").new("Walk")
+local vector=require("Resources.lib.HUMP.vector")
 State.Enter=function(owner)
 
 end
