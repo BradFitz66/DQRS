@@ -1,4 +1,4 @@
-local State = require("Resources.State").new("Idle")
+local State = require("Resources.scripts.State").new("Idle")
 State.Enter=function(owner)
 end
 

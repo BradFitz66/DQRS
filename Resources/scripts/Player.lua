@@ -47,7 +47,7 @@ function Player.load()
 	}
 	pData.moveVector=vector.new(0,0)
 	pData.currentTree=currentTree
-	pData.statemachine=require("Resources.StateMachine").new(pData)
+	pData.statemachine=require("Resources.scripts.StateMachine").new(pData)
 	pData.statemachine:addState(require("Resources.states.Idle"))
 	pData.statemachine:addState(require("Resources.states.Walk"))
 	pData.statemachine:changeState("Idle")

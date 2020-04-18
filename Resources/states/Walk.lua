@@ -1,4 +1,4 @@
-local State = require("Resources.State").new("Walk")
+local State = require("Resources.scripts.State").new("Walk")
 State.Enter=function(owner)
 
 end
