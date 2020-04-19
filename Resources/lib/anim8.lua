@@ -244,7 +244,7 @@ return {
 		return setmetatable( frames, { __call = frames.getFrames } )
 	end,
 
-	newAnimation = function( frames, delays, quadImage )
+	newAnimation = function( frames, delays,AnimationChange,quadImage )
 		err( 'newAnimation: expected argument 1 to be a table, got %type%.', frames, 'table' )
 		err( 'newAnimation: expected argument 2 to be a table or a number, got %type%.', delays, 'table', 'number' )
 		if quadImage then
@@ -310,8 +310,8 @@ return {
 
 			onAnimationChange = function() end,
 			onAnimationEnd = function() end,
-			onLoop = function() end,
-
+			onLoop = AnimationChange ~= nil and  AnimationChange or function() end,
+			onAnimationPlay = function() end,
 			currentFrame = 1,
 			delayTimer = 0,
 			looping = false,
@@ -324,15 +324,18 @@ return {
 				err( 'update: expected argument two to be positive.', dt, isPositive )
 
 				if self.active and not self.paused then
+					if(self.currentFrame==1) then
+						self:onLoop()
+					end
 					self.delayTimer = self.delayTimer + dt
 					if self.delayTimer > self.delays[self.currentFrame] then
 						self.delayTimer = 0
 						self.currentFrame = self.currentFrame + 1
 						self:onAnimationChange( self.currentFrame )
+
 						if self.currentFrame > #self.frames then
 							if self.looping then
 								self.currentFrame = 1
-								self:onLoop()
 							else
 								if self.shouldPauseAtEnd then
 									self.paused = true
@@ -367,7 +370,9 @@ return {
 					end
 				end
 			end,
-
+			setOnPlay = function(self,func)
+				self.onAnimationPlay=func
+			end,
 			setOnLoop = function( self, func )
 				err( 'setOnLoop: expected argument two be a function, got %type%', func, 'function' )
 				self.onLoop = func

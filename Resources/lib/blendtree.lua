@@ -1,7 +1,7 @@
 local Blendtree={}
 Blendtree.__index=Blendtree
 
-function Blendtree.new(BlendTreeAnimations,BlendTreeVector,Name)
+function Blendtree.new(BlendTreeAnimations,BlendTreeVector,Name,owner,StartEvent,EndEvent)
     local bT=setmetatable({},Blendtree)
     bT.animations=BlendTreeAnimations
     bT.name=Name
@@ -9,6 +9,9 @@ function Blendtree.new(BlendTreeAnimations,BlendTreeVector,Name)
     bT.lastvector=bT.vector
     bT.currentAnimation=bT.animations[1][1]
     bT.currentAnimation:setLooping(true)
+    bT.startEvent=StartEvent and StartEvent or nil
+    bT.owner=owner
+    --bT.endEvent= and StartEvent or nil
     return bT
 end
 
@@ -27,10 +30,12 @@ function Blendtree:update(dt)
             return (a[2].dist2(a[2],self.vector))<(b[2].dist2(b[2],self.vector)) 
         end)
         local frames = #self.currentAnimation.frames
-        --Increase the frame count by 1 if we're not at the last frame, otherwise set the frame back to 1.
         local frame = self.currentAnimation:getFrame()+1 < frames and self.currentAnimation:getFrame()+1 or 1
         self.currentAnimation=VectorTable[1][1]
-        self.currentAnimation:setFrame( frame)
+        if(frame==1)then
+            self.currentAnimation:onLoop()
+        end
+        self.currentAnimation:setFrame(frame)
         self.currentAnimation:setLooping(true)
     end
     self.currentAnimation:update(dt)

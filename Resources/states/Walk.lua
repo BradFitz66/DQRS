@@ -1,6 +1,6 @@
 local State = require("Resources.scripts.State").new("Walk")
 State.Enter=function(owner)
-
+	owner:loadTree("walk",false,false)
 end
 
 State.Update=function(owner,dt) 

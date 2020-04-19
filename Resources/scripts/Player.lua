@@ -42,9 +42,30 @@ function Player.load()
 			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,57,64),.1),vector.new(-.5,-.5)}, --upleft
 			},
 			vector.new(0,0),
-			"idle"
-		)
+			"idle",
+			pData
+		),
+		['walk']=
+		blendtree.new({
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,1,8),.1,function() pData.sprite:AddForce(1.5) end),vector.new(0,-1)}, --up
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,9,16),.1,function() pData.sprite:AddForce(1.5) end),vector.new(.5,-.5)}, --upright
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,17,24),.1,function() pData.sprite:AddForce(1.5) end),vector.new(1,0)}, --right
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,25,32),.1,function() pData.sprite:AddForce(1.5) end),vector.new(.5,.5)}, --downright
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,33,40),.1,function() pData.sprite:AddForce(1.5) end),vector.new(0,1)}, -- down
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,41,48),.1,function() pData.sprite:AddForce(1.5) end),vector.new(-.5,.5)}, --downleft
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,49,56),.1,function() pData.sprite:AddForce(1.5) end),vector.new(-1,0)}, --left
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,57,64),.1,function() pData.sprite:AddForce(1.5) end),vector.new(-.5,-.5)}, --upleft
+			},
+			vector.new(0,0),
+			"walk",
+			pData,
+			function() pData.sprite:AddForce(1) end
+			
+		),
 	}
+	pData.sprite=entity.new()
+	pData.sprite.parent=pData;
+	pData.sprite.bounciness=0;
 	pData.moveVector=vector.new(0,0)
 	pData.currentTree=currentTree
 	pData.statemachine=require("Resources.scripts.StateMachine").new(pData)
@@ -70,8 +91,14 @@ function Player.load()
 	return pData
 end
 
-function Player:loadTree(animationName)
+function Player:loadTree(animationName,keepVector, keepFrame)
+	local oldVector=(keepVector and self.currentTree~=nil) and self.currentTree.vector or vector.zero
+	local oldFrame=(keepVector and self.currentTree~=nil) and self.currentTree.currentAnimation:getFrame() or 1
+	print("Old vector: "..tostring(oldVector))
 	self.currentTree=self.animations[animationName]
+	self.currentTree.vector=oldVector
+	self.currentTree.currentAnimation:setFrame(oldFrame)
+	--self.currentTree.currentAnimation:setOnPlay(self.currentTree.startEvent)
 end
 
 function compare(a,b)
@@ -81,7 +108,10 @@ function compare(a,b)
 end
 
 function Player:draw()
-	self.currentTree.currentAnimation:draw(self.position.x,self.position.y,0,1,1,self.currentTree.currentAnimation:getWidth()/2,self.currentTree.currentAnimation:getHeight())
+	love.graphics.setColor(0,0,0,.5)
+	love.graphics.circle("fill",self.position.x,self.position.y-5,10,10)
+	love.graphics.setColor(1,1,1,1)
+	self.currentTree.currentAnimation:draw(self.sprite.position.x,self.sprite.position.y,0,1,1,self.currentTree.currentAnimation:getWidth()/2,self.currentTree.currentAnimation:getHeight())
 end
 
 function Player:update(dt)
@@ -89,6 +119,10 @@ function Player:update(dt)
 	self.moveVector=(vector.new(self.input:get 'move')*self.speed):normalized()
 	self.statemachine:update(dt)
 	self.currentTree:update(dt)
+	self.sprite:update(dt)
+	if(self.input:released("jump")) then
+		self.sprite:AddForce(5)
+	end
 end
 
 

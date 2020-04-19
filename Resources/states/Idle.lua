@@ -1,5 +1,7 @@
 local State = require("Resources.scripts.State").new("Idle")
 State.Enter=function(owner)
+    owner:loadTree("idle",true)
+    print("Idle tree vector: "..tostring(owner.currentTree.vector))
 end
 
 State.Update=function(owner,dt) 
