@@ -38,6 +38,13 @@ function Blendtree:update(dt)
         self.currentAnimation:setFrame(frame)
         self.currentAnimation:setLooping(true)
     end
+    if(self.name=="walk")then
+        print(self.currentAnimation:getFrame())
+    end
+    if(self.currentAnimation:getFrame()==1 and self.name=="walk")then
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        self.currentAnimation:onLoop()
+    end
     self.currentAnimation:update(dt)
 end
 --Not needed in this case since just checking the distance normally using

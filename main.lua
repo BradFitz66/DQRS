@@ -5,6 +5,7 @@ Input=nil
 vector=nil
 blendtree=nil
 entity=nil
+camera=nil
 --
 local player;
 local is_playing=true;
@@ -20,6 +21,7 @@ function love.load()
 	entity=require("Resources.scripts.Entity")
 	player=require("Resources.scripts.Player").load()
 	player:loadTree("idle")
+	camera=require("Resources.lib.HUMP.camera")(player.position.x,player.position.y,2)
 	debugInput=Input.new {
 		
 		controls = {
@@ -34,6 +36,7 @@ end
 
 --Use this for drawing objects
 function love.draw()
+	
 	love.graphics.setBackgroundColor(64/255,234/255,248/255)
 	if(debug) then
 		love.graphics.setColor(0,0,0)
@@ -43,9 +46,9 @@ function love.draw()
 		love.graphics.print("Player blendtree animation frame: "..player.currentTree.currentAnimation:getFrame(),10,55)
 		love.graphics.setColor(255,255,255)
 	end
-	
+	camera:attach()
 	player:draw()
-
+	camera:detach()
 end
 
 
@@ -54,6 +57,7 @@ function love.update(dt)
 	if is_playing or do_step then
 		--dostep=false;
 		player:update(dt)
+		camera:position(player.position.x,player.position.y)
 	end
 	if(debugInput:pressed("timestep")) then
 		is_playing=false;

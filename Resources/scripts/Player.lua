@@ -32,14 +32,14 @@ function Player.load()
 	pData.animations={
 		['idle']=
 		blendtree.new({
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,1,8),.1),vector.new(0,-1)}, --up
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,9,16),.1),vector.new(.5,-.5)}, --upright
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,17,24),.1),vector.new(1,0)}, --right
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,25,32),.1),vector.new(.5,.5)}, --downright
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,33,40),.1),vector.new(0,1)}, -- down
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,41,48),.1),vector.new(-.5,.5)}, --downleft
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,49,56),.1),vector.new(-1,0)}, --left
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,57,64),.1),vector.new(-.5,-.5)}, --upleft
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,1,8),.08),vector.new(0,-1)}, --up
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,9,16),.08),vector.new(.5,-.5)}, --upright
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,17,24),.08),vector.new(1,0)}, --right
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,25,32),.08),vector.new(.5,.5)}, --downright
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,33,40),.08),vector.new(0,1)}, -- down
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,41,48),.08),vector.new(-.5,.5)}, --downleft
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,49,56),.08),vector.new(-1,0)}, --left
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,57,64),.08),vector.new(-.5,-.5)}, --upleft
 			},
 			vector.new(0,0),
 			"idle",
@@ -47,14 +47,14 @@ function Player.load()
 		),
 		['walk']=
 		blendtree.new({
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,1,8),.1,function() pData.sprite:AddForce(1.5) end),vector.new(0,-1)}, --up
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,9,16),.1,function() pData.sprite:AddForce(1.5) end),vector.new(.5,-.5)}, --upright
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,17,24),.1,function() pData.sprite:AddForce(1.5) end),vector.new(1,0)}, --right
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,25,32),.1,function() pData.sprite:AddForce(1.5) end),vector.new(.5,.5)}, --downright
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,33,40),.1,function() pData.sprite:AddForce(1.5) end),vector.new(0,1)}, -- down
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,41,48),.1,function() pData.sprite:AddForce(1.5) end),vector.new(-.5,.5)}, --downleft
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,49,56),.1,function() pData.sprite:AddForce(1.5) end),vector.new(-1,0)}, --left
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,57,64),.1,function() pData.sprite:AddForce(1.5) end),vector.new(-.5,-.5)}, --upleft
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,1,8),.08,function() pData.sprite:AddForce(1.5) end),vector.new(0,-1)}, --up
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,9,16),.08,function() pData.sprite:AddForce(1.5) end),vector.new(.5,-.5)}, --upright
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,17,24),.08,function() pData.sprite:AddForce(1.5) end),vector.new(1,0)}, --right
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,25,32),.08,function() pData.sprite:AddForce(1.5) end),vector.new(.5,.5)}, --downright
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,33,40),.08,function() pData.sprite:AddForce(1.5) end),vector.new(0,1)}, -- down
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,41,48),.08,function() pData.sprite:AddForce(1.5) end),vector.new(-.5,.5)}, --downleft
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,49,56),.08,function() pData.sprite:AddForce(1.5) end),vector.new(-1,0)}, --left
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,57,64),.08,function() pData.sprite:AddForce(1.5) end),vector.new(-.5,-.5)}, --upleft
 			},
 			vector.new(0,0),
 			"walk",
@@ -97,7 +97,7 @@ function Player:loadTree(animationName,keepVector, keepFrame)
 	print("Old vector: "..tostring(oldVector))
 	self.currentTree=self.animations[animationName]
 	self.currentTree.vector=oldVector
-	self.currentTree.currentAnimation:setFrame(oldFrame)
+	self.currentTree.currentAnimation:setFrame(#self.currentTree.currentAnimation.frames)
 	--self.currentTree.currentAnimation:setOnPlay(self.currentTree.startEvent)
 end
 
