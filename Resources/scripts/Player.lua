@@ -109,7 +109,7 @@ end
 
 function Player:draw()
 	love.graphics.setColor(0,0,0,.5)
-	love.graphics.circle("fill",self.position.x,self.position.y-5,10,10)
+	love.graphics.circle("fill",self.position.x,self.position.y-5,10,250)
 	love.graphics.setColor(1,1,1,1)
 	self.currentTree.currentAnimation:draw(self.sprite.position.x,self.sprite.position.y,0,1,1,self.currentTree.currentAnimation:getWidth()/2,self.currentTree.currentAnimation:getHeight())
 end
