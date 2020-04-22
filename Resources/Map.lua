@@ -12,7 +12,7 @@ end
 function Map:createColliders()
     for i=1,#self.colliders do
         local s=HC.polygon(unpack(self.colliders[i]))
-        s:move(515,225)
+        s:move(self.colliderOffset.x,self.colliderOffset.y)
         table.insert(colliderShapes,s)
     end
 end

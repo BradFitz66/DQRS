@@ -12,17 +12,16 @@ HC=nil
 
 colliderWorld=nil;
 local tlfres=require("Resources.lib.TLfres")
+local aspectRatio=require("Resources.lib.aspect_ratio")
 local player;
 local is_playing=true;
 local do_step=false;
 local debugInput;
 local map;
-
-
-
+local gameCam;
+local canvas = love.graphics.newCanvas(256, 192)
 --Use this for initialization
 function love.load()
-	print(tlfres)
 	love.graphics.setDefaultFilter("nearest","nearest",3)
 	anim8=require("Resources.lib.anim8")
 	Input=require("Resources.lib.Input")
@@ -32,52 +31,26 @@ function love.load()
 	artal=require("Resources.lib.artal")
 	player=require("Resources.scripts.Player").load()
 	player:loadTree("idle")
-	camera=require("Resources.lib.HUMP.camera")(player.position.x,player.position.y,2)
+	camera=require("Resources.lib.gamera")
 	HC=require("Resources.lib.HC-master")
 	map= require("Resources.Map").new("Resources/graphics/PSD/TankBottomFloor.psd")
-	map.colliders={
-		{407.5, 134.0,
-		241.5, 134.0,
-		236.5, 138.0,
-		229.5, 153.0,
-		229.5, 190.0,
-		-86.5, 190.0,
-		-86.5, 118.0,
-		-87.5, 116.0,
-		-89.5, 115.0,
-		-93.5, 106.0,
-		-98.5, 102.0,
-		-102.5, 102.0,
-		-102.5, 88.0,
-		-104.5, 86.0,
-		-359.5, 86.0,
-		-359.5, 81.0,
-		-358.5, 80.0,
-		-358.5, 55.0,
-		-361.5, 51.0,
-		-365.5, 42.0,
-		-370.5, 38.0,
-		-390.5, 38.0,
-		-390.5, -22.0,
-		-363.5, -22.0,
-		-359.5, -25.0,
-		-358.5, -28.0,
-		-358.5, -134.0,
-		-162.5, -134.0,
-		-162.5, -116.0,
-		-161.5, -113.0,
-		-157.5, -110.0,
-		-111.5, -110.0,
-		-48.5, -173.0,
-		-21.5, -173.0,
-		-19.5, -175.0,
-		-20.5, -178.0,
-		-29.5, -178.0,
-		-29.5, -210.0,
-		-33.4, -210.0,
-		-111.6, -156.7,
-		-110.5, -167.0,
-		-112.5, -169.0,
+	map.colliders={{
+		407.5, 22.0,
+		177.5, 22.0,
+		177.5, -119.0,
+		175.5, -121.0,
+		63.5, -121.0,
+		61.5, -119.0,
+		61.5, 13.0,
+		-149.5, 13.0,
+		-149.5, -23.0,
+		-118.5, -23.0,
+		-51.5, -90.0,
+		-32.5, -90.0,
+		-30.5, -92.0,
+		-30.5, -210.0,
+		-72.5, -210.0,
+		-113.5, -169.0,
 		-397.5, -169.0,
 		-399.5, -167.0,
 		-399.5, -50.0,
@@ -96,78 +69,92 @@ function love.load()
 		-97.5, 210.0,
 		242.5, 210.0,
 		242.5, 156.0,
-		407.5, 156.0},
-		
-		{-2.5, 56.0,
-		-0.5, 58.0,
-		23.5, 58.0,
-		25.5, 56.0,
-		25.5, 42.0,
-		84.5, 42.0,
-		88.5, 39.0,
-		89.5, 36.0,
-		89.5, -119.0,
-		87.5, -121.0,
-		63.5, -121.0,
-		61.5, -119.0,
-		61.5, 13.0,
-		-149.5, 13.0,
-		-149.5, -23.0,
-		-118.5, -23.0,
-		-51.5, -90.0,
-		-32.5, -90.0,
-		-30.5, -92.0,
-		-30.5, -104.0,
-		-32.5, -106.0,
-		-57.5, -106.0,
-		-121.5, -42.0,
-		-150.5, -42.0,
-		-155.5, -38.0,
-		-162.5, -23.0,
-		-162.5, 36.0,
-		-161.5, 39.0,
-		-157.5, 42.0,
-		-58.5, 42.0,
-		-58.5, 56.0,
-		-56.5, 58.0,
-		-32.5, 58.0,
-		-30.5, 56.0,
-		-30.5, 42.0,
-		-2.5, 42.0},
-		
-		{177.5, -119.0,
-		175.5, -121.0,
-		151.5, -121.0,
-		149.5, -119.0,
-		149.5, 20.0,
-		150.5, 23.0,
-		154.5, 26.0,
-		166.5, 26.0,
-		166.5, 40.0,
-		168.5, 42.0,
-		407.5, 42.0,
-		407.5, 22.0,
-		177.5, 22.0}
+		407.5, 156.0,},
+		{
+		-85.5, 118.0,
+		-88.5, 115.0,
+		-92.5, 106.0,
+		-98.5, 101.0,
+		-101.5, 101.0,
+		-101.5, 88.0,
+		-104.5, 85.0,
+		-358.5, 85.0,
+		-357.5, 80.0,
+		-357.5, 55.0,
+		-360.5, 51.0,
+		-364.5, 42.0,
+		-370.5, 37.0,
+		-389.5, 37.0,
+		-389.5, -21.0,
+		-363.5, -21.0,
+		-358.5, -25.0,
+		-357.5, -28.0,
+		-357.5, -133.0,
+		-163.5, -133.0,
+		-163.5, -116.0,
+		-162.5, -113.0,
+		-157.5, -109.0,
+		-111.5, -109.0,
+		-48.5, -172.0,
+		-37.5, -172.0,
+		-37.5, -107.0,
+		-57.5, -107.0,
+		-121.5, -43.0,
+		-150.5, -43.0,
+		-156.5, -38.0,
+		-163.5, -23.0,
+		-163.5, 36.0,
+		-162.5, 39.0,
+		-157.5, 43.0,
+		-59.5, 43.0,
+		-59.5, 56.0,
+		-56.5, 59.0,
+		-32.5, 59.0,
+		-29.5, 56.0,
+		-29.5, 43.0,
+		-3.5, 43.0,
+		-3.5, 56.0,
+		-0.5, 59.0,
+		23.5, 59.0,
+		26.5, 56.0,
+		26.5, 43.0,
+		84.5, 43.0,
+		89.5, 39.0,
+		90.5, 36.0,
+		90.5, -114.0,
+		148.5, -114.0,
+		148.5, 20.0,
+		149.5, 23.0,
+		154.5, 27.0,
+		165.5, 27.0,
+		165.5, 40.0,
+		168.5, 43.0,
+		402.5, 43.0,
+		402.5, 133.0,
+		241.5, 133.0,
+		235.5, 138.0,
+		228.5, 153.0,
+		228.5, 189.0,
+		-85.5, 189.0,}
 	}
+	gameCam=camera.new(0,0,8000,8000)
+	map.colliderOffset=vector.new(515,225)
 	map:createColliders()
+	love.graphics.setBackgroundColor(72/255,72/255,72/255)
+	love.graphics.setLineWidth(1)
+	--aspectRatio:init(800, 600, 256, 192) 
 end
 
 --Use this for drawing objects
 function love.draw()
-	camera:attach()
-	--tlfres.beginRendering(256, 192)
-	love.graphics.setBackgroundColor(72/255,72/255,72/255)
-	map:draw()
-	player:draw()
-	--tlfres.endRendering()
-	camera:detach()
-
+	love.graphics.draw(canvas,0,192)
 	if(debug) then
-		love.graphics.setColor(0,0,0)
+		love.graphics.setColor(255,255,255)
 		love.graphics.print("FPS: "..tostring(love.timer.getFPS()),10,10)
 		love.graphics.print("Player state: "..player.statemachine.currentState.Name,10,25)
 		love.graphics.print("Player blendtree: "..player.currentTree.name,10,40)
 		love.graphics.print("Player blendtree animation frame: "..player.currentTree.currentAnimation:getFrame(),10,55)
+		love.graphics.print("Player in air: "..tostring(player.sprite.inAir),10,70)
 		love.graphics.setColor(255,255,255)
 	end
 end
@@ -175,9 +162,16 @@ end
 
 --Use this for any code that should be ran each frame
 function love.update(dt)
+	canvas:renderTo(function()
+		love.graphics.clear()
+		gameCam:draw(function(l,t,w,h) 
+			map:draw()
+			player:draw()
+		end)
+	end)	
 	if is_playing or do_step then
 		--dostep=false;
-		camera:lockPosition(player.position.x, player.position.y)
+		gameCam:setPosition(player.position.x,player.position.y+86)
 		player:update(dt)
 	end
 end

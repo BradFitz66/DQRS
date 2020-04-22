@@ -45,7 +45,6 @@ function Entity:update(dt)
         local BounceDelta = vector.new(0,1) * self.velocity.y * dt;
         --local Xdelta = ((vector.new(1,0) * self.velocity.x) + (vector.new(0,1) * self.velocity.y)) * dt;
         if ((self.localPosition + BounceDelta).y <= 0) then
-            print("!")
             --we hit the ground
             self.velocity.y = self.velocity.y * -1
             self.velocity.y = self.velocity.y*self.bounciness;
