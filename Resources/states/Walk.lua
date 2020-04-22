@@ -8,7 +8,7 @@ end
 State.Update=function(owner,dt) 
 	
 	if(owner.moveVector~=vector.zero) then
-		owner.position=owner.position+owner.moveVector;
+		owner.position=owner.position+owner.moveVector*owner.speed;
 		owner.currentTree.vector=owner.moveVector;
 	else
 		owner.statemachine:changeState("Idle")

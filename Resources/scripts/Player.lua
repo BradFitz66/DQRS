@@ -30,7 +30,7 @@ end
 
 function Player.load()
 	local pData=setmetatable({},Player)
-	pData.sprite=entity.new()
+	pData.sprite=entity.new(20,10)
 	pData.sprite.parent=pData;
 	pData.sprite.bounciness=0;
 	pData.animations={
@@ -72,14 +72,14 @@ function Player.load()
 		),
 		['jump']=
 		blendtree.new({
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,1,10),.04,function()  end),vector.new(0,-1)}, --up
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,11,20),.04,function() end),vector.new(.5,-.5)}, --upright
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,21,30),.04,function() end),vector.new(1,0)}, --right
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,31,40),.04,function() end),vector.new(.5,.5)}, --downright
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,41,50),.04,function() end),vector.new(0,1)}, -- down
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,51,60),.04,function() end),vector.new(-.5,.5)}, --downleft
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,61,70),.04,function() end),vector.new(-1,0)}, --left
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,71,80),.04,function() end),vector.new(-.5,-.5)}, --upleft
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,1,10),.03,function()  end),vector.new(0,-1)}, --up
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,11,20),.03,function() end),vector.new(.5,-.5)}, --upright
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,21,30),.03,function() end),vector.new(1,0)}, --right
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,31,40),.03,function() end),vector.new(.5,.5)}, --downright
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,41,50),.03,function() end),vector.new(0,1)}, -- down
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,51,60),.03,function() end),vector.new(-.5,.5)}, --downleft
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,61,70),.03,function() end),vector.new(-1,0)}, --left
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,71,80),.03,function() end),vector.new(-.5,-.5)}, --upleft
 			},
 			vector.new(0,0),
 			"jump",
@@ -96,7 +96,7 @@ function Player.load()
 	pData.statemachine:addState(require("Resources.states.Walk"))
 	pData.statemachine:addState(require("Resources.states.Jump"))
 	pData.statemachine:changeState("Idle")
-	pData.speed=3;
+	pData.speed=2;
 	pData.position=vector.new(400,300)
 	pData.input = Input.new {
 		controls = {
@@ -124,7 +124,6 @@ function Player:loadTree(animationName,keepVector, keepFrame)
 		--Gives better looping result on looping animations
 		self.currentTree.currentAnimation:setFrame(#self.currentTree.currentAnimation.frames)
 	else
-		print("!!")
 		self.currentTree.currentAnimation:setFrame(1)
 		self.currentTree.currentAnimation:setActive(true)
 	end
@@ -141,6 +140,7 @@ function Player:draw()
 	love.graphics.setColor(0,0,0,.5)
 	love.graphics.circle("fill",self.position.x,self.position.y-5,10,250)
 	love.graphics.setColor(1,1,1,1)
+	self.sprite:draw()
 	if(self.currentTree.currentAnimation:isActive()) then
 		self.currentTree.currentAnimation:draw(self.sprite.position.x,self.sprite.position.y,0,1,1,self.currentTree.currentAnimation:getWidth()/2,self.currentTree.currentAnimation:getHeight())
 	end
@@ -153,9 +153,20 @@ function Player:update(dt)
 	self.currentTree:update(dt)
 	self.sprite:update(dt)
 	if(self.input:released("jump")) then
-		self.statemachine:changeState("Jump")
+		if(self.statemachine.currentState.Name~="Jump")then
+			self.statemachine:changeState("Jump")
+		end
 	end
-
+	for shape, delta in pairs(colliderWorld:collisions(self.sprite.collider)) do
+		if(self.moveVector.y > 0 and delta.y < 0) then
+			print("Moving down into object")
+		end 
+		if(vector.new(delta.x,delta.y)~=vector.zero)then
+			print("!")
+		end
+		self.position=self.position+vector.new(delta.x,delta.y)
+		--shape:move(delta.x, delta.y)
+	end
 end
 
 

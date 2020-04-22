@@ -6,16 +6,19 @@ function Map.new(PSDLocation)
     m.graphics=artal.newPSD(PSDLocation)
     m.colliders={}
     m.colliderOffset=vector.zero
+    m.collidees={} --stuff that will collide with this map. Should contain the collider of the object, not the object itself
     return m
 end
 
 function Map:createColliders()
     for i=1,#self.colliders do
-        local s=HC.polygon(unpack(self.colliders[i]))
+        local s=colliderWorld:polygon(unpack(self.colliders[i]))
         s:move(self.colliderOffset.x,self.colliderOffset.y)
         table.insert(colliderShapes,s)
     end
 end
+
+
 
 function Map:draw()
     for i=1,#self.graphics do
