@@ -21,6 +21,9 @@ end
 function StateMachine:changeState(changingTo)
 	if(states[changingTo]~=nil) then
 		if(self.currentState~=nil) then
+			if(self.currentState.Name==changingTo)then
+				return;
+			end	
 			self.currentState.Exit(self.owner)
 		end
 		self.currentState=states[changingTo]

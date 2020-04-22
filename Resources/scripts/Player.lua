@@ -88,6 +88,24 @@ function Player.load()
 			function() end,
 			true
 		),
+		['squish']=
+		blendtree.new({
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/SquishFrames",true,compare,1,5),.05,function()  end),vector.new(0,-1)}, --up
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/SquishFrames",true,compare,6,10),.05,function() end),vector.new(.5,-.5)}, --upright
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/SquishFrames",true,compare,11,15),.05,function() end),vector.new(1,0)}, --right
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/SquishFrames",true,compare,16,20),.05,function() end),vector.new(.5,.5)}, --downright
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/SquishFrames",true,compare,21,25),.05,function() end),vector.new(0,1)}, -- down
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/SquishFrames",true,compare,26,30),.05,function() end),vector.new(-.5,.5)}, --downleft
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/SquishFrames",true,compare,31,35),.05,function() end),vector.new(-1,0)}, --left
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/SquishFrames",true,compare,36,40),.05,function() end),vector.new(-.5,-.5)}, --upleft
+			},
+			vector.new(0,0),
+			"jump",
+			pData,
+			nil,
+			function() end,
+			false
+		),
 	}
 	pData.moveVector=vector.new(0,0)
 	pData.currentTree=currentTree
@@ -95,6 +113,7 @@ function Player.load()
 	pData.statemachine:addState(require("Resources.states.Idle"))
 	pData.statemachine:addState(require("Resources.states.Walk"))
 	pData.statemachine:addState(require("Resources.states.Jump"))
+	pData.statemachine:addState(require("Resources.states.Squish"))
 	pData.statemachine:changeState("Idle")
 	pData.speed=2;
 	pData.position=vector.new(400,300)
@@ -117,15 +136,16 @@ end
 
 function Player:loadTree(animationName,keepVector, keepFrame)
 	local oldVector=(keepVector and self.currentTree~=nil) and self.currentTree.vector or vector.zero
-	local oldFrame=(keepVector and self.currentTree~=nil) and self.currentTree.currentAnimation:getFrame() or 1
 	self.animations[animationName].vector=oldVector; --set vector to old vector before we load the animation
 	self.currentTree=self.animations[animationName]
 	if(self.currentTree.currentAnimation:getLooping()) then
 		--Gives better looping result on looping animations
 		self.currentTree.currentAnimation:setFrame(#self.currentTree.currentAnimation.frames)
 	else
-		self.currentTree.currentAnimation:setFrame(1)
+		print("Setting animation active again")
 		self.currentTree.currentAnimation:setActive(true)
+		self.currentTree.currentAnimation:setPaused(false)
+		self.currentTree.currentAnimation:setFrame(1)
 	end
 	--self.currentTree.currentAnimation:setOnPlay(self.currentTree.startEvent)
 end
@@ -148,23 +168,25 @@ end
 
 function Player:update(dt)
 	self.input:update(dt)
-	self.moveVector=(vector.new(self.input:get 'move')*self.speed):normalized()
 	self.statemachine:update(dt)
 	self.currentTree:update(dt)
+	self.moveVector=(vector.new(self.input:get 'move')*self.speed):normalized()
 	self.sprite:update(dt)
+	if(self.input:down("jump")) then
+		if(self.statemachine.currentState.Name~="Jump")then
+			self.statemachine:changeState("Squish")
+		end
+	end
 	if(self.input:released("jump")) then
 		if(self.statemachine.currentState.Name~="Jump")then
 			self.statemachine:changeState("Jump")
 		end
 	end
 	for shape, delta in pairs(colliderWorld:collisions(self.sprite.collider)) do
-		if(self.moveVector.y > 0 and delta.y < 0) then
-			print("Moving down into object")
-		end 
 		if(vector.new(delta.x,delta.y)~=vector.zero)then
 			print("!")
+			self.position=self.position+vector.new(delta.x,delta.y)
 		end
-		self.position=self.position+vector.new(delta.x,delta.y)
 		--shape:move(delta.x, delta.y)
 	end
 end

@@ -8,11 +8,11 @@ function Blendtree.new(BlendTreeAnimations,BlendTreeVector,Name,owner,StartEvent
     bT.vector=vector.new(0,0)
     bT.lastvector=bT.vector
     bT.currentAnimation=bT.animations[1][1]
-    --bT.currentAnimation:setPauseAtEnd(not loop)
+    bT.currentAnimation:setPauseAtEnd(not loop)
     bT.currentAnimation:setLooping(loop)
     bT.startEvent=StartEvent and StartEvent or function() print("Ended") end
     bT.owner=owner
-    bT.endEvent= EndEvent or function() print("Ended") end
+    bT.endEvent= function() print("Ended") end
     bT.currentAnimation:setOnAnimationEnd(bT.endEvent)
     bT.loopAnim=loop;
     return bT
@@ -43,7 +43,7 @@ function Blendtree:update(dt)
         local prevAnim=self.currentAnimation;
         self.currentAnimation=VectorTable[1][1]
         self.currentAnimation:setLooping(self.loopAnim)
-        --self.currentAnimation:setPauseAtEnd(not self.loopAnim)
+        self.currentAnimation:setPauseAtEnd(not self.loopAnim)
         print("Pause at end on "..self.name..": "..tostring(self.currentAnimation:getPauseAtEnd()))
         self.currentAnimation:setOnAnimationEnd(self.endEvent)
         if(frame==1)then
