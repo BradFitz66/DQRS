@@ -1,0 +1,1 @@
+1.png.png 0 0, 2.png.png 25 0, 3.png.png 49 0, 4.png.png 71 0.

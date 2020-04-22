@@ -109,6 +109,22 @@ function vector.__lt(a,b)
 	return a.x < b.x or (a.x == b.x and a.y < b.y)
 end
 
+function math.Clamp(val, lower, upper)
+    assert(val and lower and upper, "not very useful error message here")
+    if lower > upper then lower, upper = upper, lower end -- swap if boundaries supplied the wrong way
+    return math.max(lower, math.min(upper, val))
+end
+
+
+function Lerp(a, b, t)
+
+	t = math.Clamp(t,0,1);
+	return new(
+		a.x + (b.x - a.x) * t,
+		a.y + (b.y - a.y) * t
+	);
+end
+
 function vector.__le(a,b)
 	return a.x <= b.x and a.y <= b.y
 end
@@ -217,7 +233,8 @@ return setmetatable({
 	randomDirection = randomDirection,
 	isvector        = isvector,
 	zero            = zero,
-	dot				= dot
+	dot				= dot,
+	Lerp			= Lerp
 }, {
 	__call = function(_, ...) return new(...) end
 })

@@ -3,6 +3,8 @@ State.Enter=function(owner)
     owner.sprite.inAir=false;
     owner.sprite.localPosition=vector.zero
     owner.sprite:AddForce(3)
+    owner.scale=vector.new(1,1)
+    owner.rotation=0
     owner:loadTree("jump",true)
 end
 

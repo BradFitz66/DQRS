@@ -15,6 +15,7 @@ function Blendtree.new(BlendTreeAnimations,BlendTreeVector,Name,owner,StartEvent
     bT.endEvent= function() print("Ended") end
     bT.currentAnimation:setOnAnimationEnd(bT.endEvent)
     bT.loopAnim=loop;
+    bT.frameOffset=bT.animations[1][3]
     return bT
 end
 
@@ -42,6 +43,7 @@ function Blendtree:update(dt)
         local frame = self.currentAnimation:getFrame()+1 < frames and self.currentAnimation:getFrame()+1 or 1
         local prevAnim=self.currentAnimation;
         self.currentAnimation=VectorTable[1][1]
+        self.frameOffset=VectorTable[1][3]
         self.currentAnimation:setLooping(self.loopAnim)
         self.currentAnimation:setPauseAtEnd(not self.loopAnim)
         print("Pause at end on "..self.name..": "..tostring(self.currentAnimation:getPauseAtEnd()))
@@ -54,7 +56,6 @@ function Blendtree:update(dt)
     self.currentAnimation:update(dt)
 end   
 function CosineSim(a, b)
-
     local dotProduct = vector.dot(a, b);
     local norm1 = math.sqrt(vector.dot(a, a));
     local norm2 = math.sqrt(vector.dot(b, b));

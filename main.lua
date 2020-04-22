@@ -8,6 +8,7 @@ entity=nil
 camera=nil
 artal=nil
 HC=nil
+timer=nil
 --
 
 colliderWorld=nil;
@@ -16,16 +17,18 @@ local aspectRatio=require("Resources.lib.aspect_ratio")
 local player;
 local map;
 local gameCam;
-local canvas = love.graphics.newCanvas(256, 192)
+local canvas;
 --Use this for initialization
 function love.load()
-	love.graphics.setDefaultFilter("nearest","nearest",3)
+	love.graphics.setDefaultFilter("nearest","nearest",0)
+	canvas= love.graphics.newCanvas(256, 192)
 	anim8=require("Resources.lib.anim8")
 	Input=require("Resources.lib.Input")
 	vector=require("Resources.lib.HUMP.vector")
 	blendtree=require("Resources.lib.blendtree")
 	entity=require("Resources.scripts.Entity")
 	artal=require("Resources.lib.artal")
+	timer=require("Resources.lib.HUMP.timer")
 	camera=require("Resources.lib.gamera")
 	HC=require("Resources.lib.HC-master")
 	colliderWorld=HC.new(100)
@@ -152,4 +155,5 @@ function love.update(dt)
 	end)	
 	gameCam:setPosition(player.position.x,(player.position.y+86))
 	player:update(dt)
+	timer.update(dt)
 end
