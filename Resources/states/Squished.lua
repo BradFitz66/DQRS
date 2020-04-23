@@ -6,6 +6,9 @@ State.Enter=function(owner)
     local t = true
     timer.script(function(wait)
         for i=1,5 do
+            if(owner.currentTree.name~="squished")then
+                break;
+            end
             t=not t
             wait(.025)
             owner.sprite.localPosition.x = t and 2*owner.currentTree.vector.x or -2*owner.currentTree.vector.x

@@ -35,7 +35,7 @@ end
 
 function Player.load()
 	local pData=setmetatable({},Player)
-	pData.sprite=entity.new(20,10)
+	pData.sprite=entity.new(0,1,20,12)
 	pData.sprite.parent=pData;
 	pData.sprite.bounciness=0;
 	pData.animations={
@@ -236,10 +236,9 @@ function Player:update(dt)
 	end
 	for shape, delta in pairs(colliderWorld:collisions(self.sprite.collider)) do
 		if(vector.new(delta.x,delta.y)~=vector.zero)then
-			print("!")
+			
 			self.position=self.position+vector.new(delta.x,delta.y)
 		end
-		--shape:move(delta.x, delta.y)
 	end
 end
 

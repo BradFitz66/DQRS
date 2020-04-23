@@ -1,7 +1,7 @@
 --Base module for entities (players, ammo, enemies, etc)
 local Entity={}
 Entity.__index=Entity
-function Entity.new(colliderSX,colliderSY)
+function Entity.new(colliderPX,colliderPY,colliderSX,colliderSY)
     local e=setmetatable({},Entity)
     e.position=vector.new(0,0)
     e.localPosition=vector.new(0,0) --position when we have a parent
@@ -11,6 +11,7 @@ function Entity.new(colliderSX,colliderSY)
     e.inAir=false -- is the entity in the air?
     e.bounciness=.7
     e.colliderSize=(colliderSX and colliderSY) and vector.new(colliderSX,colliderSY) or vector.zero
+    e.colliderPos=vector.new(colliderPX or 0,colliderPY or 0)
     e.collider=colliderWorld:rectangle(0,0,colliderSX or 20,colliderSY or 20)
     e.maxBounces=0;
     e.parent=nil
@@ -35,7 +36,7 @@ end
 function Entity:draw()
     if(debug) then
         love.graphics.setColor(0,255,0)
-        self.collider:draw("fill")
+        self.collider:draw("line")
         love.graphics.setColor(255,255,255)
     end
 end
@@ -48,7 +49,7 @@ function Entity:update(dt)
     else
         self.position=self.parent.position+-self.localPosition
         self.localPosition=self.localPosition+self.velocity;
-        self.collider:moveTo(self.parent.position.x,self.parent.position.y-self.colliderSize.y/2)
+        self.collider:moveTo(self.parent.position.x+self.colliderPos.x,self.parent.position.y+self.colliderPos.y)
     end
 
     if(self.inAir and (self.maxBounces > 0 and self.velocity.y ~= 0)) then
