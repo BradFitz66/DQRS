@@ -206,6 +206,8 @@ function vector:cross(v)
 	return self.x * v.y - self.y * v.x
 end
 
+
+
 -- ref.: http://blog.signalsondisplay.com/?p=336
 function vector:trimInplace(maxLen)
 	local s = maxLen * maxLen / self:len2()

@@ -11,10 +11,10 @@ end
 State.Update=function(owner,dt) 
     if(owner.moveVector~=vector.zero) then
         owner.currentTree.vector=owner.moveVector;
-        owner.position = owner.position + owner.moveVector*owner.speed;
+        owner.position = owner.position + owner.moveVector*owner.speed*dt;
     end
     if(owner.sprite.inAir==false) then
-        owner.statemachine:changeState("Idle")
+        owner:changeState("Idle")
     end
 end
 

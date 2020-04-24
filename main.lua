@@ -1,4 +1,4 @@
-local debug = true;
+debug = true;
 --Define global modules
 anim8=nil
 Input=nil
@@ -10,6 +10,7 @@ artal=nil
 HC=nil
 timer=nil
 --
+
 
 colliderWorld=nil;
 local tlfres=require("Resources.lib.TLfres")

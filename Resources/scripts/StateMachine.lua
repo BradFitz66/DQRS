@@ -1,7 +1,7 @@
 local StateMachine={}
 StateMachine.__index=StateMachine
 
-states={}
+local states={}
 
 function StateMachine.new(owner)
 	local sM=setmetatable({},StateMachine)
@@ -14,7 +14,6 @@ function StateMachine:addState(newState)
 	if(newState.Enter==nil or newState.Update==nil or newState.Exit==nil)then
 		error("Given state is invalid. Make sure the state is a valid state")
 	end
-	
 	states[newState.Name]=newState
 end
 

@@ -7,7 +7,7 @@ end
 
 State.Update=function(owner,dt) 
 	if(owner.currentTree.currentAnimation:getFrame()==5)then
-		owner.statemachine:changeState("Squished")
+		owner:changeState("Squished")
 	end
 end
 

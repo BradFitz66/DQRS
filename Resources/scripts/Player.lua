@@ -93,6 +93,25 @@ function Player.load()
 			function() end,
 			true
 		),
+		['blasting']=
+		blendtree.new({
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,1,10),.03,function()  end),vector.new(0,-1),vector.new(.5,.8)}, --up
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,11,20),.03,function() end),vector.new(.5,-.5),vector.new(.5,.8)}, --upright
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,21,30),.03,function() end),vector.new(1,0),vector.new(.5,.8)}, --right
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,31,40),.03,function() end),vector.new(.5,.7),vector.new(.5,.8)}, --downright
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,41,50),.03,function() end),vector.new(0,1),vector.new(.5,.8)}, -- down
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,51,60),.03,function() end),vector.new(-.5,.7),vector.new(.5,.8)}, --downleft
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,61,70),.03,function() end),vector.new(-1,0),vector.new(.5,.8)}, --left
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,71,80),.03,function() end),vector.new(-.5,-.5),vector.new(.5,.8)}, --upleft
+			},
+			vector.new(0,0),
+			"blasting",
+			pData,
+			nil,
+			function() end,
+			true
+		),
+		
 		['squish']=
 		blendtree.new({
 			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/SquishFrames",true,compare,1,5),.05,function()  end),vector.new(0,-1),vector.new(.5,.8)}, --up
@@ -147,22 +166,49 @@ function Player.load()
 			nil,
 			function() end,
 			false
+		),
+		['wallhit']=
+		blendtree.new(
+			{
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/WallHitFrames",true,compare,1,4),.1,function()  end),vector.new(0,-1),vector.new(.5,.8)}, --up
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/WallHitFrames",true,compare,5,8),.1,function() end),vector.new(.5,-.5),vector.new(.5,.8)}, --upright
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/WallHitFrames",true,compare,9,12),.1,function() end),vector.new(1,0),vector.new(.5,.8)}, --right
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/WallHitFrames",true,compare,13,16),.1,function() end),vector.new(.5,.7),vector.new(.5,.8)}, --downright
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/WallHitFrames",true,compare,17,20),.1,function() end),vector.new(0,1),vector.new(.5,.8)}, -- down
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/WallHitFrames",true,compare,21,24),.1,function() end),vector.new(-.5,.7),vector.new(.5,.8)}, --downleft
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/WallHitFrames",true,compare,25,28),.1,function() end),vector.new(-1,0),vector.new(.5,.8)}, --left
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/WallHitFrames",true,compare,29,32),.1,function() end),vector.new(-.5,-.5),vector.new(.5,.8)}, --upleft
+				},
+			vector.new(0,0),
+			"stretch",
+			pData,
+			nil,
+			function() end,
+			false
 		)
 	}
 	
 	pData.moveVector=vector.new(0,0)
 	pData.currentTree=currentTree
 	pData.statemachine=require("Resources.scripts.StateMachine").new(pData)
-	pData.statemachine:addState(require("Resources.states.Idle"))
-	pData.statemachine:addState(require("Resources.states.Walk"))
-	pData.statemachine:addState(require("Resources.states.Jump"))
-	pData.statemachine:addState(require("Resources.states.Squish"))
-	pData.statemachine:addState(require("Resources.states.Stretch"))
-	pData.statemachine:addState(require("Resources.states.Squished"))
+	--This contains the players states. It stores the actual state module + a table of the states that can't transition to it
+	pData.states={
+		["Idle"]={pData.statemachine:addState(require("Resources.states.Idle")),{}},
+		["Walk"]={pData.statemachine:addState(require("Resources.states.Walk")),{}},
+		["Jump"]={pData.statemachine:addState(require("Resources.states.Jump")),{"Blasting","Stretch","WallHit"}},
+		["Squish"]={pData.statemachine:addState(require("Resources.states.Squish")),{"Jump","Stretch","Squished","Blasting","WallHit"}},
+		["Stretch"]={pData.statemachine:addState(require("Resources.states.Stretch")),{}},
+		["Squished"]={pData.statemachine:addState(require("Resources.states.Squished")),{}},
+		["Blasting"]={pData.statemachine:addState(require("Resources.states.Blasting")),{}},
+		["WallHit"]={pData.statemachine:addState(require("Resources.states.WallHit")),{}}
+	}
+	
 	pData.statemachine:changeState("Idle")
-	pData.speed=2;
+	pData.speed=96;
 	pData.scale=vector.new(1,1)
 	pData.position=vector.new(400,300)
+	pData.wallHitNormal=vector.zero
+	pData.blastVelocity=vector.zero
 	pData.input = Input.new {
 		controls = {
 			left = {'key:left', 'key:a', 'axis:leftx-', 'button:dpleft'},
@@ -193,7 +239,7 @@ function Player:loadTree(animationName,keepVector,frame,pausedAtStart)
 		--Gives better looping result on looping animations
 		self.currentTree.currentAnimation:setFrame(#self.currentTree.currentAnimation.frames)
 	else
-		print("Setting animation active again")
+		--!print("Setting animation active again")
 		self.currentTree.currentAnimation:setActive(true)
 		self.currentTree.currentAnimation:setPaused(false)
 		self.currentTree.currentAnimation:setFrame(1)
@@ -218,6 +264,28 @@ function Player:draw()
 	end
 end
 
+function Player:changeState(newState)
+	local currentState=self.statemachine.currentState.Name
+	if(newState==currentState)then
+		--!print("Can't switch to new state because it's already the current state")
+		return
+	end
+	if(contains(self.states[newState][2],currentState))then
+		--!print("Can't switch to new state because the current state is not allowed to switch to it ("..currentState.." to "..newState..")")
+		return
+	end
+	self.statemachine:changeState(newState)
+end
+
+function contains(table, element)
+	for _, value in pairs(table) do
+	  if value == element then
+		return true
+	  end
+	end
+	return false
+  end
+
 function Player:update(dt)
 	self.input:update(dt)
 	self.statemachine:update(dt)
@@ -225,18 +293,42 @@ function Player:update(dt)
 	self.moveVector=(vector.new(self.input:get 'move')*self.speed):normalized()
 	self.sprite:update(dt)
 	if(self.input:down("jump")) then
-		if(self.statemachine.currentState.Name~="Jump" and self.statemachine.currentState.Name~="Stretch" and self.statemachine.currentState.Name~="Squished")then
-			self.statemachine:changeState("Squish")
-		end
+		self:changeState("Squish")
 	end
 	if(self.input:released("jump")) then
-		if(self.statemachine.currentState.Name~="Jump")then
-			self.statemachine:changeState("Jump")
-		end
+		self:changeState("Jump")
 	end
 	for shape, delta in pairs(colliderWorld:collisions(self.sprite.collider)) do
+		if(self.blastVelocity~=vector.zero)then
+			print("Blast velocity: "..tostring(self.blastVelocity).." delta: "..tostring(delta))
+			if(self.blastVelocity.y > 0 and delta.y < 0) then
+				--Hit while going downwards
+				self.wallHitNormal=vector.new(1,0)
+				self:changeState("WallHit")	
+				self.currentTree.vector=vector.new(0,-1)
+			elseif(self.blastVelocity.y < 0 and delta.y > 0) then
+				--Hit while going upwards
+				self.wallHitNormal=vector.new(1,0)
+				self:changeState("WallHit")	
+				self.currentTree.vector=vector.new(0,1)
+			elseif(self.blastVelocity.x > 0 and delta.x < 0) then
+				--Hit while going right
+				self.wallHitNormal=vector.new(0,1)
+				self:changeState("WallHit")
+				self.currentTree.vector=vector.new(-1,0)
+			elseif(self.blastVelocity.x < 0 and delta.x > 0) then
+				--Hit while going left
+				print("HIT LEFT!!!!!!!!!!!!!!!!!!")
+				self.wallHitNormal=vector.new(0,1)
+				self:changeState("WallHit")	
+				self.currentTree.vector=vector.new(1,0)
+			end
+		else
+			if(self.statemachine.currentState.Name=="Blasting")then
+				self:changeState("Idle")
+			end
+		end
 		if(vector.new(delta.x,delta.y)~=vector.zero)then
-			
 			self.position=self.position+vector.new(delta.x,delta.y)
 		end
 	end

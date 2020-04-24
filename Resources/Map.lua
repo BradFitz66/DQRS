@@ -23,6 +23,13 @@ end
 function Map:draw()
     for i=1,#self.graphics do
         if(self.graphics[i].name~="CollisionMap") then
+            local oX,oY=self.graphics[i].ox,self.graphics[i].oy;
+
+            if(self.graphics[i].name=="DoorTop")then
+                oY=oY+64
+            elseif self.graphics[i].name=="DoorBottom"then
+                oY=oY-64
+            end
             love.graphics.draw(
             self.graphics[i].image,
             nil,
@@ -30,8 +37,8 @@ function Map:draw()
             nil,
             nil,
             nil,
-            self.graphics[i].ox,
-            self.graphics[i].oy
+            oX,
+            oY
             )
         end
     end

@@ -35,10 +35,10 @@ function Blendtree:update(dt)
         table.sort(VectorTable,function(a,b)
             return (a[2].dist2(a[2],self.vector))<(b[2].dist2(b[2],self.vector)) 
         end)
-        --No difference between top and bottom sorting algorithm (although I have to change less than to greater than). Bottom might even be slower due to the use of square root
-        -- table.sort(VectorTable,function(a,b)
-        --     return (CosineSim(a[2],self.vector))>(CosineSim(b[2],self.vector)) 
-        -- end)
+        --!No difference between top and bottom sorting algorithm (although I have to change less than to greater than). Bottom might even be slower due to the use of square root
+        --table.sort(VectorTable,function(a,b)
+        --    return (CosineSim(a[2],self.vector))>(CosineSim(b[2],self.vector)) 
+        --end)
         local frames = #self.currentAnimation.frames
         local frame = self.currentAnimation:getFrame()+1 < frames and self.currentAnimation:getFrame()+1 or 1
         local prevAnim=self.currentAnimation;

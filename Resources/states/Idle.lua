@@ -5,7 +5,7 @@ end
 
 State.Update=function(owner,dt) 
     if(owner.moveVector~=vector.zero) then
-        owner.statemachine:changeState("Walk")
+        owner:changeState("Walk")
     end
 end
 

@@ -4,4 +4,5 @@ function love.conf(t)
 	t.window.resizable = true
 	t.window.width=256
 	t.window.height=192*2
+	t.vsync=false;
 end

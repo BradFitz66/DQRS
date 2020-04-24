@@ -18,7 +18,7 @@ State.Update=function(owner,dt)
         owner.currentTree.vector = owner.moveVector
         print(endScale)
         local distance=owner.scale.dist(owner.scale,endScale);
-        local newSpeed = 2;
+        local newSpeed = 1.5;
         local finalSpeed = (distance / newSpeed);
         owner.scale = vector.Lerp(owner.scale, endScale, dt/finalSpeed);
 
@@ -32,16 +32,30 @@ State.Update=function(owner,dt)
     else
     
         local distance = owner.scale.dist(owner.scale,startScale);
-        local newSpeed = 2;
+        local newSpeed = 1.5;
         local finalSpeed = (distance / newSpeed);
         owner.scale = vector.Lerp(owner.scale, startScale, dt / finalSpeed);
 
         if (owner.scale.dist(owner.scale,startScale)<=0.005) then
             owner.rotation=0
             owner.scale=vector.new(1,1)
-            owner.statemachine:changeState("Squished")
+            owner:changeState("Squished")
             
         end
+    end
+    if (owner.input:released("jump"))then
+    
+        --So rocket slime's full stretch elastoblast (not a charged one) moves the player 267 pixels roughly which translates to about 16 unity units (267/16) so that's what I'm basing this off of.
+
+        --Scale the full power elastoblast by how much the player stretched
+        --vec = Quaternion.Euler(new Vector3(0, 10, 0)) * vec
+        local maxPower = vector.new(0, 9*16);
+        local mag = maxPower:len();
+        local maxPowerAligned=maxPower:rotated(owner.rotation);
+        maxPowerAligned = -maxPowerAligned;
+        owner.blastVelocity = vector.Lerp(vector.zero, maxPowerAligned, (owner.scale - startScale):len() / (endScale - startScale):len());
+        --print("Blast velocity: "..tostring(owner.blastVelocity))
+        owner:changeState("Blasting")
     end
 end
 
