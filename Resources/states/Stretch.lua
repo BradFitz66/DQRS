@@ -16,7 +16,6 @@ State.Update=function(owner,dt)
     if (owner.moveVector ~= vector.zero) then
     
         owner.currentTree.vector = owner.moveVector
-        print(endScale)
         local distance=owner.scale.dist(owner.scale,endScale);
         local newSpeed = 1.5;
         local finalSpeed = (distance / newSpeed);

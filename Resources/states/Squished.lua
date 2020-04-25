@@ -22,7 +22,6 @@ end
 
 State.Update=function(owner,dt) 
 	if(owner.moveVector~=vector.zero)then
-		print("!!!")
 		owner:changeState("Stretch")
 	end
 end

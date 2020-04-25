@@ -11,7 +11,7 @@ end
 State.Update=function(owner,dt)
     if(owner.currentTree.currentAnimation:getFrame()==4)then
         timer.after(.1,function()
-            owner.blastVelocity=owner.blastVelocity:mirrorOn(owner.wallHitNormal)
+            owner.blastVelocity=owner.blastVelocity:mirrorOn(owner.wallHitNormal)*1
             owner:changeState("Blasting")
         end)
     end

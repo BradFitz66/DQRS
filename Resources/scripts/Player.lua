@@ -209,6 +209,7 @@ function Player.load()
 	pData.position=vector.new(400,300)
 	pData.wallHitNormal=vector.zero
 	pData.blastVelocity=vector.zero
+	pData.wallHitDebounce=false --* I don't want to do this, but it seems like the easiest solution to stop the player from being stuck in a wallhit loop
 	pData.input = Input.new {
 		controls = {
 			left = {'key:left', 'key:a', 'axis:leftx-', 'button:dpleft'},
@@ -287,6 +288,28 @@ function contains(table, element)
   end
 
 function Player:update(dt)
+
+	for shape, delta in pairs(colliderWorld:collisions(self.sprite.collider)) do
+		
+		if(self.statemachine.currentState.Name=="Blasting")then
+			--Only continue if there's a separation delta (meaning we're actually colliding into something, not just touching it) and if we're not currently in debounce mode
+			if(not (delta.x==0 and delta.y==0) and not self.wallHitDebounce) then
+				self.wallHitDebounce=true;
+				self.wallHitNormal=vector.new(math.floor(delta.y),math.floor(delta.x))
+				self:changeState("WallHit")
+				self.currentTree.vector=vector.new(delta.x,delta.y)
+				timer.after(.1,function()
+					self.wallHitDebounce=false;
+				end)
+			end
+		else
+			if(self.statemachine.currentState.Name=="Blasting")then
+				self:changeState("Idle")
+			end
+		end
+		self.position=self.position+vector.new(delta.x,delta.y)
+	end
+
 	self.input:update(dt)
 	self.statemachine:update(dt)
 	self.currentTree:update(dt)
@@ -298,40 +321,7 @@ function Player:update(dt)
 	if(self.input:released("jump")) then
 		self:changeState("Jump")
 	end
-	for shape, delta in pairs(colliderWorld:collisions(self.sprite.collider)) do
-		if(self.blastVelocity~=vector.zero)then
-			print("Blast velocity: "..tostring(self.blastVelocity).." delta: "..tostring(delta))
-			if(self.blastVelocity.y > 0 and delta.y < 0) then
-				--Hit while going downwards
-				self.wallHitNormal=vector.new(1,0)
-				self:changeState("WallHit")	
-				self.currentTree.vector=vector.new(0,-1)
-			elseif(self.blastVelocity.y < 0 and delta.y > 0) then
-				--Hit while going upwards
-				self.wallHitNormal=vector.new(1,0)
-				self:changeState("WallHit")	
-				self.currentTree.vector=vector.new(0,1)
-			elseif(self.blastVelocity.x > 0 and delta.x < 0) then
-				--Hit while going right
-				self.wallHitNormal=vector.new(0,1)
-				self:changeState("WallHit")
-				self.currentTree.vector=vector.new(-1,0)
-			elseif(self.blastVelocity.x < 0 and delta.x > 0) then
-				--Hit while going left
-				print("HIT LEFT!!!!!!!!!!!!!!!!!!")
-				self.wallHitNormal=vector.new(0,1)
-				self:changeState("WallHit")	
-				self.currentTree.vector=vector.new(1,0)
-			end
-		else
-			if(self.statemachine.currentState.Name=="Blasting")then
-				self:changeState("Idle")
-			end
-		end
-		if(vector.new(delta.x,delta.y)~=vector.zero)then
-			self.position=self.position+vector.new(delta.x,delta.y)
-		end
-	end
+	
 end
 
 

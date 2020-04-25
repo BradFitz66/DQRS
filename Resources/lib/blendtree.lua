@@ -46,7 +46,6 @@ function Blendtree:update(dt)
         self.frameOffset=VectorTable[1][3]
         self.currentAnimation:setLooping(self.loopAnim)
         self.currentAnimation:setPauseAtEnd(not self.loopAnim)
-        print("Pause at end on "..self.name..": "..tostring(self.currentAnimation:getPauseAtEnd()))
         self.currentAnimation:setOnAnimationEnd(self.endEvent)
         if(frame==1)then
             self.currentAnimation:onLoop()

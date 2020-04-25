@@ -13,12 +13,12 @@ State.Enter=function(owner)
     endPosDiff = -(owner.position - endPos):normalized();
     distanceTravelled=0;
     lastPos=owner.position
-    print("EndPosDiff: "..tostring(endPosDiff))
     owner.currentTree.vector=endPosDiff
 end
 
 State.Update=function(owner,dt)
-    if(distanceTravelled-distance)<.04 then
+    if-(distanceTravelled-distance)>.04 then
+        print("Distance left: "..tostring(-(distanceTravelled-distance)))
         owner.position=owner.position+endPosDiff*256*dt
         distanceTravelled=distanceTravelled+owner.position.dist(owner.position,lastPos)
         lastPos=owner.position
