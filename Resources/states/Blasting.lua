@@ -18,14 +18,13 @@ end
 
 State.Update=function(owner,dt)
     if-(distanceTravelled-distance)>.04 then
-        print("Distance left: "..tostring(-(distanceTravelled-distance)))
         owner.position=owner.position+endPosDiff*256*dt
         distanceTravelled=distanceTravelled+owner.position.dist(owner.position,lastPos)
         lastPos=owner.position
 
         owner.blastVelocity=owner.blastVelocity*(1-((distanceTravelled/distance)*.25))
     else
-        owner.blastVelocity=vector.zero
+        owner.blastVelocity=vector.new(0,0)
         owner:changeState("Idle")
     end
 end

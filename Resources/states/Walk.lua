@@ -7,9 +7,9 @@ end
 
 State.Update=function(owner,dt) 
 	
-	if(owner.moveVector~=vector.zero) then
+	if(owner.moveVector~=vector.new(0,0)) then
 		owner.position=owner.position+owner.moveVector*owner.speed*dt;
-		owner.currentTree.vector=owner.moveVector;
+		owner.currentTree.vector=owner.moveVector:normalized();
 	else
 		owner:changeState("Idle")
 	end
@@ -17,7 +17,7 @@ State.Update=function(owner,dt)
 		owner.sprite:AddForce(1.5)
 	elseif owner.sprite.inAir and owner.currentTree.currentAnimation:getFrame()==1 then
 		owner.sprite.inAir=false
-		owner.sprite.localPosition=vector.zero
+		owner.sprite.localPosition=vector.new(0,0)
 		owner.sprite:AddForce(1.5)
 	end
 end

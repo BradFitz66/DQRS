@@ -4,7 +4,7 @@ State.Enter=function(owner)
 end
 
 State.Update=function(owner,dt) 
-    if(owner.moveVector~=vector.zero) then
+    if(owner.moveVector~=vector.new(0,0)) then
         owner:changeState("Walk")
     end
 end

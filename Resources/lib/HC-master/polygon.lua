@@ -295,6 +295,19 @@ function Polygon:scale(s, cx,cy)
 	self._radius = self._radius * s
 end
 
+function Polygon:scaleNonUniform(sx,sy,cx,cy)
+	if not (cx and cy) then
+		cx,cy = self.centroid.x, self.centroid.y
+	end
+	for i,v in ipairs(self.vertices) do
+		-- v = (v - center) * s + center
+		v.x = (v.x + sx)*vector.mul(sx,v.x-cx,v.y-cy)
+		v.y = (v.y + sy)*vector.mul(sy,v.x-cx,v.y-cy)
+		--v.x,v.y = vector.add(cx,cy, vector.mul(s, v.x-cx, v.y-cy))
+	end
+	self._radius = self._radius * vector.len(sx,sy)
+end
+
 -- triangulation by the method of kong
 function Polygon:triangulate()
 	if #self.vertices == 3 then return {self:clone()} end

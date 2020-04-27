@@ -1,37 +1,39 @@
+floor,ceil,pi,sqrt=math.floor,math.ceil,math.pi,math.sqrt
 debug = true;
 --Define global modules
 anim8=nil
 Input=nil
-vector=nil
 blendtree=nil
-entity=nil
 camera=nil
 artal=nil
 HC=nil
 timer=nil
-
+lovepixels=nil
+vector=nil
 --
+math=require("Resources.lib.mathx")
+actors={}
 local player=nil;
+local ammo;
 currentMap=nil;
 colliderWorld=nil;
-local tlfres=require("Resources.lib.TLfres")
-local aspectRatio=require("Resources.lib.aspect_ratio")
 local gameCam;
 local canvas;
 --Use this for initialization
 function love.load()
 	love.graphics.setDefaultFilter("nearest","nearest",0)
 	canvas= love.graphics.newCanvas(256, 192)
+	vector=require("Resources.lib.HUMP.vector")
 	anim8=require("Resources.lib.anim8")
 	Input=require("Resources.lib.Input")
-	vector=require("Resources.lib.HUMP.vector")
 	blendtree=require("Resources.lib.blendtree")
-	entity=require("Resources.scripts.Entity")
 	artal=require("Resources.lib.artal")
 	timer=require("Resources.lib.HUMP.timer")
 	camera=require("Resources.lib.gamera")
+	vector3=require("Resources.lib.brinevector3D")
 	HC=require("Resources.lib.HC-master")
 	colliderWorld=HC.new(50)
+
 	player=require("Resources.scripts.Player").load()
 	player:loadTree("idle")
 	currentMap=require("Resources.scripts.TankInterior").Load()
@@ -39,9 +41,18 @@ function love.load()
 	gameCam=camera.new(0,0,8000,8000)
 	love.graphics.setBackgroundColor(72/255,72/255,72/255)
 	love.graphics.setLineWidth(1)
-	--aspectRatio:init(800, 600, 256, 192) 
+	ammo=require("Resources.scripts.TankShell").new()
+	table.insert(actors,player)
+	table.insert(actors,ammo)
+end
+function round(number, nearest)
+	return math.floor(number / nearest + 0.5) * nearest
 end
 
+function roundToNthDecimal(num, n)
+	local mult = 10^(n or 0)
+	return math.floor(num * mult + 0.5) / mult
+end
 --Use this for drawing objects
 function love.draw()
 	love.graphics.setColor(255,0,0)
@@ -66,10 +77,17 @@ function love.update(dt)
 		love.graphics.clear()
 		gameCam:draw(function(l,t,w,h) 
 			currentMap.map:draw()
-			player:draw()
+			table.sort(actors,function(a,b)
+				return a.position.y<b.position.y
+			end)		
+			for _, actor in pairs(actors) do
+				actor:draw()
+			end
 		end)
 	end)	
 	gameCam:setPosition(player.position.x,(player.position.y+86))
-	player:update(dt)
+	for _, actor in pairs(actors) do
+		actor:update(dt)
+	end
 	timer.update(dt)
 end

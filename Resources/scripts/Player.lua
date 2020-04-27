@@ -30,9 +30,7 @@ function loadImagesFromDirectory(directory, sort,sortFunction,startIndex,endInde
 	end
 	return images
 end
-
-
-
+local entity=require("Resources.scripts.Entity")
 function Player.load()
 	local pData=setmetatable({},Player)
 	pData.sprite=entity.new(0,1,20,12)
@@ -170,13 +168,13 @@ function Player.load()
 		['wallhit']=
 		blendtree.new(
 			{
-				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/WallHitFrames",true,compare,1,4),.1,function()  end),vector.new(0,-1),vector.new(.5,.8)}, --up
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/WallHitFrames",true,compare,1,4),.1,function()  end),vector.new(0,-1),vector.new(.5,0)}, --up
 				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/WallHitFrames",true,compare,5,8),.1,function() end),vector.new(.5,-.5),vector.new(.5,.8)}, --upright
-				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/WallHitFrames",true,compare,9,12),.1,function() end),vector.new(1,0),vector.new(.5,.8)}, --right
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/WallHitFrames",true,compare,9,12),.1,function() end),vector.new(1,0),vector.new(1,.8)}, --right
 				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/WallHitFrames",true,compare,13,16),.1,function() end),vector.new(.5,.7),vector.new(.5,.8)}, --downright
-				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/WallHitFrames",true,compare,17,20),.1,function() end),vector.new(0,1),vector.new(.5,.8)}, -- down
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/WallHitFrames",true,compare,17,20),.1,function() end),vector.new(0,1),vector.new(.5,1)}, -- down
 				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/WallHitFrames",true,compare,21,24),.1,function() end),vector.new(-.5,.7),vector.new(.5,.8)}, --downleft
-				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/WallHitFrames",true,compare,25,28),.1,function() end),vector.new(-1,0),vector.new(.5,.8)}, --left
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/WallHitFrames",true,compare,25,28),.1,function() end),vector.new(-1,0),vector.new(0,.8)}, --left
 				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/WallHitFrames",true,compare,29,32),.1,function() end),vector.new(-.5,-.5),vector.new(.5,.8)}, --upleft
 				},
 			vector.new(0,0),
@@ -206,9 +204,9 @@ function Player.load()
 	pData.statemachine:changeState("Idle")
 	pData.speed=96;
 	pData.scale=vector.new(1,1)
-	pData.position=vector.new(400,300)
-	pData.wallHitNormal=vector.zero
-	pData.blastVelocity=vector.zero
+	pData.position=vector.new(200,200)
+	pData.wallHitNormal=vector.new(0,0)
+	pData.blastVelocity=vector.new(0,0)
 	pData.wallHitDebounce=false --* I don't want to do this, but it seems like the easiest solution to stop the player from being stuck in a wallhit loop
 	pData.input = Input.new {
 		controls = {
@@ -224,12 +222,13 @@ function Player.load()
 		},
 		joystick = love.joystick.getJoysticks()[1],
 	}
+	
 	pData.rotation=0
 	return pData
 end
 
 function Player:loadTree(animationName,keepVector,frame,pausedAtStart)
-	local oldVector=(keepVector and self.currentTree~=nil) and self.currentTree.vector or vector.zero
+	local oldVector=(keepVector and self.currentTree~=nil) and self.currentTree.vector or vector.new(0,0)
 	self.animations[animationName].vector=oldVector; --set vector to old vector before we load the animation
 	self.currentTree=self.animations[animationName]
 	if(frame and pausedAtStart) then
@@ -255,14 +254,15 @@ function compare(a,b)
 end
 
 function Player:draw()
-	love.graphics.setColor(0,0,0,.5)
-	love.graphics.circle("fill",self.position.x,self.position.y-5,10,250)
-	love.graphics.setColor(1,1,1,1)
+	-- love.graphics.setColor(0,0,0,.5)
+	-- love.graphics.circle("fill",self.position.x,self.position.y-5,10,250)
+	-- love.graphics.setColor(1,1,1,1)
 	self.sprite:draw()
 	if(self.currentTree.currentAnimation:isActive()) then
 		local offset=vector.new(self.currentTree.currentAnimation:getWidth()*self.currentTree.frameOffset.x,self.currentTree.currentAnimation:getHeight()*self.currentTree.frameOffset.y)
 		self.currentTree.currentAnimation:draw(self.sprite.position.x,self.sprite.position.y,self.rotation,self.scale.x,self.scale.y,offset.x,offset.y)
 	end
+	love.graphics.line(200,200,200,210)
 end
 
 function Player:changeState(newState)
@@ -285,43 +285,105 @@ function contains(table, element)
 	  end
 	end
 	return false
-  end
+end
 
+function find(table, element)
+	local item=nil
+	for _, value in pairs(table) do
+	  if value == element then
+		item=value
+	  end
+	end
+	return item
+end
+
+function closeEnough(angle)
+	if(((180-math.abs(angle)<10) or (90-math.abs(angle)>10) or 180%math.abs(angle)==0 or angle==0))then
+		return true
+	end
+	return false
+end
+
+local halfRotations={
+	45,
+	225,
+	135
+}
+--!AAAAAAAAAAAAAAAAAAAAAAAAAAAA
 function Player:update(dt)
-
-	for shape, delta in pairs(colliderWorld:collisions(self.sprite.collider)) do
-		
-		if(self.statemachine.currentState.Name=="Blasting")then
-			--Only continue if there's a separation delta (meaning we're actually colliding into something, not just touching it) and if we're not currently in debounce mode
-			if(not (delta.x==0 and delta.y==0) and not self.wallHitDebounce) then
-				self.wallHitDebounce=true;
-				self.wallHitNormal=vector.new(math.floor(delta.y),math.floor(delta.x))
-				self:changeState("WallHit")
-				self.currentTree.vector=vector.new(delta.x,delta.y)
-				timer.after(.1,function()
-					self.wallHitDebounce=false;
-				end)
+	self.input:update(dt)
+	self.sprite:update(dt,function()
+		for shape, delta in pairs(colliderWorld:collisions(self.sprite.collider)) do
+			for _, actor in pairs(actors) do
+				if(actor.sprite.collider==shape) then
+					if(self.statemachine.currentState.Name=="Blasting")then
+						local initialVel = (vector3(self.blastVelocity.x,self.blastVelocity.y,0))
+						initialVel.z=initialVel.y;
+						initialVel.y=0;
+						initialVel=initialVel+vector3(0,3,0)
+						print("Initial vel: "..tostring(initialVel))
+						actor.sprite:AddForceXYZ(initialVel)
+					end
+				end
 			end
-		else
-			if(self.statemachine.currentState.Name=="Blasting")then
-				self:changeState("Idle")
+			if(contains(currentMap.map.colliderShapes,shape)) then
+				self.position=self.position+vector.new(delta.x,delta.y)
+				if(self.statemachine.currentState.Name=="Blasting")then
+					if(not (delta.x==0 and delta.y==0) and not self.wallHitDebounce) then
+						local collisionAngle=(math.round((math.deg(math.atan2(delta.y,delta.x)))))
+						local headingAngle=math.round((math.deg(math.atan2(self.blastVelocity.y,self.blastVelocity.x))))
+						local collisionHeadingDifference=math.abs(math.abs(headingAngle)-math.abs(collisionAngle))
+						local isHalfRotation=contains(halfRotations,math.abs(headingAngle))
+						--Here we check if there's a separation delta and if the angle of collision is divisible by 180 with no remainder or is within 10 degrees of it or 90 degrees (some flat wall aren't perfectly flat due to float precision)
+						if(not isHalfRotation) then
+							if(contains(halfRotations,math.abs(collisionAngle))) then
+								break;
+							end
+							collisionAngle=round(collisionAngle,90)
+							self.position=self.position+vector.new(delta.x,delta.y)
+							self.wallHitDebounce=true;
+							local newDelta = vector.new(math.cos(math.rad(collisionAngle)),math.sin(math.rad(collisionAngle)))
+							self.wallHitNormal=vector.new(roundToNthDecimal(newDelta.y,1),roundToNthDecimal(newDelta.x,1))
+							self:changeState("WallHit")
+							self.currentTree.vector=vector.new(roundToNthDecimal(delta.x,1),roundToNthDecimal(delta.y,1))
+							timer.after(.1,function()
+								self.wallHitDebounce=false;
+							end)
+						else
+							self.position=self.position+vector.new(delta.x,delta.y)
+							self.wallHitDebounce=true;
+							local newDelta = vector.new(math.cos(math.rad(math.abs(collisionAngle))),math.sin(math.rad(math.abs(collisionAngle))))
+							self.wallHitNormal=vector.new(roundToNthDecimal(newDelta.y,1),roundToNthDecimal(newDelta.x,1))
+							self:changeState("WallHit")
+							self.currentTree.vector=vector.new(roundToNthDecimal(delta.x,1),roundToNthDecimal(delta.y,1))
+							timer.after(.1,function()
+								self.wallHitDebounce=false;
+							end)			
+						end
+					end
+				else
+					if(self.statemachine.currentState.Name=="Blasting")then
+						self:changeState("Idle")
+					end
+				end
+
 			end
 		end
-		self.position=self.position+vector.new(delta.x,delta.y)
-	end
-
-	self.input:update(dt)
+	end)
 	self.statemachine:update(dt)
 	self.currentTree:update(dt)
-	self.moveVector=(vector.new(self.input:get 'move')*self.speed):normalized()
-	self.sprite:update(dt)
+	local hori,vert=self.input:get 'move'
+	if(hori~=0 or vert~=0) then
+		self.moveVector=(vector.new(hori,vert)*self.speed):normalized()
+	else
+		self.moveVector=vector.new(0,0)
+	end
 	if(self.input:down("jump")) then
 		self:changeState("Squish")
 	end
 	if(self.input:released("jump")) then
 		self:changeState("Jump")
 	end
-	
 end
 
 

@@ -1,7 +1,7 @@
 local State = require("Resources.scripts.State").new("Squish")
 State.Enter=function(owner)
 	owner.sprite.inAir=false;
-    owner.sprite.localPosition=vector.zero
+    owner.sprite.localPosition=vector.new(0,0)
 	owner:loadTree("squish",true)
 end
 

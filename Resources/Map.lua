@@ -1,11 +1,12 @@
 local Map={}
 Map.__index=Map
 local a;
+
 function Map.new(PSDLocation)
     local m = setmetatable({},Map)
     m.graphics=artal.newPSD(PSDLocation)
     m.colliders={}
-    m.colliderOffset=vector.zero
+    m.colliderOffset=vector.new(0,0)
     m.collidees={} --stuff that will collide with this map. Should contain the collider of the object, not the object itself
     m.colliderShapes={}
     return m

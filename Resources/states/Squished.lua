@@ -1,7 +1,7 @@
 local State = require("Resources.scripts.State").new("Squished")
 State.Enter=function(owner)
 	owner.sprite.inAir=false;
-    owner.sprite.localPosition=vector.zero
+    owner.sprite.localPosition=vector.new(0,0)
     owner:loadTree("squished",true)
     local t = true
     timer.script(function(wait)
@@ -11,8 +11,9 @@ State.Enter=function(owner)
             end
             t=not t
             wait(.025)
-            owner.sprite.localPosition.x = t and 2*owner.currentTree.vector.x or -2*owner.currentTree.vector.x
-            owner.sprite.localPosition.y = t and 2*owner.currentTree.vector.y or -2*owner.currentTree.vector.y
+            local treeVec =owner.currentTree.vector
+            owner.sprite.localPosition.x = t and 2*treeVec.x or -2*treeVec.x
+            owner.sprite.localPosition.y = t and 2*treeVec.y or -2*treeVec.y
         end
         owner.sprite.localPosition.x = 0
         owner.sprite.localPosition.y  = 0
@@ -21,7 +22,7 @@ State.Enter=function(owner)
 end
 
 State.Update=function(owner,dt) 
-	if(owner.moveVector~=vector.zero)then
+	if(owner.moveVector~=vector.new(0,0))then
 		owner:changeState("Stretch")
 	end
 end
