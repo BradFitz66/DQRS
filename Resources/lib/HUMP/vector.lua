@@ -55,6 +55,10 @@ function dot(lhs,rhs)
 	return lhs.x * rhs.x + lhs.y * rhs.y; 
 end
 
+function cross(a,b)
+	return a.x * b.y - a.y * b.x
+end
+
 local function isvector(v)
 	return type(v) == 'table' and type(v.x) == 'number' and type(v.y) == 'number'
 end
@@ -236,6 +240,7 @@ return setmetatable({
 	isvector        = isvector,
 	zero            = zero,
 	dot				= dot,
+	cross			= cross,
 	Lerp			= Lerp
 }, {
 	__call = function(_, ...) return new(...) end

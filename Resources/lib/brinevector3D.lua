@@ -157,10 +157,13 @@ end
 
 function Vector3D:mirrorOn(v)
 	-- 2 * self:projectOn(v) - self
-	local s = 2 * (self.x * v.x + self.y * v.y + self.z * v.z) / (v.x * v.x + v.y * v.y + v.z * v.z)  
-	return Vector3D(s * v.x - self.x, s * v.y - self.y,s*v.z-self.z)
+  local s = 2 * (self.x * v.x + self.y * v.y + self.z * v.z) / math.max((v.x * v.x + v.y * v.y + v.z * v.z),.01)
+  if(s==nil) then
+    print("!")
+    return Vector3D(0,0,0);
+  end
+  return Vector3D(s * v.x - self.x, s * v.y - self.y,s*v.z-self.z)
 end
-
 
 function Vector3D.__unm(v)
   return Vector3D(-v.x, -v.y, -v.z)

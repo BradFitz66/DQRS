@@ -36,6 +36,7 @@ function Player.load()
 	pData.sprite=entity.new(0,1,20,12)
 	pData.sprite.parent=pData;
 	pData.sprite.bounciness=0;
+	pData.sprite.maxBounces=1;
 	pData.animations={
 		['idle']=
 		blendtree.new({
@@ -314,52 +315,45 @@ function Player:update(dt)
 	self.input:update(dt)
 	self.sprite:update(dt,function()
 		for shape, delta in pairs(colliderWorld:collisions(self.sprite.collider)) do
+			local absoluteDelta=vector.new(math.abs(delta.x),math.abs(delta.y))
+			local fixedDelta=vector.new(delta.x,delta.y)-(self.moveVector*self.speed):normalized()
 			for _, actor in pairs(actors) do
 				if(actor.sprite.collider==shape) then
 					if(self.statemachine.currentState.Name=="Blasting")then
+						local normalizedBlast=self.blastVelocity:normalized()
 						local initialVel = (vector3(self.blastVelocity.x,self.blastVelocity.y,0))
 						initialVel.z=initialVel.y;
 						initialVel.y=0;
-						initialVel=initialVel+vector3(0,3,0)
-						print("Initial vel: "..tostring(initialVel))
+						initialVel=initialVel+vector3(0,0+math.min(self.blastVelocity:len()*.05,4),0)
 						actor.sprite:AddForceXYZ(initialVel)
 					end
 				end
 			end
 			if(contains(currentMap.map.colliderShapes,shape)) then
-				self.position=self.position+vector.new(delta.x,delta.y)
+				self.position=self.position+vector.new(fixedDelta.x,fixedDelta.y)
 				if(self.statemachine.currentState.Name=="Blasting")then
 					if(not (delta.x==0 and delta.y==0) and not self.wallHitDebounce) then
-						local collisionAngle=(math.round((math.deg(math.atan2(delta.y,delta.x)))))
-						local headingAngle=math.round((math.deg(math.atan2(self.blastVelocity.y,self.blastVelocity.x))))
-						local collisionHeadingDifference=math.abs(math.abs(headingAngle)-math.abs(collisionAngle))
-						local isHalfRotation=contains(halfRotations,math.abs(headingAngle))
+						local cA=math.abs((math.round((math.deg(math.atan2(absoluteDelta.y,absoluteDelta.x))))))
+						local hA=math.abs(math.round((math.deg(math.atan2(math.abs(self.blastVelocity.y),math.abs(self.blastVelocity.x))))))
+						local rounded=round(cA)
+						--Very ugly. This is the 'bounce rules' that determine whether the player cna bounce or not
+						local canBounce = (rounded==90 and hA<=90) or (rounded==45 and hA== 45) or (rounded==0 and hA<=45)
+						
+						cA= cA==45 and -cA or cA
 						--Here we check if there's a separation delta and if the angle of collision is divisible by 180 with no remainder or is within 10 degrees of it or 90 degrees (some flat wall aren't perfectly flat due to float precision)
-						if(not isHalfRotation) then
-							if(contains(halfRotations,math.abs(collisionAngle))) then
-								break;
-							end
-							collisionAngle=round(collisionAngle,90)
-							self.position=self.position+vector.new(delta.x,delta.y)
-							self.wallHitDebounce=true;
-							local newDelta = vector.new(math.cos(math.rad(collisionAngle)),math.sin(math.rad(collisionAngle)))
-							self.wallHitNormal=vector.new(roundToNthDecimal(newDelta.y,1),roundToNthDecimal(newDelta.x,1))
-							self:changeState("WallHit")
-							self.currentTree.vector=vector.new(roundToNthDecimal(delta.x,1),roundToNthDecimal(delta.y,1))
-							timer.after(.1,function()
-								self.wallHitDebounce=false;
-							end)
-						else
-							self.position=self.position+vector.new(delta.x,delta.y)
-							self.wallHitDebounce=true;
-							local newDelta = vector.new(math.cos(math.rad(math.abs(collisionAngle))),math.sin(math.rad(math.abs(collisionAngle))))
-							self.wallHitNormal=vector.new(roundToNthDecimal(newDelta.y,1),roundToNthDecimal(newDelta.x,1))
-							self:changeState("WallHit")
-							self.currentTree.vector=vector.new(roundToNthDecimal(delta.x,1),roundToNthDecimal(delta.y,1))
-							timer.after(.1,function()
-								self.wallHitDebounce=false;
-							end)			
+						if(not canBounce) then
+							print("NOT BOUNCING")
+							return
 						end
+						self.position=self.position+vector.new(absoluteDelta.x,absoluteDelta.y)
+						self.wallHitDebounce=true;
+						local newDelta = vector.new(math.cos(math.rad(cA)),math.sin(math.rad(cA)))
+						self.wallHitNormal=vector.new(roundToNthDecimal(newDelta.y,1),roundToNthDecimal(newDelta.x,1))
+						self:changeState("WallHit")
+						self.currentTree.vector=self.blastVelocity:mirrorOn(self.wallHitNormal)
+						timer.after(.05,function()
+							self.wallHitDebounce=false;
+						end)
 					end
 				else
 					if(self.statemachine.currentState.Name=="Blasting")then

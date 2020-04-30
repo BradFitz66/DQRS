@@ -12,6 +12,8 @@ lovepixels=nil
 vector=nil
 --
 math=require("Resources.lib.mathx")
+string=require("Resources.lib.stringx")
+table=require("Resources.lib.tablex")
 actors={}
 local player=nil;
 local ammo;
@@ -19,6 +21,49 @@ currentMap=nil;
 colliderWorld=nil;
 local gameCam;
 local canvas;
+
+function love.run()
+	if love.load then love.load(love.arg.parseGameArguments(arg), arg) end
+	
+	-- We don't want the first frame's dt to include time taken by love.load.
+	if love.timer then love.timer.step() end
+ 
+	local dt = 0
+ 
+	-- Main loop time.
+	return function()
+		-- Process events.
+		if love.event then
+			love.event.pump()
+			for name, a,b,c,d,e,f in love.event.poll() do
+				if name == "quit" then
+					if not love.quit or not love.quit() then
+						return a or 0
+					end
+				end
+				love.handlers[name](a,b,c,d,e,f)
+			end
+		end
+ 
+		-- Update dt, as we'll be passing it to update
+		if love.timer then dt = love.timer.step() end
+ 
+		-- Call update and draw
+		if love.update then love.update(dt) end -- will pass 0 if love.timer is disabled
+ 
+		if love.graphics and love.graphics.isActive() then
+			love.graphics.origin()
+			love.graphics.clear(love.graphics.getBackgroundColor())
+ 
+			if love.draw then love.draw() end
+ 
+			love.graphics.present()
+		end
+ 
+		--if love.timer then love.timer.sleep(0.01) end
+	end
+end
+
 --Use this for initialization
 function love.load()
 	love.graphics.setDefaultFilter("nearest","nearest",0)
@@ -41,13 +86,17 @@ function love.load()
 	gameCam=camera.new(0,0,8000,8000)
 	love.graphics.setBackgroundColor(72/255,72/255,72/255)
 	love.graphics.setLineWidth(1)
-	ammo=require("Resources.scripts.TankShell").new()
+	for i = 1, 3 do 
+		local shell = require("Resources.scripts.TankShell").new()
+		table.insert(actors,shell)
+		shell.position=shell.position + vector.new(100*(i-1),-20)
+	end
 	table.insert(actors,player)
-	table.insert(actors,ammo)
 end
 function round(number, nearest)
-	return math.floor(number / nearest + 0.5) * nearest
+	return math.round(number / 45) * 45;
 end
+
 
 function roundToNthDecimal(num, n)
 	local mult = 10^(n or 0)

@@ -14,6 +14,7 @@ function Entity.new(colliderPX,colliderPY,colliderSX,colliderSY)
     e.colliderPos=vector.new(colliderPX or 0,colliderPY or 0)
     e.collider=colliderWorld:rectangle(0,0,colliderSX or 20,colliderSY or 20)
     e.maxBounces=0;
+    e.bouncesLeft=0;
     e.parent=nil
     e.name=""
     return e
@@ -26,7 +27,7 @@ function Entity:AddForce(y)
     self.inAir = true;
     self.startingVelocity =vector3(0,y,0)
     self.velocity=vector3(0,y,0)
-    self.maxBounces=3;
+    self.bouncesLeft=self.maxBounces
 end
 
 function Entity:AddForceXYZ(vec)
@@ -36,7 +37,7 @@ function Entity:AddForceXYZ(vec)
     self.inAir = true;
     self.startingVelocity=vec
     self.velocity=vec
-    self.maxBounces=3;
+    self.bouncesLeft=self.maxBounces
 end
 
 function math.Clamp(val, lower, upper)
@@ -56,29 +57,32 @@ end
 
 
 function Entity:update(dt,collisionOverride)
+    
     if(self.parent==nil) then
         self.position = self.position + self.velocity * dt;
         self.collider:moveTo(self.position.x,self.position.y)
     else
         self.position=self.parent.position+-self.localPosition
+        
         self.localPosition=self.localPosition+vector.new(0,self.velocity.y);
-        self.collider:moveTo(((self.parent.position.x+self.colliderPos.x)),((self.parent.position.y+self.colliderPos.y)))
+        self.collider:moveTo(((math.round(self.parent.position.x+self.colliderPos.x))),((math.round(self.parent.position.y+self.colliderPos.y))))
         --self.collider:setRotation((self.parent.rotation))
     end
 
-    if(self.inAir and (self.maxBounces > 0 and self.velocity.y ~= 0)) then
+    if(self.inAir and (self.bouncesLeft > 0 and self.velocity.y ~= 0)) then
         self.velocity = self.velocity + vector3(0, -9.81, 0) * dt;
         local BounceDelta = vector.new(0,1) * self.velocity.y * dt;
         local Xdelta = ((vector3(1,0,0) * self.velocity.x) + (vector3(0,1,0) * self.velocity.z));
         if ((self.localPosition + BounceDelta).y <= 0) then
+            
             --we hit the ground
             self.velocity.y = self.velocity.y * -1
             self.velocity.y = self.velocity.y*self.bounciness;
-            self.velocity.x = self.velocity.x - (self.startingVelocity.x / 3);
-            self.velocity.z = self.velocity.z - (self.startingVelocity.z / 3);
+            self.velocity.x = self.velocity.x - (self.startingVelocity.x / self.maxBounces);
+            self.velocity.z = self.velocity.z - (self.startingVelocity.z / self.maxBounces);
 
             --pos += Vector3.up * self.velocity * Time.deltaTime;
-            self.maxBounces = self.maxBounces - 1;
+            self.bouncesLeft = self.bouncesLeft - 1;
         end
         local spritePos = self.localPosition + BounceDelta;
         spritePos.y = math.Clamp(spritePos.y, 0, math.huge);
