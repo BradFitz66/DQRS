@@ -10,6 +10,7 @@ HC=nil
 timer=nil
 lovepixels=nil
 vector=nil
+aspect=nil
 --
 math=require("Resources.lib.mathx")
 string=require("Resources.lib.stringx")
@@ -66,8 +67,14 @@ end
 
 --Use this for initialization
 function love.load()
+	local width, height, flags = love.window.getMode()
+	
 	love.graphics.setDefaultFilter("nearest","nearest",0)
-	canvas= love.graphics.newCanvas(256, 192)
+
+	aspect=require("Resources.lib.aspect_ratio")
+	aspect:init(width, height, 256, 384) -- 320, 240 is the native resolution
+	canvasTop= love.graphics.newCanvas(aspect.dig_w, aspect.dig_h/2)
+	canvasBottom= love.graphics.newCanvas(aspect.dig_w, aspect.dig_h/2)
 	vector=require("Resources.lib.HUMP.vector")
 	anim8=require("Resources.lib.anim8")
 	Input=require("Resources.lib.Input")
@@ -78,7 +85,6 @@ function love.load()
 	vector3=require("Resources.lib.brinevector3D")
 	HC=require("Resources.lib.HC-master")
 	colliderWorld=HC.new(50)
-
 	player=require("Resources.scripts.Player").load()
 	player:loadTree("idle")
 	currentMap=require("Resources.scripts.TankInterior").Load()
@@ -86,10 +92,10 @@ function love.load()
 	gameCam=camera.new(0,0,8000,8000)
 	love.graphics.setBackgroundColor(72/255,72/255,72/255)
 	love.graphics.setLineWidth(1)
-	for i = 1, 3 do 
+	for i = 1, 10 do 
 		local shell = require("Resources.scripts.TankShell").new()
 		table.insert(actors,shell)
-		shell.position=shell.position + vector.new(100*(i-1),-20)
+		shell.position=shell.position
 	end
 	table.insert(actors,player)
 end
@@ -104,36 +110,40 @@ function roundToNthDecimal(num, n)
 end
 --Use this for drawing objects
 function love.draw()
-	love.graphics.setColor(255,0,0)
-	love.graphics.rectangle("line", 0, 0, 256, 192)
-	love.graphics.setColor(255,255,255)
-	love.graphics.draw(canvas,0,192)
-	if(debug) then
-		love.graphics.setColor(255,255,255)
-		love.graphics.print("FPS: "..tostring(love.timer.getFPS()),10,10)
-		love.graphics.print("Player state: "..player.statemachine.currentState.Name,10,25)
-		love.graphics.print("Player blendtree: "..player.currentTree.name,10,40)
-		love.graphics.print("Player blendtree animation frame: "..player.currentTree.currentAnimation:getFrame(),10,55)
-		love.graphics.print("Player in air: "..tostring(player.sprite.inAir),10,70)
-		love.graphics.setColor(255,255,255)
-	end
+	love.graphics.draw(canvasBottom, 0, aspect.y, 0, aspect.scale)
+	love.graphics.draw(canvasTop, 0, 0, aspect.y/2, aspect.scale)
 end
 
-
+function love.resize(w, h)
+	aspect:resize(w,h)
+end
 --Use this for any code that should be ran each frame
 function love.update(dt)
-	canvas:renderTo(function()
+	canvasBottom:renderTo(function()
 		love.graphics.clear()
 		gameCam:draw(function(l,t,w,h) 
 			currentMap.map:draw()
 			table.sort(actors,function(a,b)
-				return a.position.y<b.position.y
+				return a.sprite.ZValue<b.sprite.ZValue
 			end)		
 			for _, actor in pairs(actors) do
 				actor:draw()
 			end
 		end)
 	end)	
+	canvasTop:renderTo(function()
+		love.graphics.clear()
+		if(debug) then
+			love.graphics.setColor(255,0,0)
+			love.graphics.rectangle("line", 0, 0, 256, 192)
+			love.graphics.setColor(255,255,255)
+			love.graphics.print("FPS: "..tostring(love.timer.getFPS()),10,10)
+			love.graphics.print("Player state: "..player.statemachine.currentState.Name,10,25)
+			love.graphics.print("Player blendtree: "..player.currentTree.name,10,40)
+			love.graphics.print("Player blendtree animation frame: "..player.currentTree.currentAnimation:getFrame(),10,55)
+			love.graphics.print("Player in air: "..tostring(player.sprite.inAir),10,70)
+		end	
+	end)
 	gameCam:setPosition(player.position.x,(player.position.y+86))
 	for _, actor in pairs(actors) do
 		actor:update(dt)

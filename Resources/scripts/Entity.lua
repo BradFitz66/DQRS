@@ -17,6 +17,9 @@ function Entity.new(colliderPX,colliderPY,colliderSX,colliderSY)
     e.bouncesLeft=0;
     e.parent=nil
     e.name=""
+    e.ZValue=0
+    e.pickedUp=false;
+    e.canPickup=true;
     return e
 end
 
@@ -62,9 +65,9 @@ function Entity:update(dt,collisionOverride)
         self.position = self.position + self.velocity * dt;
         self.collider:moveTo(self.position.x,self.position.y)
     else
-        self.position=self.parent.position+-self.localPosition
+        self.position=(self.parent.position+-self.localPosition)
         
-        self.localPosition=self.localPosition+vector.new(0,self.velocity.y);
+        self.localPosition=(self.localPosition+vector.new(0,self.velocity.y));
         self.collider:moveTo(((math.round(self.parent.position.x+self.colliderPos.x))),((math.round(self.parent.position.y+self.colliderPos.y))))
         --self.collider:setRotation((self.parent.rotation))
     end
@@ -95,7 +98,10 @@ function Entity:update(dt,collisionOverride)
         self.velocity=vector3(0,0,0)
         self.localPosition=vector.new(0,0)
     end
-
+    if(self.pickedUp) then
+        return
+    end
+    self.ZValue=self.position.y+self.localPosition.y
     if(collisionOverride) then
         collisionOverride()
     else

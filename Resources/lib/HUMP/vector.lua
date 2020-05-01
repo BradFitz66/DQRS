@@ -231,6 +231,9 @@ function vector:trimmed(maxLen)
 	return self:clone():trimInplace(maxLen)
 end
 
+function vector:round()
+	return new(math.round(self.x),math.round(self.y)) 
+end
 
 -- the module
 return setmetatable({

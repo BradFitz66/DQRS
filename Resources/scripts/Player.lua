@@ -56,6 +56,24 @@ function Player.load()
 			nil,
 			true
 		),
+		['throw']=
+		blendtree.new({
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/ThrowFrames",true,compare,1,8),.06),vector.new(0,-1),vector.new(.5,.8)}, --up
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/ThrowFrames",true,compare,9,16),.06),vector.new(.5,-.5),vector.new(.5,.8)}, --upright
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/ThrowFrames",true,compare,17,24),.06),vector.new(1,0),vector.new(.5,.8)}, --right
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/ThrowFrames",true,compare,25,32),.06),vector.new(.5,.7),vector.new(.5,.8)}, --downright
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/ThrowFrames",true,compare,33,40),.06),vector.new(0,1),vector.new(.5,.8)}, -- down
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/ThrowFrames",true,compare,41,48),.06),vector.new(-.5,.7),vector.new(.5,.8)}, --downleft
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/ThrowFrames",true,compare,49,56),.06),vector.new(-1,0),vector.new(.5,.8)}, --left
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/ThrowFrames",true,compare,57,64),.06),vector.new(-.5,-.5),vector.new(.5,.8)}, --upleft
+			},
+			vector.new(0,0),
+			"throw",
+			pData,
+			nil,
+			nil,
+			false
+		),
 		['walk']=
 		blendtree.new({
 			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,1,8),.06,nil),vector.new(0,-1),vector.new(.5,.8)}, --up
@@ -199,15 +217,18 @@ function Player.load()
 		["Stretch"]={pData.statemachine:addState(require("Resources.states.Stretch")),{}},
 		["Squished"]={pData.statemachine:addState(require("Resources.states.Squished")),{}},
 		["Blasting"]={pData.statemachine:addState(require("Resources.states.Blasting")),{}},
-		["WallHit"]={pData.statemachine:addState(require("Resources.states.WallHit")),{}}
+		["WallHit"]={pData.statemachine:addState(require("Resources.states.WallHit")),{}},
+		["Throw"]={pData.statemachine:addState(require("Resources.states.Throw")),{}}
 	}
 	
 	pData.statemachine:changeState("Idle")
 	pData.speed=96;
+	pData.holding={}
 	pData.scale=vector.new(1,1)
 	pData.position=vector.new(200,200)
 	pData.wallHitNormal=vector.new(0,0)
 	pData.blastVelocity=vector.new(0,0)
+	pData.canThrow=true;
 	pData.wallHitDebounce=false --* I don't want to do this, but it seems like the easiest solution to stop the player from being stuck in a wallhit loop
 	pData.input = Input.new {
 		controls = {
@@ -216,7 +237,7 @@ function Player.load()
 			up = {'key:up', 'key:w', 'axis:lefty-', 'button:dpup'},
 			down = {'key:down', 'key:s', 'axis:lefty+', 'button:dpdown'},
 			jump = {"key:space"},
-			action = {'key:x', 'button:a'},
+			action = {'key:lshift', 'button:a'},
 		},
 		pairs = {
 			move = {'left', 'right', 'up', 'down'}
@@ -260,8 +281,9 @@ function Player:draw()
 	-- love.graphics.setColor(1,1,1,1)
 	self.sprite:draw()
 	if(self.currentTree.currentAnimation:isActive()) then
-		local offset=vector.new(self.currentTree.currentAnimation:getWidth()*self.currentTree.frameOffset.x,self.currentTree.currentAnimation:getHeight()*self.currentTree.frameOffset.y)
-		self.currentTree.currentAnimation:draw(self.sprite.position.x,self.sprite.position.y,self.rotation,self.scale.x,self.scale.y,offset.x,offset.y)
+		local offset=vector.new(self.currentTree.currentAnimation:getWidth()*self.currentTree.frameOffset.x,self.currentTree.currentAnimation:getHeight()*self.currentTree.frameOffset.y):round()
+
+		self.currentTree.currentAnimation:draw(math.round(self.sprite.position.x),math.round(self.sprite.position.y),self.rotation,self.scale.x,self.scale.y,offset.x,offset.y)
 	end
 	love.graphics.line(200,200,200,210)
 end
@@ -272,64 +294,66 @@ function Player:changeState(newState)
 		--!print("Can't switch to new state because it's already the current state")
 		return
 	end
-	if(contains(self.states[newState][2],currentState))then
+	if(table.index_of(self.states[newState][2],currentState))then
 		--!print("Can't switch to new state because the current state is not allowed to switch to it ("..currentState.." to "..newState..")")
 		return
 	end
 	self.statemachine:changeState(newState)
 end
+local startPos;
+local spdX=0;
+local spdY=0;
+local spdZ=0;
 
-function contains(table, element)
-	for _, value in pairs(table) do
-	  if value == element then
-		return true
-	  end
-	end
-	return false
-end
 
-function find(table, element)
-	local item=nil
-	for _, value in pairs(table) do
-	  if value == element then
-		item=value
-	  end
-	end
-	return item
-end
-
-function closeEnough(angle)
-	if(((180-math.abs(angle)<10) or (90-math.abs(angle)>10) or 180%math.abs(angle)==0 or angle==0))then
-		return true
-	end
-	return false
-end
-
-local halfRotations={
-	45,
-	225,
-	135
-}
---!AAAAAAAAAAAAAAAAAAAAAAAAAAAA
 function Player:update(dt)
 	self.input:update(dt)
+	for i, held in pairs(self.holding) do
+		if(held~=nil) then
+			local endPoint=((self.position-self.sprite.localPosition)+vector.new(-10,-10-(16*i)));
+			local heldSprite=held[1].sprite
+			local heldVelocity=held[2]
+			heldVelocity.x=math.lerp(held[1].position.x,(endPoint.x),.1*dt);
+			heldVelocity.z=math.lerp(held[1].position.y,(endPoint.y),.1*dt);
+			held[1].position.y=held[1].position.y+(endPoint.y-held[1].position.y)*.5/i;
+			held[1].position.x=held[1].position.x+(endPoint.x-held[1].position.x)*.5/i;
+		end
+	end
+
 	self.sprite:update(dt,function()
 		for shape, delta in pairs(colliderWorld:collisions(self.sprite.collider)) do
 			local absoluteDelta=vector.new(math.abs(delta.x),math.abs(delta.y))
 			local fixedDelta=vector.new(delta.x,delta.y)-(self.moveVector*self.speed):normalized()
 			for _, actor in pairs(actors) do
-				if(actor.sprite.collider==shape) then
+				if(actor.sprite.collider==shape and not actor.sprite.pickedUp) then
 					if(self.statemachine.currentState.Name=="Blasting")then
 						local normalizedBlast=self.blastVelocity:normalized()
 						local initialVel = (vector3(self.blastVelocity.x,self.blastVelocity.y,0))
 						initialVel.z=initialVel.y;
 						initialVel.y=0;
-						initialVel=initialVel+vector3(0,0+math.min(self.blastVelocity:len()*.05,4),0)
+						initialVel=initialVel+vector3(0,3,0)
 						actor.sprite:AddForceXYZ(initialVel)
+					else
+						if(actor.sprite.inAir and actor.sprite.canPickup and #self.holding<3)then
+							local heightDifference=actor.sprite.localPosition.y - self.sprite.localPosition.y
+							if(heightDifference < 20) then
+								actor.sprite.inAir=false
+								--Picking up
+								actor.sprite.pickedUp=true;
+								actor.sprite.ZValue=10e5
+								table.insert(self.holding,{actor,vector3(0,0,0)})
+								startPos=actor.sprite.localPosition
+								timer.script(function(wait)
+									self:changeState("Squish")
+									wait(.2)
+									self:changeState("Idle")
+								end)
+							end
+						end
 					end
 				end
 			end
-			if(contains(currentMap.map.colliderShapes,shape)) then
+			if(table.index_of(currentMap.map.colliderShapes,shape)~=nil) then
 				self.position=self.position+vector.new(fixedDelta.x,fixedDelta.y)
 				if(self.statemachine.currentState.Name=="Blasting")then
 					if(not (delta.x==0 and delta.y==0) and not self.wallHitDebounce) then
@@ -342,7 +366,6 @@ function Player:update(dt)
 						cA= cA==45 and -cA or cA
 						--Here we check if there's a separation delta and if the angle of collision is divisible by 180 with no remainder or is within 10 degrees of it or 90 degrees (some flat wall aren't perfectly flat due to float precision)
 						if(not canBounce) then
-							print("NOT BOUNCING")
 							return
 						end
 						self.position=self.position+vector.new(absoluteDelta.x,absoluteDelta.y)
@@ -368,7 +391,7 @@ function Player:update(dt)
 	self.currentTree:update(dt)
 	local hori,vert=self.input:get 'move'
 	if(hori~=0 or vert~=0) then
-		self.moveVector=(vector.new(hori,vert)*self.speed):normalized()
+		self.moveVector=(vector.new(hori*self.speed,vert*self.speed)):normalized()
 	else
 		self.moveVector=vector.new(0,0)
 	end
@@ -377,6 +400,17 @@ function Player:update(dt)
 	end
 	if(self.input:released("jump")) then
 		self:changeState("Jump")
+	end
+	if(self.input:pressed("action")) then
+		if(#self.holding>0 and self.canThrow) then
+			if(self.statemachine.currentState.Name~="Blasting") then
+				self:changeState("Throw")
+			else
+				--Hack to bypass the change state function so we can stay in the blasting state while throwing
+				self.states["Throw"][1].Enter(self)
+				timer.after(.5,function() self.states["Throw"][1].Exit(self)	end)
+			end
+		end
 	end
 end
 

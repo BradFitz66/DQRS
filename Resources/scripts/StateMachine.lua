@@ -15,6 +15,7 @@ function StateMachine:addState(newState)
 		error("Given state is invalid. Make sure the state is a valid state")
 	end
 	states[newState.Name]=newState
+	return newState
 end
 
 function StateMachine:changeState(changingTo)

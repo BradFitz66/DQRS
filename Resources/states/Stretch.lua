@@ -37,6 +37,7 @@ State.Update=function(owner,dt)
         local distance = owner.scale.dist(owner.scale,startScale);
         local newSpeed = 1.5;
         local finalSpeed = (distance / newSpeed);
+        
         owner.scale = vector.Lerp(owner.scale, startScale, dt / finalSpeed);
         headPosition=owner.position-scaleProper:rotated(owner.rotation);
         --State.collider:moveTo(headPosition.x,headPosition.y)
@@ -65,6 +66,8 @@ State.Update=function(owner,dt)
 end
 
 State.Exit=function(owner)
+    owner.rotation=0
+    owner.scale=vector.new(1,1)
     --State.collider:moveTo(-1000000,-10000000)
 end
 
