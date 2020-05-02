@@ -35,7 +35,7 @@ function tankshell:update(dt)
                 if(actor.sprite.collider==shape and actor.type=="ammo") then
                     local heightDiff = self.sprite.localPosition.y - actor.sprite.localPosition.y 
                     local speed=vector3.getLength(self.sprite.velocity)/16
-                    if(actor.sprite.inAir==false and not table.index_of(self.hitObjects,actor) and not actor.sprite.pickedUp and heightDiff < 15 and speed>4) then
+                    if(actor.sprite.inAir==false and not table.index_of(self.hitObjects,actor) and not actor.sprite.pickedUp and heightDiff <= 35 and speed>4) then
                         table.insert(self.hitObjects,actor)
                         table.insert(actor.hitObjects,self)
                         local initialVel = (vector3(self.sprite.velocity.x/2,self.sprite.velocity.z,0))
@@ -44,7 +44,6 @@ function tankshell:update(dt)
                         initialVel=initialVel+vector3(0,3,0)
                         actor.sprite:AddForceXYZ(initialVel)
                         timer.after(1,function()
-                            print("Clearing!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                             table.clear(self.hitObjects)
                             table.clear(actor.hitObjects)
                         end)

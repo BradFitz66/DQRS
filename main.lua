@@ -72,7 +72,7 @@ function love.load()
 	love.graphics.setDefaultFilter("nearest","nearest",0)
 
 	aspect=require("Resources.lib.aspect_ratio")
-	aspect:init(width, height, 256, 384) -- 320, 240 is the native resolution
+	aspect:init(256, 384, 256, 384)
 	canvasTop= love.graphics.newCanvas(aspect.dig_w, aspect.dig_h/2)
 	canvasBottom= love.graphics.newCanvas(aspect.dig_w, aspect.dig_h/2)
 	vector=require("Resources.lib.HUMP.vector")
@@ -110,8 +110,9 @@ function roundToNthDecimal(num, n)
 end
 --Use this for drawing objects
 function love.draw()
-	love.graphics.draw(canvasBottom, 0, aspect.y, 0, aspect.scale)
-	love.graphics.draw(canvasTop, 0, 0, aspect.y/2, aspect.scale)
+	local width,height,flags=love.window.getMode()
+	love.graphics.draw(canvasBottom, aspect.x, aspect.y+(192*aspect.scale), 0, aspect.scale)
+	love.graphics.draw(canvasTop, aspect.x, aspect.y, 0, aspect.scale)
 end
 
 function love.resize(w, h)
