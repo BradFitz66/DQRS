@@ -4,6 +4,7 @@ local endPosDiff
 local lastPos 
 local distance=0;
 local distanceTravelled=0;
+local debounce = false
 State.Enter=function(owner)
     owner:loadTree("wallhit")
 end
@@ -11,9 +12,18 @@ end
 State.Update=function(owner,dt)
     if(owner.currentTree.currentAnimation:getFrame()==4)then
         timer.after(.1,function()
-            owner.blastVelocity=owner.blastVelocity:mirrorOn(owner.wallHitNormal)*1
+            if(debounce==true) then
+                return
+            end
+            debounce=true
+            local newVel=owner.blastVelocity*owner.wallHitNormal;
+            
+            owner.blastVelocity=vector.Reflect(-owner.blastVelocity,owner.wallHitNormal)
+            
+            owner.hitWall=true;
             owner:changeState("Blasting")
         end)
+        debounce=false
     end
 end
 

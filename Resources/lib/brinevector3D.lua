@@ -155,6 +155,14 @@ function Vector3D.__div(v1, op)
   return Vector3D(v1.x / op, v1.y / op, v1.z / op)
 end
 
+function Vector3D:Reflect(inDirection, inNormal)
+
+    local factor = -2 * (inNormal*inDirection);
+    return Vector3D(factor * inNormal.x + inDirection.x,
+        factor * inNormal.y + inDirection.y,
+        factor * inNormal.z + inDirection.z);
+end
+
 function Vector3D:mirrorOn(v)
 	-- 2 * self:projectOn(v) - self
   local s = 2 * (self.x * v.x + self.y * v.y + self.z * v.z) / math.max((v.x * v.x + v.y * v.y + v.z * v.z),.01)

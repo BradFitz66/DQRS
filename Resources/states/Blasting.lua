@@ -24,8 +24,16 @@ State.Update=function(owner,dt)
 
         owner.blastVelocity=owner.blastVelocity*(1-((distanceTravelled/distance)*.25))
     else
+        print("Ended blast. Can super throw.")
         owner.blastVelocity=vector.new(0,0)
+        
         owner:changeState("Idle")
+        owner.superThrow=true
+        --Wait a frame
+        timer.after(dt*40,function()
+            print("Can no longer super throw")
+            owner.superThrow=false;
+        end)
     end
 end
 

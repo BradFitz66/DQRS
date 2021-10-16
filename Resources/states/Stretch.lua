@@ -2,7 +2,7 @@ local State = require("Resources.scripts.State").new("Stretch")
 local startScale=vector.new(1.1,.37);
 local endScale=vector.new(1,1)
 local angle;
-
+local collider;
 State.Enter=function(owner)
     --State.collider=colliderWorld:rectangle(-1000,-1000,10,10)
     owner:loadTree("stretch",true)
@@ -23,6 +23,8 @@ State.Update=function(owner,dt)
         local finalSpeed = (distance / newSpeed);
         owner.scale = vector.Lerp(owner.scale, endScale, dt/finalSpeed);
         headPosition=owner.position+vector.new(10,0) -scaleProper:rotated(owner.rotation);
+        collider=colliderWorld:rectangle(owner.position.x,owner.position.y,owner.scale.x,owner.scale.y)
+        
         --State.collider:moveTo(headPosition.x,headPosition.y)
 
         local target= owner.position+owner.moveVector;

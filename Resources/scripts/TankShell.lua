@@ -12,6 +12,7 @@ function tankshell.new()
     ts.scale=vector.new(1,1)
     ts.type="ammo"
     ts.name="tankshell"
+    ts.color={math.random(1,255)/255,math.random(1,255)/255,math.random(1,255)/255}
     ts.wallHitDebounce=false
     ts.hitObjects={}
     return ts
@@ -81,8 +82,10 @@ function tankshell:update(dt)
 end
 
 function tankshell:draw()
+    love.graphics.setColor(self.color)
     love.graphics.draw(self.spriteImage,math.round(self.sprite.position.x),math.round(self.sprite.position.y),self.rotation,self.scale.x,self.scale.y,0,math.round(self.spriteImage:getHeight()/2))
     self.sprite:draw()
+    love.graphics.setColor(255,255,255)
 end
 
 return tankshell

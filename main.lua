@@ -22,49 +22,12 @@ currentMap=nil;
 colliderWorld=nil;
 local gameCam;
 local canvas;
+local debugKeys=nil;
+local playing=true;
+local timestep=false;
 
-function love.run()
-	if love.load then love.load(love.arg.parseGameArguments(arg), arg) end
-	
-	-- We don't want the first frame's dt to include time taken by love.load.
-	if love.timer then love.timer.step() end
- 
-	local dt = 0
- 
-	-- Main loop time.
-	return function()
-		-- Process events.
-		if love.event then
-			love.event.pump()
-			for name, a,b,c,d,e,f in love.event.poll() do
-				if name == "quit" then
-					if not love.quit or not love.quit() then
-						return a or 0
-					end
-				end
-				love.handlers[name](a,b,c,d,e,f)
-			end
-		end
- 
-		-- Update dt, as we'll be passing it to update
-		if love.timer then dt = love.timer.step() end
- 
-		-- Call update and draw
-		if love.update then love.update(dt) end -- will pass 0 if love.timer is disabled
- 
-		if love.graphics and love.graphics.isActive() then
-			love.graphics.origin()
-			love.graphics.clear(love.graphics.getBackgroundColor())
- 
-			if love.draw then love.draw() end
- 
-			love.graphics.present()
-		end
- 
-		--if love.timer then love.timer.sleep(0.01) end
-	end
-end
-
+local tickPeriod = 0 -- seconds per tick
+local accumulator = 0.0
 --Use this for initialization
 function love.load()
 	local width, height, flags = love.window.getMode()
@@ -84,11 +47,11 @@ function love.load()
 	camera=require("Resources.lib.gamera")
 	vector3=require("Resources.lib.brinevector3D")
 	HC=require("Resources.lib.HC-master")
-	colliderWorld=HC.new(50)
+	colliderWorld=HC.new(25)
 	player=require("Resources.scripts.Player").load()
 	player:loadTree("idle")
 	currentMap=require("Resources.scripts.TankInterior").Load()
-    table.insert(currentMap.map.collidees,player.sprite.collider)
+    table.insert(currentMap.map.collidees,player.collider)
 	gameCam=camera.new(0,0,8000,8000)
 	love.graphics.setBackgroundColor(72/255,72/255,72/255)
 	love.graphics.setLineWidth(1)
@@ -98,6 +61,14 @@ function love.load()
 		shell.position=shell.position
 	end
 	table.insert(actors,player)
+	debugKeys=Input.new{
+		controls={
+			timestep = {'key:n'},
+			pause = {'key:p'}
+		},
+		pairs={},
+		joystick = love.joystick.getJoysticks()[1],
+	}
 end
 function round(number, nearest)
 	return math.round(number / 45) * 45;
@@ -107,6 +78,10 @@ end
 function roundToNthDecimal(num, n)
 	local mult = 10^(n or 0)
 	return math.floor(num * mult + 0.5) / mult
+end
+
+function sign(number)
+    return number > 0 and 1 or (number == 0 and 0 or -1)
 end
 --Use this for drawing objects
 function love.draw()
@@ -120,34 +95,54 @@ function love.resize(w, h)
 end
 --Use this for any code that should be ran each frame
 function love.update(dt)
-	canvasBottom:renderTo(function()
-		love.graphics.clear()
-		gameCam:draw(function(l,t,w,h) 
-			currentMap.map:draw()
-			table.sort(actors,function(a,b)
-				return a.sprite.ZValue<b.sprite.ZValue
-			end)		
-			for _, actor in pairs(actors) do
-				actor:draw()
-			end
+	love.timer.sleep((1/33)-dt)
+	accumulator = accumulator + dt
+	if accumulator >= tickPeriod then
+	  accumulator = accumulator - tickPeriod
+	  if playing or timestep then
+		canvasBottom:renderTo(function()
+			love.graphics.clear()
+			gameCam:draw(function(l,t,w,h) 
+				currentMap.map:draw()
+				table.sort(actors,function(a,b)
+					return a.sprite.ZValue<b.sprite.ZValue
+				end)		
+				for _, actor in pairs(actors) do
+					actor:draw()
+				end
+			end)
+		end)	
+		canvasTop:renderTo(function()
+			love.graphics.clear()
+			if(debug) then
+				love.graphics.setColor(255,0,0)
+				love.graphics.rectangle("line", 0, 0, 256, 192)
+				love.graphics.setColor(255,255,255)
+				love.graphics.print("FPS: "..tostring(love.timer.getFPS()),10,10)
+				love.graphics.print("Player state: "..player.statemachine.currentState.Name,10,25)
+				love.graphics.print("Player blendtree: "..player.currentTree.name,10,40)
+				love.graphics.print("Player blendtree animation frame: "..player.currentTree.currentAnimation:getFrame(),10,55)
+				love.graphics.print("Player in air: "..tostring(player.sprite.inAir),10,70)
+			end	
 		end)
-	end)	
-	canvasTop:renderTo(function()
-		love.graphics.clear()
-		if(debug) then
-			love.graphics.setColor(255,0,0)
-			love.graphics.rectangle("line", 0, 0, 256, 192)
-			love.graphics.setColor(255,255,255)
-			love.graphics.print("FPS: "..tostring(love.timer.getFPS()),10,10)
-			love.graphics.print("Player state: "..player.statemachine.currentState.Name,10,25)
-			love.graphics.print("Player blendtree: "..player.currentTree.name,10,40)
-			love.graphics.print("Player blendtree animation frame: "..player.currentTree.currentAnimation:getFrame(),10,55)
-			love.graphics.print("Player in air: "..tostring(player.sprite.inAir),10,70)
-		end	
-	end)
-	gameCam:setPosition(player.position.x,(player.position.y+86))
-	for _, actor in pairs(actors) do
-		actor:update(dt)
+		timestep=false
+		gameCam:setPosition(player.position.x,(player.position.y+86))
+		for _, actor in pairs(actors) do
+			actor:update(dt)
+		end
+		timer.update(dt)
 	end
-	timer.update(dt)
+	if(debug)then
+		debugKeys:update(dt)
+		if(debugKeys:pressed'timestep')then
+			print("Timestep!")
+			timestep=true
+			playing=false
+		end
+		if(debugKeys:pressed'pause')then
+			playing=not playing
+		end
+	end
+	end
+	
 end

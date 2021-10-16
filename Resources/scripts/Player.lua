@@ -30,10 +30,11 @@ function loadImagesFromDirectory(directory, sort,sortFunction,startIndex,endInde
 	end
 	return images
 end
+
 local entity=require("Resources.scripts.Entity")
 function Player.load()
 	local pData=setmetatable({},Player)
-	pData.sprite=entity.new(0,1,20,12)
+	pData.sprite=entity.new(0,1,12,12)
 	pData.sprite.parent=pData;
 	pData.sprite.bounciness=0;
 	pData.sprite.maxBounces=1;
@@ -229,6 +230,8 @@ function Player.load()
 	pData.wallHitNormal=vector.new(0,0)
 	pData.blastVelocity=vector.new(0,0)
 	pData.canThrow=true;
+	pData.superThrow=false;
+	pData.hitWall=false;
 	pData.wallHitDebounce=false --* I don't want to do this, but it seems like the easiest solution to stop the player from being stuck in a wallhit loop
 	pData.input = Input.new {
 		controls = {
@@ -276,16 +279,20 @@ function compare(a,b)
 end
 
 function Player:draw()
-	-- love.graphics.setColor(0,0,0,.5)
-	-- love.graphics.circle("fill",self.position.x,self.position.y-5,10,250)
-	-- love.graphics.setColor(1,1,1,1)
 	self.sprite:draw()
 	if(self.currentTree.currentAnimation:isActive()) then
 		local offset=vector.new(self.currentTree.currentAnimation:getWidth()*self.currentTree.frameOffset.x,self.currentTree.currentAnimation:getHeight()*self.currentTree.frameOffset.y):round()
 
 		self.currentTree.currentAnimation:draw(math.round(self.sprite.position.x),math.round(self.sprite.position.y),self.rotation,self.scale.x,self.scale.y,offset.x,offset.y)
 	end
-	love.graphics.line(200,200,200,210)
+	if(self.hitWall) then
+		self.hitWall=false;
+		print("Hit wall!!!!");
+		local pointPos=vector.Reflect(-self.blastVelocity,self.wallHitNormal)
+		local pos=self.sprite.position
+		love.graphics.setPointSize(5)
+		love.graphics.points(pos.x+pointPos.x,pos.y+pointPos.y)
+	end
 end
 
 function Player:changeState(newState)
@@ -353,28 +360,37 @@ function Player:update(dt)
 					end
 				end
 			end
+			--Does the map's collider shape actually exist?
 			if(table.index_of(currentMap.map.colliderShapes,shape)~=nil) then
 				self.position=self.position+vector.new(fixedDelta.x,fixedDelta.y)
 				if(self.statemachine.currentState.Name=="Blasting")then
 					if(not (delta.x==0 and delta.y==0) and not self.wallHitDebounce) then
-						local cA=math.abs((math.round((math.deg(math.atan2(absoluteDelta.y,absoluteDelta.x))))))
-						local hA=math.abs(math.round((math.deg(math.atan2(math.abs(self.blastVelocity.y),math.abs(self.blastVelocity.x))))))
-						local rounded=round(cA)
-						--Very ugly. This is the 'bounce rules' that determine whether the player cna bounce or not
-						local canBounce = (rounded==90 and hA<=90) or (rounded==45 and hA== 45) or (rounded==0 and hA<=45)
 						
-						cA= cA==45 and -cA or cA
+						--Angle we hit the wall at
+						local collisionAngle=math.abs((math.round((math.deg(math.atan2(absoluteDelta.y,absoluteDelta.x))))))
+						--Angle of the wall we hit
+						local hitAngle=math.abs(math.round((math.deg(math.atan2(math.abs(self.blastVelocity.y),math.abs(self.blastVelocity.x))))))
+						local rounded=round(collisionAngle)
+						--Very ugly. This is the 'bounce rules' that determine whether the player cann bounce or not
+						local canBounce = (rounded==90 and hitAngle<=90) or (rounded==45 and hitAngle== 45) or (rounded==0 and hitAngle<=45)
+						
+						collisionAngle= collisionAngle==45 and -collisionAngle or collisionAngle
 						--Here we check if there's a separation delta and if the angle of collision is divisible by 180 with no remainder or is within 10 degrees of it or 90 degrees (some flat wall aren't perfectly flat due to float precision)
 						if(not canBounce) then
 							return
 						end
 						self.position=self.position+vector.new(absoluteDelta.x,absoluteDelta.y)
 						self.wallHitDebounce=true;
-						local newDelta = vector.new(math.cos(math.rad(cA)),math.sin(math.rad(cA)))
+						local newDelta = vector.new(math.cos(math.rad(collisionAngle)),math.sin(math.rad(collisionAngle)))
 						self.wallHitNormal=vector.new(roundToNthDecimal(newDelta.y,1),roundToNthDecimal(newDelta.x,1))
 						self:changeState("WallHit")
+						print("Hit wall.");
+						self.hitWall=true;
+						timer.after(10,function()
+							self.hitWall=false;
+						end)
 						self.currentTree.vector=self.blastVelocity:mirrorOn(self.wallHitNormal)
-						timer.after(.05,function()
+						timer.after(.025,function()
 							self.wallHitDebounce=false;
 						end)
 					end

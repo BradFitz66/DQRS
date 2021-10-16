@@ -87,7 +87,7 @@ function Entity:update(dt,collisionOverride)
             --pos += Vector3.up * self.velocity * Time.deltaTime;
             self.bouncesLeft = self.bouncesLeft - 1;
         end
-        local spritePos = self.localPosition + BounceDelta;
+        local spritePos = self.localPosition + BounceDelta * dt;
         spritePos.y = math.Clamp(spritePos.y, 0, math.huge);
         local mainPos = self.parent.position + vector.new(Xdelta.x,Xdelta.y)*dt;
         

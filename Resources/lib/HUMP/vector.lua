@@ -89,14 +89,14 @@ function vector.__sub(a,b)
 	return new(a.x-b.x, a.y-b.y)
 end
 
-function vector.__mul(a,b)
+function vector.__mul(a,b,scale)
 	if type(a) == "number" then
 		return new(a*b.x, a*b.y)
 	elseif type(b) == "number" then
 		return new(b*a.x, b*a.y)
 	else
 		assert(isvector(a) and isvector(b), "Mul: wrong argument types (<vector> or <number> expected)")
-		return a.x*b.x + a.y*b.y
+		return (a.x*b.x+a.y*b.y)
 	end
 end
 
@@ -127,6 +127,10 @@ function Lerp(a, b, t)
 		a.x + (b.x - a.x) * t,
 		a.y + (b.y - a.y) * t
 	);
+end
+function Reflect(inDirection, inNormal)
+	local factor = -2 * dot(inNormal, inDirection);
+	return new(factor * inNormal.x + inDirection.x, factor * inNormal.y + inDirection.y);
 end
 
 function vector.__le(a,b)
@@ -244,7 +248,9 @@ return setmetatable({
 	zero            = zero,
 	dot				= dot,
 	cross			= cross,
-	Lerp			= Lerp
+	Lerp			= Lerp,
+	reflect 		= Reflect,
+	Reflect 		= Reflect,
 }, {
 	__call = function(_, ...) return new(...) end
 })
