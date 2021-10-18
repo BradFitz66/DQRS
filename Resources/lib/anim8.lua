@@ -244,7 +244,7 @@ return {
 		return setmetatable( frames, { __call = frames.getFrames } )
 	end,
 
-	newAnimation = function( frames, delays,AnimationChange,quadImage )
+	newAnimation = function( frames, delays,AnimationChange,quadImage,flipped)
 		err( 'newAnimation: expected argument 1 to be a table, got %type%.', frames, 'table' )
 		err( 'newAnimation: expected argument 2 to be a table or a number, got %type%.', delays, 'table', 'number' )
 		if quadImage then
@@ -318,10 +318,11 @@ return {
 			active = true,
 			paused = false,
 			shouldPauseAtEnd = false,
+			isFlipped=flipped,
 
 			update = function( self, dt )
 				err( 'update: expected argument two to be a number, got %type%.', dt, 'number' )
-				err( 'update: expected argument two to be positive.', dt, isPositive )
+				--err( 'update: expected argument two to be positive.', dt, isPositive )
 
 				if self.active and not self.paused then
 					if(self.currentFrame==1) then
@@ -364,9 +365,9 @@ return {
 					local frame = self.frames[self.currentFrame]
 					local frameType = frame:type()
 					if frameType == 'Image' then
-						love.graphics.draw( frame, x, y, rotation, scaleX, scaleY, offsetX, offsetY, shearingX, shearingY )
+						love.graphics.draw( frame, x, y, rotation, self.isFlipped==true and -scaleX or scaleX, scaleY, offsetX, offsetY, shearingX, shearingY )
 					elseif frameType == 'Quad' then
-						love.graphics.draw( self.quadImage, frame, x, y, rotation, scaleX, scaleY, offsetX, offsetY, shearingX, shearingY )
+						love.graphics.draw( self.quadImage, frame, x, y, rotation, self.isFlipped==true and -scaleX or scaleX, scaleY, offsetX, offsetY, shearingX, shearingY )
 					end
 				end
 			end,

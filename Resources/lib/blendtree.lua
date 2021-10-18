@@ -19,14 +19,8 @@ function Blendtree.new(BlendTreeAnimations,BlendTreeVector,Name,owner,StartEvent
     return bT
 end
 
-function Blendtree:draw()
-
-end
-
-
-
 function Blendtree:update(dt)
-    if(self.lastvector~=self.vector) then
+    if(self.lastvector.dist(self.lastvector,self.vector)>.25) then
         self.lastvector=self.vector
         local VectorTable={}
         for _, v in pairs(self.animations) do
@@ -35,6 +29,7 @@ function Blendtree:update(dt)
         table.sort(VectorTable,function(a,b)
             return (a[2].dist2(a[2],self.vector))<(b[2].dist2(b[2],self.vector)) 
         end)
+        
         local frames = #self.currentAnimation.frames
         local frame = self.currentAnimation:getFrame()+1 < frames and self.currentAnimation:getFrame()+1 or 1
         local prevAnim=self.currentAnimation;

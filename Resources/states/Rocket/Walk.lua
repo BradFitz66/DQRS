@@ -13,6 +13,7 @@ State.Update=function(owner,dt)
 	else
 		owner:changeState("Idle")
 	end
+	
 	if(owner.sprite.inAir==false and owner.currentTree.currentAnimation:getFrame()==1) then
 		owner.sprite:AddForce(1.5)
 	elseif owner.sprite.inAir and owner.currentTree.currentAnimation:getFrame()==1 then

@@ -22,7 +22,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-]]--
+--]]
 
 local assert = assert
 local sqrt, cos, sin, atan2 = math.sqrt, math.cos, math.sin, math.atan2
@@ -49,6 +49,12 @@ local function randomDirection(len_min, len_max)
 	
 	return fromPolar(math.random() * 2*math.pi,
 	                 math.random() * (len_max-len_min) + len_min)
+end
+
+local function randomInsideUnitCircle(circleRadius)
+	local theta = love.math.random()*2*math.pi
+	local r = circleRadius*math.sqrt( love.math.random())
+	return new(r*math.cos(theta),r*math.sin(theta))
 end
 
 function dot(lhs,rhs)
@@ -241,16 +247,17 @@ end
 
 -- the module
 return setmetatable({
-	new             = new,
-	fromPolar       = fromPolar,
-	randomDirection = randomDirection,
-	isvector        = isvector,
-	zero            = zero,
-	dot				= dot,
-	cross			= cross,
-	Lerp			= Lerp,
-	reflect 		= Reflect,
-	Reflect 		= Reflect,
+	new                    = new,
+	fromPolar              = fromPolar,
+	randomDirection        = randomDirection,
+	isvector               = isvector,
+	zero                   = zero,
+	dot				       = dot,
+	cross			       = cross,
+	Lerp			       = Lerp,
+	reflect 		       = Reflect,
+	Reflect 			   = Reflect,
+	randomInsideUnitCircle = randomInsideUnitCircle,
 }, {
 	__call = function(_, ...) return new(...) end
 })

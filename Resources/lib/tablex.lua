@@ -269,6 +269,15 @@ function tablex.overlay(to, from)
 	return to
 end
 
+--returns a new table from the range of indexes in another table
+function tablex.range(t1,range_start,range_end)
+	local new_table={}
+	for i = range_start,range_end do
+		table.insert(new_table,1,t1[i])
+	end
+	return new_table
+end
+
 --faster unpacking for known-length tables up to 8
 --gets around nyi in luajit
 --note: you can use a larger unpack than you need as the rest

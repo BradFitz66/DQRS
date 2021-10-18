@@ -30,7 +30,7 @@ State.Update=function(owner,dt)
         owner:changeState("Idle")
         owner.superThrow=true
         --Wait a frame
-        timer.after(dt*40,function()
+        timer.after(10*dt,function()
             print("Can no longer super throw")
             owner.superThrow=false;
         end)

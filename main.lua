@@ -25,11 +25,62 @@ local canvas;
 local debugKeys=nil;
 local playing=true;
 local timestep=false;
+local tick=require 'Resources.lib.tick'
 
-local tickPeriod = 0 -- seconds per tick
-local accumulator = 0.0
+function round(number, nearest)
+	return math.round(number / 45) * 45;
+end
+
+function roundToNthDecimal(num, n)
+	local mult = 10^(n or 0)
+	return math.floor(num * mult + 0.5) / mult
+end
+
+function sign(number)
+    return number > 0 and 1 or (number == 0 and 0 or -1)
+end
+
+function compare(a,b)
+	local num1 = tonumber(string.sub(a,0,-5))
+	local num2 = tonumber(string.sub(b,0,-5))
+	return num1<num2
+end
+
+function loadImagesFromDirectory(directory, sort,sortFunction,startIndex,endIndex)
+	local images={}
+	
+	local files = love.filesystem.getDirectoryItems(directory)
+	if(not startIndex and not endIndex) then
+		startIndex=1
+		endIndex=#files
+	end
+	if(sort) then
+		if(sortFunction) then
+			table.sort(files,sortFunction)
+		else
+			table.sort(files)
+		end
+	end
+	if(startIndex and not endIndex) then
+		table.insert(images,love.graphics.newImage(directory.."/"..files[startIndex]))
+		return images;
+	end
+
+	for index, file in pairs(files) do
+		if(index>=startIndex) then
+			if(index>endIndex) then
+				break
+			end
+			table.insert(images,love.graphics.newImage(directory.."/"..file))
+		end
+	end
+	return images
+end
+local pp
 --Use this for initialization
 function love.load()
+	--tick.framerate = 60 -- Limit framerate to 60 frames per second.
+	tick.rate=.016
 	local width, height, flags = love.window.getMode()
 	
 	love.graphics.setDefaultFilter("nearest","nearest",0)
@@ -61,6 +112,8 @@ function love.load()
 		shell.position=shell.position
 	end
 	table.insert(actors,player)
+	pp=require("Resources.scripts.Platypunk").new()
+	table.insert(actors,pp)
 	debugKeys=Input.new{
 		controls={
 			timestep = {'key:n'},
@@ -70,19 +123,7 @@ function love.load()
 		joystick = love.joystick.getJoysticks()[1],
 	}
 end
-function round(number, nearest)
-	return math.round(number / 45) * 45;
-end
 
-
-function roundToNthDecimal(num, n)
-	local mult = 10^(n or 0)
-	return math.floor(num * mult + 0.5) / mult
-end
-
-function sign(number)
-    return number > 0 and 1 or (number == 0 and 0 or -1)
-end
 --Use this for drawing objects
 function love.draw()
 	local width,height,flags=love.window.getMode()
@@ -93,12 +134,9 @@ end
 function love.resize(w, h)
 	aspect:resize(w,h)
 end
+
 --Use this for any code that should be ran each frame
 function love.update(dt)
-	love.timer.sleep((1/33)-dt)
-	accumulator = accumulator + dt
-	if accumulator >= tickPeriod then
-	  accumulator = accumulator - tickPeriod
 	  if playing or timestep then
 		canvasBottom:renderTo(function()
 			love.graphics.clear()
@@ -119,9 +157,9 @@ function love.update(dt)
 				love.graphics.rectangle("line", 0, 0, 256, 192)
 				love.graphics.setColor(255,255,255)
 				love.graphics.print("FPS: "..tostring(love.timer.getFPS()),10,10)
-				love.graphics.print("Player state: "..player.statemachine.currentState.Name,10,25)
-				love.graphics.print("Player blendtree: "..player.currentTree.name,10,40)
-				love.graphics.print("Player blendtree animation frame: "..player.currentTree.currentAnimation:getFrame(),10,55)
+				love.graphics.print("Player state: "..pp.statemachine.currentState.Name,10,25)
+				love.graphics.print("Player blendtree: "..pp.currentTree.name,10,40)
+				love.graphics.print("Player blendtree animation frame: "..pp.currentTree.currentAnimation:getFrame(),10,55)
 				love.graphics.print("Player in air: "..tostring(player.sprite.inAir),10,70)
 			end	
 		end)
@@ -143,6 +181,4 @@ function love.update(dt)
 			playing=not playing
 		end
 	end
-	end
-	
 end

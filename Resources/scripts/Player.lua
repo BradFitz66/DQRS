@@ -1,35 +1,6 @@
 Player={}
 Player.__index=Player
-function loadImagesFromDirectory(directory, sort,sortFunction,startIndex,endIndex)
-	local images={}
-	
-	local files = love.filesystem.getDirectoryItems(directory)
-	if(not startIndex and not endIndex) then
-		startIndex=1
-		endIndex=#files
-	end
-	if(sort) then
-		if(sortFunction) then
-			table.sort(files,sortFunction)
-		else
-			table.sort(files)
-		end
-	end
-	if(startIndex and not endIndex) then
-		table.insert(images,love.graphics.newImage(directory.."/"..files[startIndex]))
-		return images;
-	end
 
-	for index, file in pairs(files) do
-		if(index>=startIndex) then
-			if(index>endIndex) then
-				break
-			end
-			table.insert(images,love.graphics.newImage(directory.."/"..file))
-		end
-	end
-	return images
-end
 
 local entity=require("Resources.scripts.Entity")
 function Player.load()
@@ -41,14 +12,14 @@ function Player.load()
 	pData.animations={
 		['idle']=
 		blendtree.new({
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,1,8),.06),vector.new(0,-1),vector.new(.5,.8)}, --up
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,9,16),.06),vector.new(.5,-.5),vector.new(.5,.8)}, --upright
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,17,24),.06),vector.new(1,0),vector.new(.5,.8)}, --right
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,25,32),.06),vector.new(.5,.7),vector.new(.5,.8)}, --downright
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,33,40),.06),vector.new(0,1),vector.new(.5,.8)}, -- down
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,41,48),.06),vector.new(-.5,.7),vector.new(.5,.8)}, --downleft
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,49,56),.06),vector.new(-1,0),vector.new(.5,.8)}, --left
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,57,64),.06),vector.new(-.5,-.5),vector.new(.5,.8)}, --upleft
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/IdleFrames",true,compare,1,8),.06),vector.new(0,-1),vector.new(.5,.8)}, --up
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/IdleFrames",true,compare,9,16),.06),vector.new(.5,-.5),vector.new(.5,.8)}, --upright
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/IdleFrames",true,compare,17,24),.06),vector.new(1,0),vector.new(.5,.8)}, --right
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/IdleFrames",true,compare,25,32),.06),vector.new(.5,.7),vector.new(.5,.8)}, --downright
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/IdleFrames",true,compare,33,40),.06),vector.new(0,1),vector.new(.5,.8)}, -- down
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/IdleFrames",true,compare,41,48),.06),vector.new(-.5,.7),vector.new(.5,.8)}, --downleft
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/IdleFrames",true,compare,49,56),.06),vector.new(-1,0),vector.new(.5,.8)}, --left
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/IdleFrames",true,compare,57,64),.06),vector.new(-.5,-.5),vector.new(.5,.8)}, --upleft
 			},
 			vector.new(0,0),
 			"idle",
@@ -59,14 +30,14 @@ function Player.load()
 		),
 		['throw']=
 		blendtree.new({
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/ThrowFrames",true,compare,1,8),.06),vector.new(0,-1),vector.new(.5,.8)}, --up
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/ThrowFrames",true,compare,9,16),.06),vector.new(.5,-.5),vector.new(.5,.8)}, --upright
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/ThrowFrames",true,compare,17,24),.06),vector.new(1,0),vector.new(.5,.8)}, --right
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/ThrowFrames",true,compare,25,32),.06),vector.new(.5,.7),vector.new(.5,.8)}, --downright
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/ThrowFrames",true,compare,33,40),.06),vector.new(0,1),vector.new(.5,.8)}, -- down
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/ThrowFrames",true,compare,41,48),.06),vector.new(-.5,.7),vector.new(.5,.8)}, --downleft
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/ThrowFrames",true,compare,49,56),.06),vector.new(-1,0),vector.new(.5,.8)}, --left
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/ThrowFrames",true,compare,57,64),.06),vector.new(-.5,-.5),vector.new(.5,.8)}, --upleft
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/ThrowFrames",true,compare,1,8),.06),vector.new(0,-1),vector.new(.5,.8)}, --up
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/ThrowFrames",true,compare,9,16),.06),vector.new(.5,-.5),vector.new(.5,.8)}, --upright
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/ThrowFrames",true,compare,17,24),.06),vector.new(1,0),vector.new(.5,.8)}, --right
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/ThrowFrames",true,compare,25,32),.06),vector.new(.5,.7),vector.new(.5,.8)}, --downright
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/ThrowFrames",true,compare,33,40),.06),vector.new(0,1),vector.new(.5,.8)}, -- down
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/ThrowFrames",true,compare,41,48),.06),vector.new(-.5,.7),vector.new(.5,.8)}, --downleft
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/ThrowFrames",true,compare,49,56),.06),vector.new(-1,0),vector.new(.5,.8)}, --left
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/ThrowFrames",true,compare,57,64),.06),vector.new(-.5,-.5),vector.new(.5,.8)}, --upleft
 			},
 			vector.new(0,0),
 			"throw",
@@ -77,14 +48,14 @@ function Player.load()
 		),
 		['walk']=
 		blendtree.new({
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,1,8),.06,nil),vector.new(0,-1),vector.new(.5,.8)}, --up
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,9,16),.06,nil),vector.new(.5,-.5),vector.new(.5,.8)}, --upright
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,17,24),.06,nil),vector.new(1,0),vector.new(.5,.8)}, --right
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,25,32),.06,nil),vector.new(.5,.7),vector.new(.5,.8)}, --downright
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,33,40),.06,nil),vector.new(0,1),vector.new(.5,.8)}, -- down
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,41,48),.06,nil),vector.new(-.5,.7),vector.new(.5,.8)}, --downleft
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,49,56),.06,nil),vector.new(-1,0),vector.new(.5,.8)}, --left
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/IdleFrames",true,compare,57,64),.06,nil),vector.new(-.5,-.5),vector.new(.5,.8)}, --upleft
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/IdleFrames",true,compare,1,8),.06,nil),vector.new(0,-1),vector.new(.5,.8)}, --up
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/IdleFrames",true,compare,9,16),.06,nil),vector.new(.5,-.5),vector.new(.5,.8)}, --upright
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/IdleFrames",true,compare,17,24),.06,nil),vector.new(1,0),vector.new(.5,.8)}, --right
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/IdleFrames",true,compare,25,32),.06,nil),vector.new(.5,.7),vector.new(.5,.8)}, --downright
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/IdleFrames",true,compare,33,40),.06,nil),vector.new(0,1),vector.new(.5,.8)}, -- down
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/IdleFrames",true,compare,41,48),.06,nil),vector.new(-.5,.7),vector.new(.5,.8)}, --downleft
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/IdleFrames",true,compare,49,56),.06,nil),vector.new(-1,0),vector.new(.5,.8)}, --left
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/IdleFrames",true,compare,57,64),.06,nil),vector.new(-.5,-.5),vector.new(.5,.8)}, --upleft
 			},
 			vector.new(0,0),
 			"walk",
@@ -95,14 +66,14 @@ function Player.load()
 		),
 		['jump']=
 		blendtree.new({
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,1,10),.03,function()  end),vector.new(0,-1),vector.new(.5,.8)}, --up
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,11,20),.03,function() end),vector.new(.5,-.5),vector.new(.5,.8)}, --upright
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,21,30),.03,function() end),vector.new(1,0),vector.new(.5,.8)}, --right
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,31,40),.03,function() end),vector.new(.5,.7),vector.new(.5,.8)}, --downright
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,41,50),.03,function() end),vector.new(0,1),vector.new(.5,.8)}, -- down
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,51,60),.03,function() end),vector.new(-.5,.7),vector.new(.5,.8)}, --downleft
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,61,70),.03,function() end),vector.new(-1,0),vector.new(.5,.8)}, --left
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,71,80),.03,function() end),vector.new(-.5,-.5),vector.new(.5,.8)}, --upleft
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/JumpFrames",true,compare,1,10),.03,function()  end),vector.new(0,-1),vector.new(.5,.8)}, --up
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/JumpFrames",true,compare,11,20),.03,function() end),vector.new(.5,-.5),vector.new(.5,.8)}, --upright
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/JumpFrames",true,compare,21,30),.03,function() end),vector.new(1,0),vector.new(.5,.8)}, --right
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/JumpFrames",true,compare,31,40),.03,function() end),vector.new(.5,.7),vector.new(.5,.8)}, --downright
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/JumpFrames",true,compare,41,50),.03,function() end),vector.new(0,1),vector.new(.5,.8)}, -- down
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/JumpFrames",true,compare,51,60),.03,function() end),vector.new(-.5,.7),vector.new(.5,.8)}, --downleft
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/JumpFrames",true,compare,61,70),.03,function() end),vector.new(-1,0),vector.new(.5,.8)}, --left
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/JumpFrames",true,compare,71,80),.03,function() end),vector.new(-.5,-.5),vector.new(.5,.8)}, --upleft
 			},
 			vector.new(0,0),
 			"jump",
@@ -113,14 +84,14 @@ function Player.load()
 		),
 		['blasting']=
 		blendtree.new({
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,1,10),.03,function()  end),vector.new(0,-1),vector.new(.5,.8)}, --up
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,11,20),.03,function() end),vector.new(.5,-.5),vector.new(.5,.8)}, --upright
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,21,30),.03,function() end),vector.new(1,0),vector.new(.5,.8)}, --right
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,31,40),.03,function() end),vector.new(.5,.7),vector.new(.5,.8)}, --downright
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,41,50),.03,function() end),vector.new(0,1),vector.new(.5,.8)}, -- down
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,51,60),.03,function() end),vector.new(-.5,.7),vector.new(.5,.8)}, --downleft
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,61,70),.03,function() end),vector.new(-1,0),vector.new(.5,.8)}, --left
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/JumpFrames",true,compare,71,80),.03,function() end),vector.new(-.5,-.5),vector.new(.5,.8)}, --upleft
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/JumpFrames",true,compare,1,10),.03,function()  end),vector.new(0,-1),vector.new(.5,.8)}, --up
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/JumpFrames",true,compare,11,20),.03,function() end),vector.new(.5,-.5),vector.new(.5,.8)}, --upright
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/JumpFrames",true,compare,21,30),.03,function() end),vector.new(1,0),vector.new(.5,.8)}, --right
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/JumpFrames",true,compare,31,40),.03,function() end),vector.new(.5,.7),vector.new(.5,.8)}, --downright
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/JumpFrames",true,compare,41,50),.03,function() end),vector.new(0,1),vector.new(.5,.8)}, -- down
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/JumpFrames",true,compare,51,60),.03,function() end),vector.new(-.5,.7),vector.new(.5,.8)}, --downleft
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/JumpFrames",true,compare,61,70),.03,function() end),vector.new(-1,0),vector.new(.5,.8)}, --left
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/JumpFrames",true,compare,71,80),.03,function() end),vector.new(-.5,-.5),vector.new(.5,.8)}, --upleft
 			},
 			vector.new(0,0),
 			"blasting",
@@ -132,14 +103,14 @@ function Player.load()
 		
 		['squish']=
 		blendtree.new({
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/SquishFrames",true,compare,1,5),.05,function()  end),vector.new(0,-1),vector.new(.5,.8)}, --up
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/SquishFrames",true,compare,6,10),.05,function() end),vector.new(.5,-.5),vector.new(.5,.8)}, --upright
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/SquishFrames",true,compare,11,15),.05,function() end),vector.new(1,0),vector.new(.5,.8)}, --right
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/SquishFrames",true,compare,16,20),.05,function() end),vector.new(.5,.7),vector.new(.5,.8)}, --downright
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/SquishFrames",true,compare,21,25),.05,function() end),vector.new(0,1),vector.new(.5,.8)}, -- down
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/SquishFrames",true,compare,26,30),.05,function() end),vector.new(-.5,.7),vector.new(.5,.8)}, --downleft
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/SquishFrames",true,compare,31,35),.05,function() end),vector.new(-1,0),vector.new(.5,.8)}, --left
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/SquishFrames",true,compare,36,40),.05,function() end),vector.new(-.5,-.5),vector.new(.5,.8)}, --upleft
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/SquishFrames",true,compare,1,5),.05,function()  end),vector.new(0,-1),vector.new(.5,.8)}, --up
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/SquishFrames",true,compare,6,10),.05,function() end),vector.new(.5,-.5),vector.new(.5,.8)}, --upright
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/SquishFrames",true,compare,11,15),.05,function() end),vector.new(1,0),vector.new(.5,.8)}, --right
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/SquishFrames",true,compare,16,20),.05,function() end),vector.new(.5,.7),vector.new(.5,.8)}, --downright
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/SquishFrames",true,compare,21,25),.05,function() end),vector.new(0,1),vector.new(.5,.8)}, -- down
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/SquishFrames",true,compare,26,30),.05,function() end),vector.new(-.5,.7),vector.new(.5,.8)}, --downleft
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/SquishFrames",true,compare,31,35),.05,function() end),vector.new(-1,0),vector.new(.5,.8)}, --left
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/SquishFrames",true,compare,36,40),.05,function() end),vector.new(-.5,-.5),vector.new(.5,.8)}, --upleft
 			},
 			vector.new(0,0),
 			"squish",
@@ -150,14 +121,14 @@ function Player.load()
 		),
 		['squished']=
 		blendtree.new({
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/SquishFrames",true,compare,5),.05,function()  end),vector.new(0,-1),vector.new(.5,.8)}, --up
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/SquishFrames",true,compare,10),.05,function() end),vector.new(.5,-.5),vector.new(.5,.8)}, --upright
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/SquishFrames",true,compare,15),.05,function() end),vector.new(1,0),vector.new(.5,.8)}, --right
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/SquishFrames",true,compare,20),.05,function() end),vector.new(.5,.7),vector.new(.5,.8)}, --downright
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/SquishFrames",true,compare,25),.05,function() end),vector.new(0,1),vector.new(.5,.8)}, -- down
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/SquishFrames",true,compare,30),.05,function() end),vector.new(-.5,.7),vector.new(.5,.8)}, --downleft
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/SquishFrames",true,compare,35),.05,function() end),vector.new(-1,0),vector.new(.5,.8)}, --left
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/SquishFrames",true,compare,40),.05,function() end),vector.new(-.5,-.5),vector.new(.5,.8)}, --upleft
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/SquishFrames",true,compare,5),.05,function()  end),vector.new(0,-1),vector.new(.5,.8)}, --up
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/SquishFrames",true,compare,10),.05,function() end),vector.new(.5,-.5),vector.new(.5,.8)}, --upright
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/SquishFrames",true,compare,15),.05,function() end),vector.new(1,0),vector.new(.5,.8)}, --right
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/SquishFrames",true,compare,20),.05,function() end),vector.new(.5,.7),vector.new(.5,.8)}, --downright
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/SquishFrames",true,compare,25),.05,function() end),vector.new(0,1),vector.new(.5,.8)}, -- down
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/SquishFrames",true,compare,30),.05,function() end),vector.new(-.5,.7),vector.new(.5,.8)}, --downleft
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/SquishFrames",true,compare,35),.05,function() end),vector.new(-1,0),vector.new(.5,.8)}, --left
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/SquishFrames",true,compare,40),.05,function() end),vector.new(-.5,-.5),vector.new(.5,.8)}, --upleft
 			},
 			vector.new(0,0),
 			"squished",
@@ -169,14 +140,14 @@ function Player.load()
 		['stretch']=
 		blendtree.new(
 			{
-				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/StretchFrames",true,compare,1),0,function()end),vector.new(0,-1),vector.new(.5,.9)}, --up
-				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/StretchFrames",true,compare,1),0,function()end),vector.new(.5,-.5),vector.new(.5,.9)}, --upright
-				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/StretchFrames",true,compare,2),0,function()end),vector.new(1,0),vector.new(.8,.8)}, --right
-				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/StretchFrames",true,compare,3),0,function()end),vector.new(.5,.5),vector.new(.8,.8)}, --downright
-				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/StretchFrames",true,compare,3),0,function()end),vector.new(0,1),vector.new(.5,.7)}, --down
-				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/StretchFrames",true,compare,3),0,function()end),vector.new(-.5,.5),vector.new(.2,.8)}, --downleft
-				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/StretchFrames",true,compare,4),0,function()end),vector.new(-1,0),vector.new(0.2,.8)}, --left
-				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/StretchFrames",true,compare,1),0,function()end),vector.new(-.5,-.5),vector.new(.5,.9)}, --upleft
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/StretchFrames",true,compare,1),0,function()end),vector.new(0,-1),vector.new(.5,.9)}, --up
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/StretchFrames",true,compare,1),0,function()end),vector.new(.5,-.5),vector.new(.5,.9)}, --upright
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/StretchFrames",true,compare,2),0,function()end),vector.new(1,0),vector.new(.8,.8)}, --right
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/StretchFrames",true,compare,3),0,function()end),vector.new(.5,.5),vector.new(.8,.8)}, --downright
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/StretchFrames",true,compare,3),0,function()end),vector.new(0,1),vector.new(.5,.7)}, --down
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/StretchFrames",true,compare,3),0,function()end),vector.new(-.5,.5),vector.new(.2,.8)}, --downleft
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/StretchFrames",true,compare,4),0,function()end),vector.new(-1,0),vector.new(0.2,.8)}, --left
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/StretchFrames",true,compare,1),0,function()end),vector.new(-.5,-.5),vector.new(.5,.9)}, --upleft
 			},
 			vector.new(0,0),
 			"stretch",
@@ -188,17 +159,17 @@ function Player.load()
 		['wallhit']=
 		blendtree.new(
 			{
-				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/WallHitFrames",true,compare,1,4),.1,function()  end),vector.new(0,-1),vector.new(.5,0)}, --up
-				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/WallHitFrames",true,compare,5,8),.1,function() end),vector.new(.5,-.5),vector.new(.5,.8)}, --upright
-				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/WallHitFrames",true,compare,9,12),.1,function() end),vector.new(1,0),vector.new(1,.8)}, --right
-				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/WallHitFrames",true,compare,13,16),.1,function() end),vector.new(.5,.7),vector.new(.5,.8)}, --downright
-				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/WallHitFrames",true,compare,17,20),.1,function() end),vector.new(0,1),vector.new(.5,1)}, -- down
-				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/WallHitFrames",true,compare,21,24),.1,function() end),vector.new(-.5,.7),vector.new(.5,.8)}, --downleft
-				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/WallHitFrames",true,compare,25,28),.1,function() end),vector.new(-1,0),vector.new(0,.8)}, --left
-				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/WallHitFrames",true,compare,29,32),.1,function() end),vector.new(-.5,-.5),vector.new(.5,.8)}, --upleft
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/WallHitFrames",true,compare,1,4),.1,function()  end),vector.new(0,-1),vector.new(.5,0)}, --up
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/WallHitFrames",true,compare,5,8),.1,function() end),vector.new(.5,-.5),vector.new(.5,.8)}, --upright
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/WallHitFrames",true,compare,9,12),.1,function() end),vector.new(1,0),vector.new(1,.8)}, --right
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/WallHitFrames",true,compare,13,16),.1,function() end),vector.new(.5,.7),vector.new(.5,.8)}, --downright
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/WallHitFrames",true,compare,17,20),.1,function() end),vector.new(0,1),vector.new(.5,1)}, -- down
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/WallHitFrames",true,compare,21,24),.1,function() end),vector.new(-.5,.7),vector.new(.5,.8)}, --downleft
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/WallHitFrames",true,compare,25,28),.1,function() end),vector.new(-1,0),vector.new(0,.8)}, --left
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/WallHitFrames",true,compare,29,32),.1,function() end),vector.new(-.5,-.5),vector.new(.5,.8)}, --upleft
 				},
 			vector.new(0,0),
-			"stretch",
+			"wallhit",
 			pData,
 			nil,
 			function() end,
@@ -211,15 +182,15 @@ function Player.load()
 	pData.statemachine=require("Resources.scripts.StateMachine").new(pData)
 	--This contains the players states. It stores the actual state module + a table of the states that can't transition to it
 	pData.states={
-		["Idle"]={pData.statemachine:addState(require("Resources.states.Idle")),{}},
-		["Walk"]={pData.statemachine:addState(require("Resources.states.Walk")),{}},
-		["Jump"]={pData.statemachine:addState(require("Resources.states.Jump")),{"Blasting","Stretch","WallHit"}},
-		["Squish"]={pData.statemachine:addState(require("Resources.states.Squish")),{"Jump","Stretch","Squished","Blasting","WallHit"}},
-		["Stretch"]={pData.statemachine:addState(require("Resources.states.Stretch")),{}},
-		["Squished"]={pData.statemachine:addState(require("Resources.states.Squished")),{}},
-		["Blasting"]={pData.statemachine:addState(require("Resources.states.Blasting")),{}},
-		["WallHit"]={pData.statemachine:addState(require("Resources.states.WallHit")),{}},
-		["Throw"]={pData.statemachine:addState(require("Resources.states.Throw")),{}}
+		["Idle"]={pData.statemachine:addState(require("Resources.states.Rocket.Idle")),{}},
+		["Walk"]={pData.statemachine:addState(require("Resources.states.Rocket.Walk")),{}},
+		["Jump"]={pData.statemachine:addState(require("Resources.states.Rocket.Jump")),{"Blasting","Stretch","WallHit"}},
+		["Squish"]={pData.statemachine:addState(require("Resources.states.Rocket.Squish")),{"Jump","Stretch","Squished","Blasting","WallHit"}},
+		["Stretch"]={pData.statemachine:addState(require("Resources.states.Rocket.Stretch")),{}},
+		["Squished"]={pData.statemachine:addState(require("Resources.states.Rocket.Squished")),{}},
+		["Blasting"]={pData.statemachine:addState(require("Resources.states.Rocket.Blasting")),{}},
+		["WallHit"]={pData.statemachine:addState(require("Resources.states.Rocket.WallHit")),{"Throw"}},
+		["Throw"]={pData.statemachine:addState(require("Resources.states.Rocket.Throw")),{"WallHit"}}
 	}
 	
 	pData.statemachine:changeState("Idle")
@@ -269,14 +240,8 @@ function Player:loadTree(animationName,keepVector,frame,pausedAtStart)
 		self.currentTree.currentAnimation:setPaused(false)
 		self.currentTree.currentAnimation:setFrame(1)
 	end
-	--self.currentTree.currentAnimation:setOnPlay(self.currentTree.startEvent)
 end
 
-function compare(a,b)
-	local num1 = tonumber(string.sub(a,0,-5))
-	local num2 = tonumber(string.sub(b,0,-5))
-	return num1<num2
-end
 
 function Player:draw()
 	self.sprite:draw()
@@ -284,14 +249,6 @@ function Player:draw()
 		local offset=vector.new(self.currentTree.currentAnimation:getWidth()*self.currentTree.frameOffset.x,self.currentTree.currentAnimation:getHeight()*self.currentTree.frameOffset.y):round()
 
 		self.currentTree.currentAnimation:draw(math.round(self.sprite.position.x),math.round(self.sprite.position.y),self.rotation,self.scale.x,self.scale.y,offset.x,offset.y)
-	end
-	if(self.hitWall) then
-		self.hitWall=false;
-		print("Hit wall!!!!");
-		local pointPos=vector.Reflect(-self.blastVelocity,self.wallHitNormal)
-		local pos=self.sprite.position
-		love.graphics.setPointSize(5)
-		love.graphics.points(pos.x+pointPos.x,pos.y+pointPos.y)
 	end
 end
 
@@ -307,10 +264,6 @@ function Player:changeState(newState)
 	end
 	self.statemachine:changeState(newState)
 end
-local startPos;
-local spdX=0;
-local spdY=0;
-local spdZ=0;
 
 
 function Player:update(dt)
