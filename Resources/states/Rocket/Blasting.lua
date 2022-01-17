@@ -28,12 +28,6 @@ State.Update=function(owner,dt)
         owner.blastVelocity=vector.new(0,0)
         
         owner:changeState("Idle")
-        owner.superThrow=true
-        --Wait a frame
-        timer.after(10*dt,function()
-            print("Can no longer super throw")
-            owner.superThrow=false;
-        end)
     end
 end
 

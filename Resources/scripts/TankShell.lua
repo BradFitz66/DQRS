@@ -4,6 +4,7 @@ local entity=require("Resources/scripts/Entity")
 function tankshell.new()
     local ts=setmetatable({}, tankshell)
     ts.sprite=entity.new(10,5,10,10)
+    ts.sprite.holdOffset=vector.new(-10,-10)
     ts.sprite.maxBounces=2
     ts.spriteImage=love.graphics.newImage("Resources/graphics/TankShell.png")
     ts.sprite.parent=ts
@@ -32,7 +33,7 @@ function tankshell:update(dt)
     self.sprite:update(dt,function()
         for shape, delta in pairs(colliderWorld:collisions(self.sprite.collider)) do
             local absoluteDelta=vector.new(math.abs(delta.x),math.abs(delta.y))
-            for _, actor in pairs(actors) do
+            for _, actor in pairs(spriteLayer.sprites) do
                 if(actor.sprite.collider==shape and actor.type=="ammo") then
                     local heightDiff = self.sprite.localPosition.y - actor.sprite.localPosition.y 
                     local speed=vector3.getLength(self.sprite.velocity)/16
@@ -83,7 +84,7 @@ end
 
 function tankshell:draw()
     love.graphics.setColor(self.color)
-    love.graphics.draw(self.spriteImage,math.round(self.sprite.position.x),math.round(self.sprite.position.y),self.rotation,self.scale.x,self.scale.y,0,math.round(self.spriteImage:getHeight()/2))
+    love.graphics.draw(self.spriteImage,math.floor(self.sprite.position.x),math.floor(self.sprite.position.y),self.rotation,self.scale.x,self.scale.y,0,math.floor(self.spriteImage:getHeight()/2))
     self.sprite:draw()
     love.graphics.setColor(255,255,255)
 end

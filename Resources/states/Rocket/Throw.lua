@@ -16,13 +16,7 @@ State.Enter=function(owner)
     thrown.position=owner.position-vector.new(10)
     thrown.sprite.localPosition.y=thrown.sprite.localPosition.y+owner.sprite.localPosition.y
     timer.after(.2,function() thrown.sprite.canPickup=true end)
-    print(owner.superThrow)
-    if(not owner.superThrow) then
-        thrown.sprite:AddForceXYZ(vector3((owner.currentTree.vector).x*100,3,(owner.currentTree.vector).y*100))
-    else
-        --owner.superThrow=false
-        thrown.sprite:AddForceXYZ(vector3((owner.currentTree.vector).x*300,3,(owner.currentTree.vector).y*300))
-    end
+    thrown.sprite:AddForceXYZ(vector3((owner.currentTree.vector).x*(100*math.clamp(owner.blastVelocity:len()/15,1,3)),3,(owner.currentTree.vector).y*100*(math.clamp(owner.blastVelocity:len()/15,1,3))))
 end
 
 State.Update=function(owner,dt)

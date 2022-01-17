@@ -7,9 +7,9 @@ end
 
 State.Update=function(owner,dt) 
 	
+	owner.currentTree:setVector(owner.moveVector)
 	if(owner.moveVector~=vector.new(0,0)) then
 		owner.position=owner.position+owner.moveVector*owner.speed*dt;
-		owner.currentTree.vector=owner.moveVector:normalized();
 	else
 		owner:changeState("Idle")
 	end

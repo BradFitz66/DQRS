@@ -18,6 +18,7 @@ function Entity.new(colliderPX,colliderPY,colliderSX,colliderSY)
     e.parent=nil
     e.name=""
     e.ZValue=0
+    e.holdOffset=vector.new(0,0)
     e.pickedUp=false;
     e.canPickup=true;
     return e
@@ -102,13 +103,11 @@ function Entity:update(dt,collisionOverride)
         return
     end
     self.ZValue=self.position.y+self.localPosition.y
-    if(collisionOverride) then
+    if(collisionOverride~=nil) then
         collisionOverride()
     else
         for shape, delta in pairs(colliderWorld:collisions(self.collider)) do
-            for _, actor in pairs(actors) do
-            end
-            if(contains(currentMap.map.colliderShapes,shape)) then
+            if(table.index_of(currentMap.map.colliderShapes,shape)~=nil) then
                 self.parent.position=self.parent.position+vector.new(delta.x,delta.y)
             end
         end

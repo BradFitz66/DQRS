@@ -3,70 +3,22 @@ TankInterior.__index=TankInterior
 
 function TankInterior.Load()
     local tank=setmetatable({},TankInterior)
-    tank.map= require("Resources.Map").new("Resources/graphics/PSD/TankBottomFloor.psd")
-
-    tank.map.colliders=
-        {{
-            284.5,144.5,
-            284.5,185.5,
-            -35.5,185.5,
-            -35.5,109.5,
-            -44.5,95.5,
-            -51.5,95.5,
-            -51.5,81.5,
-            -307.5,81.5,
-            -307.5,47.5,
-            -315.5,33.5,
-            -339.5,33.5,
-            -339.5,-30.5,
-            -310.5,-30.5,
-            -307.5,-33.5,
-            -307.5,-142.5,
-            -107.5,-142.5,
-            -107.5,-121.5,
-            -104.5,-118.5,
-            -58.5,-118.5,
-            4.5,-181.5,
-            20.5,-181.5,
-            20.5,-230.5,
-            -460.5,-230.5,
-            -460.5,-31.5,
-            -354.5,-31.5,
-            -354.5,33.5,
-            -460.5,33.5,
-            -460.5,230.5,
-            460.5,230.5,
-            460.5,129.5,
-            293.5,129.5,},{
-            52.5,33.5,
-            52.5,49.5,
-            76.5,49.5,
-            76.5,33.5,
-            137.5,33.5,
-            140.5,30.5,
-            140.5,-125.5,
-            116.5,-125.5,
-            116.5,-110.5,
-            -4.5,-110.5,
-            -68.5,-46.5,
-            -97.5,-46.5,
-            -107.5,-30.5,
-            -107.5,30.5,
-            -104.5,33.5,
-            -3.5,33.5,
-            -3.5,49.5,
-            20.5,49.5,
-            20.5,33.5,},{
-            204.5,-230.5,
-            204.5,14.5,
-            207.5,17.5,
-            221.5,17.5,
-            221.5,33.5,
-            460.5,34.5,
-            460.5,-230.5,}}
-    tank.map.colliderOffset=vector.new(460,231)
+    tank.map= require("Resources.Map").new("Resources/graphics/Tilemaps/CannonRoom.lua")
+    tank.map.originOffset=vector.new(100,250)
+    tank.map.colliders={}
+    tank.map.colliderOffset=vector.new(0,0)
     tank.map:createColliders()
-
+    -- for i, v in pairs(tank.map.graphics.objects) do
+    --     for i2, object in pairs(v) do
+    --         if(object=="MachinePoint")then
+    --             for i3, point in pairs(v.polyline) do
+    --                 local wx,wy=gameCam:toWorld(point.x,point.y)
+    --                 local machine=require("Resources.scripts.TankMachine").new(wx-29,wy+38)
+    --                 table.insert(spriteLayer.sprites,1,machine)
+    --             end
+    --         end
+    --     end
+    -- end
     return tank
 end
 

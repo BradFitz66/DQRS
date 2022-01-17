@@ -271,9 +271,16 @@ end
 
 --returns a new table from the range of indexes in another table
 function tablex.range(t1,range_start,range_end)
+	
 	local new_table={}
-	for i = range_start,range_end do
-		table.insert(new_table,1,t1[i])
+	if(range_start<range_end) then
+		for i = range_start,range_end do
+			table.insert(new_table,1,t1[i])
+		end
+	else
+		for i = range_start,range_end,-1 do
+			table.insert(new_table,1,t1[i])
+		end
 	end
 	return new_table
 end

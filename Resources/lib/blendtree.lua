@@ -19,7 +19,17 @@ function Blendtree.new(BlendTreeAnimations,BlendTreeVector,Name,owner,StartEvent
     return bT
 end
 
+function Blendtree:setVector(newVector)
+    if(newVector~=vector.new(0,0)) then
+        self.lastvector=self.vector
+        self.vector=newVector
+        print(self.vector)
+    end
+end
+
 function Blendtree:update(dt)
+    self.lastvector=self.lastvector:normalized()
+    self.vector=self.vector:normalized()
     if(self.lastvector.dist(self.lastvector,self.vector)>.25) then
         self.lastvector=self.vector
         local VectorTable={}

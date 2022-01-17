@@ -7,16 +7,17 @@ Platypunk.__index=Platypunk
 local entity=require("Resources.scripts.Entity")
 function Platypunk.new()
 	local punkData=setmetatable({},Platypunk)
-	punkData.sprite=entity.new(0,1,12,12)
+	punkData.sprite=entity.new(0,0,15,15)
 	punkData.sprite.parent=punkData;
-	punkData.sprite.bounciness=0;
-	punkData.sprite.maxBounces=1;
-	punkData.sprite.ZValue=10;
+	punkData.sprite.name="NPC"
+	
+	punkData.sprite.maxBounces=2;
 	local idleFrames=loadImagesFromDirectory("Resources/graphics/Platypunk/Idle",true,compare,1,9)
 	local walkFrames=loadImagesFromDirectory("Resources/graphics/Platypunk/Walk",true,compare,1,36)
+	local stretchFrames=loadImagesFromDirectory("Resources/graphics/Platypunk/Stretch",true,compare,1,36)
 	local walkDelays={0.03,0.03,0.07,0.13,0.03,0.03,0.03,0.03,0.07,0.13,0.03,0.03}
+	local stretchDelays={0.16,0.16,0.16,0.16,0.16,0.16,0.16,0.04,0.04,0.04,0.04,0.16}
 	local idleDelays={0.27,0.13,0.13,0.03}
-	print(#idleFrames)
 	punkData.animations={
 		['idle']=
 		blendtree.new({
@@ -46,7 +47,49 @@ function Platypunk.new()
 			nil,
 			true
 		),
-		
+		['stretch']=
+		blendtree.new({
+			{anim8.newAnimation(table.range(stretchFrames,12,1),stretchDelays,nil),vector.new(0,-1),vector.new(.5,.8)}, --up
+			{anim8.newAnimation(table.range(stretchFrames,24,13),stretchDelays,nil),vector.new(1,0),vector.new(.5,.8)}, --right
+			{anim8.newAnimation(table.range(stretchFrames,36,25),stretchDelays,nil),vector.new(0,1),vector.new(.5,.8)}, -- down
+			{anim8.newAnimation(table.range(stretchFrames,24,13),stretchDelays,nil,nil,true),vector.new(-1,0),vector.new(.5,.8)}, --left
+			},
+			vector.new(0,0),
+			"stretch",
+			punkData,
+			function() end,
+			nil,
+			false
+		),
+
+		['held']=
+		blendtree.new({
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Platypunk/Held",true,compare,3,4),.18,nil),vector.new(0,-1),vector.new(.5,.8)}, --up
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Platypunk/Held",true,compare,1,2),.18,nil),vector.new(1,0),vector.new(.6,.5)}, --right
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Platypunk/Held",true,compare,5,6),.18,nil),vector.new(0,1),vector.new(.5,.8)}, -- down
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Platypunk/Held",true,compare,1,2),.18,nil,nil,true),vector.new(-1,0),vector.new(.6,.5)}, --left
+			},
+			vector.new(0,0),
+			"held",
+			punkData,
+			function() end,
+			nil,
+			true
+		),
+		['hurt']=
+		blendtree.new({
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Platypunk/Hurt",true,compare,2,2),.18,nil),vector.new(0,-1),vector.new(.5,.8)}, --up
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Platypunk/Hurt",true,compare,1,1),.18,nil,nil,true),vector.new(1,0),vector.new(.5,.8)}, --right
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Platypunk/Hurt",true,compare,3,3),.18,nil),vector.new(0,1),vector.new(.5,.8)}, -- down
+			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Platypunk/Hurt",true,compare,1,1),.18,nil),vector.new(-1,0),vector.new(.5,.8)}, --left
+			},
+			vector.new(0,0),
+			"hurt",
+			punkData,
+			function() end,
+			nil,
+			true
+		),
 	}
 	
 	punkData.moveVector=vector.new(0,0)
@@ -56,6 +99,9 @@ function Platypunk.new()
 	punkData.states={
 		["Idle"]={punkData.statemachine:addState(require("Resources.states.Platypunk.Idle")),{}},
 		["Walk"]={punkData.statemachine:addState(require("Resources.states.Platypunk.Walk")),{}},
+		["Stretch"]={punkData.statemachine:addState(require("Resources.states.Platypunk.Stretch")),{}},
+		["Held"]={punkData.statemachine:addState(require("Resources.states.Held")),{}},
+		["Hurt"]={punkData.statemachine:addState(require("Resources.states.Hurt")),{}}
 	}
 	
 	punkData.statemachine:changeState("Idle")
@@ -85,7 +131,6 @@ function Platypunk:loadTree(animationName,keepVector,frame,pausedAtStart)
 		self.currentTree.currentAnimation:setActive(true)
 		self.currentTree.currentAnimation:setPaused(false)
 		self.currentTree.currentAnimation:setFrame(1)
-
 	end
 	
 end
@@ -94,7 +139,6 @@ function Platypunk:draw()
 	self.sprite:draw()
 	if(self.currentTree.currentAnimation:isActive()) then
 		local offset=vector.new(self.currentTree.currentAnimation:getWidth()*self.currentTree.frameOffset.x,self.currentTree.currentAnimation:getHeight()*self.currentTree.frameOffset.y):round()
-		--love.graphics.draw(self.image,self.sprite.position.x,self.sprite.position.y)
 		self.currentTree.currentAnimation:draw(math.round(self.sprite.position.x),math.round(self.sprite.position.y),self.rotation,self.scale.x,self.scale.y,offset.x,offset.y)
 	end
 end
@@ -115,7 +159,10 @@ end
 function Platypunk:update(dt)
 	self.statemachine:update(dt)
 	self.currentTree:update(dt)
-	self.sprite.position=self.position
+	self.sprite:update(dt,nil)
+	if(self.sprite.inAir==true and self.statemachine.currentState.Name~="Hurt") then
+		self:changeState("Hurt")
+	end
 end
 
 

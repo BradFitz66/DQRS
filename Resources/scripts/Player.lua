@@ -142,11 +142,11 @@ function Player.load()
 			{
 				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/StretchFrames",true,compare,1),0,function()end),vector.new(0,-1),vector.new(.5,.9)}, --up
 				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/StretchFrames",true,compare,1),0,function()end),vector.new(.5,-.5),vector.new(.5,.9)}, --upright
-				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/StretchFrames",true,compare,2),0,function()end),vector.new(1,0),vector.new(.8,.8)}, --right
-				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/StretchFrames",true,compare,3),0,function()end),vector.new(.5,.5),vector.new(.8,.8)}, --downright
-				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/StretchFrames",true,compare,3),0,function()end),vector.new(0,1),vector.new(.5,.7)}, --down
-				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/StretchFrames",true,compare,3),0,function()end),vector.new(-.5,.5),vector.new(.2,.8)}, --downleft
-				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/StretchFrames",true,compare,4),0,function()end),vector.new(-1,0),vector.new(0.2,.8)}, --left
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/StretchFrames",true,compare,2),0,function()end),vector.new(1,0),vector.new(.7,.9)}, --right
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/StretchFrames",true,compare,3),0,function()end),vector.new(.5,.5),vector.new(.5,.9)}, --downright
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/StretchFrames",true,compare,3),0,function()end),vector.new(0,1),vector.new(.5,.9)}, --down
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/StretchFrames",true,compare,3),0,function()end),vector.new(-.5,.5),vector.new(.5,.9)}, --downleft
+				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/StretchFrames",true,compare,4),0,function()end),vector.new(-1,0),vector.new(0.3,.9)}, --left
 				{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/StretchFrames",true,compare,1),0,function()end),vector.new(-.5,-.5),vector.new(.5,.9)}, --upleft
 			},
 			vector.new(0,0),
@@ -192,7 +192,6 @@ function Player.load()
 		["WallHit"]={pData.statemachine:addState(require("Resources.states.Rocket.WallHit")),{"Throw"}},
 		["Throw"]={pData.statemachine:addState(require("Resources.states.Rocket.Throw")),{"WallHit"}}
 	}
-	
 	pData.statemachine:changeState("Idle")
 	pData.speed=96;
 	pData.holding={}
@@ -218,6 +217,8 @@ function Player.load()
 		},
 		joystick = love.joystick.getJoysticks()[1],
 	}
+	pData.headCollider=colliderWorld:circle(-100,-100,5)
+	pData.headPosition=vector.new(0,0)
 	
 	pData.rotation=0
 	return pData
@@ -248,8 +249,9 @@ function Player:draw()
 	if(self.currentTree.currentAnimation:isActive()) then
 		local offset=vector.new(self.currentTree.currentAnimation:getWidth()*self.currentTree.frameOffset.x,self.currentTree.currentAnimation:getHeight()*self.currentTree.frameOffset.y):round()
 
-		self.currentTree.currentAnimation:draw(math.round(self.sprite.position.x),math.round(self.sprite.position.y),self.rotation,self.scale.x,self.scale.y,offset.x,offset.y)
+		self.currentTree.currentAnimation:draw(math.floor(self.sprite.position.x),math.floor(self.sprite.position.y),self.rotation,self.scale.x,self.scale.y,offset.x,offset.y)
 	end
+	self.headCollider:draw("fill")
 end
 
 function Player:changeState(newState)
@@ -267,24 +269,28 @@ end
 
 
 function Player:update(dt)
-	self.input:update(dt)
+	
 	for i, held in pairs(self.holding) do
 		if(held~=nil) then
-			local endPoint=((self.position-self.sprite.localPosition)+vector.new(-10,-10-(16*i)));
+			local posDiff=(self.position-self.sprite.localPosition)
+			local offset=vector.new(held[1].sprite.holdOffset.x,(held[1].sprite.holdOffset.y-(16*i)))
+			local endPoint= self.statemachine.currentState.Name=="Stretch" and (self.headPosition)+offset or posDiff+offset
 			local heldSprite=held[1].sprite
 			local heldVelocity=held[2]
 			heldVelocity.x=math.lerp(held[1].position.x,(endPoint.x),.1*dt);
 			heldVelocity.z=math.lerp(held[1].position.y,(endPoint.y),.1*dt);
 			held[1].position.y=held[1].position.y+(endPoint.y-held[1].position.y)*.5/i;
 			held[1].position.x=held[1].position.x+(endPoint.x-held[1].position.x)*.5/i;
+			if(held[1].sprite.name=="NPC") then
+				held[1].moveVector=self.moveVector
+			end
 		end
 	end
-
 	self.sprite:update(dt,function()
 		for shape, delta in pairs(colliderWorld:collisions(self.sprite.collider)) do
 			local absoluteDelta=vector.new(math.abs(delta.x),math.abs(delta.y))
 			local fixedDelta=vector.new(delta.x,delta.y)-(self.moveVector*self.speed):normalized()
-			for _, actor in pairs(actors) do
+			for _, actor in pairs(spriteLayer.sprites) do
 				if(actor.sprite.collider==shape and not actor.sprite.pickedUp) then
 					if(self.statemachine.currentState.Name=="Blasting")then
 						local normalizedBlast=self.blastVelocity:normalized()
@@ -300,9 +306,13 @@ function Player:update(dt)
 								actor.sprite.inAir=false
 								--Picking up
 								actor.sprite.pickedUp=true;
-								actor.sprite.ZValue=10e5
+								
+								actor.sprite.ZValue=10000*(#self.holding+1)
 								table.insert(self.holding,{actor,vector3(0,0,0)})
 								startPos=actor.sprite.localPosition
+								if(actor.sprite.name=="NPC") then
+									actor:changeState("Held")
+								end
 								timer.script(function(wait)
 									self:changeState("Squish")
 									wait(.2)
@@ -313,7 +323,7 @@ function Player:update(dt)
 					end
 				end
 			end
-			--Does the map's collider shape actually exist?
+			--Are we colliding with the map?
 			if(table.index_of(currentMap.map.colliderShapes,shape)~=nil) then
 				self.position=self.position+vector.new(fixedDelta.x,fixedDelta.y)
 				if(self.statemachine.currentState.Name=="Blasting")then
@@ -337,7 +347,6 @@ function Player:update(dt)
 						local newDelta = vector.new(math.cos(math.rad(collisionAngle)),math.sin(math.rad(collisionAngle)))
 						self.wallHitNormal=vector.new(roundToNthDecimal(newDelta.y,1),roundToNthDecimal(newDelta.x,1))
 						self:changeState("WallHit")
-						print("Hit wall.");
 						self.hitWall=true;
 						timer.after(10,function()
 							self.hitWall=false;
@@ -356,13 +365,19 @@ function Player:update(dt)
 			end
 		end
 	end)
-	self.statemachine:update(dt)
-	self.currentTree:update(dt)
 	local hori,vert=self.input:get 'move'
-	if(hori~=0 or vert~=0) then
-		self.moveVector=(vector.new(hori*self.speed,vert*self.speed)):normalized()
+
+	if(vector.new(hori,vert)~=vector.new(0,0)) then
+		self.moveVector=(vector.new(hori,vert)):normalized()
 	else
 		self.moveVector=vector.new(0,0)
+	end
+
+	self.currentTree:update(dt)
+	self.input:update(dt)
+	self.statemachine:update(dt)
+	if(self.statemachine.currentState.Name~="Stretch") then
+		self.headPosition=self.position
 	end
 	if(self.input:down("jump")) then
 		self:changeState("Squish")
