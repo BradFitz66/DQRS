@@ -290,7 +290,7 @@ function Player:update(dt)
 		for shape, delta in pairs(colliderWorld:collisions(self.sprite.collider)) do
 			local absoluteDelta=vector.new(math.abs(delta.x),math.abs(delta.y))
 			local fixedDelta=vector.new(delta.x,delta.y)-(self.moveVector*self.speed):normalized()
-			for _, actor in pairs(spriteLayer.sprites) do
+			for _, actor in pairs(actors) do
 				if(actor.sprite.collider==shape and not actor.sprite.pickedUp) then
 					if(self.statemachine.currentState.Name=="Blasting")then
 						local normalizedBlast=self.blastVelocity:normalized()

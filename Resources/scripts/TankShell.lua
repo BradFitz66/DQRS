@@ -33,7 +33,7 @@ function tankshell:update(dt)
     self.sprite:update(dt,function()
         for shape, delta in pairs(colliderWorld:collisions(self.sprite.collider)) do
             local absoluteDelta=vector.new(math.abs(delta.x),math.abs(delta.y))
-            for _, actor in pairs(spriteLayer.sprites) do
+            for _, actor in pairs(actors) do
                 if(actor.sprite.collider==shape and actor.type=="ammo") then
                     local heightDiff = self.sprite.localPosition.y - actor.sprite.localPosition.y 
                     local speed=vector3.getLength(self.sprite.velocity)/16

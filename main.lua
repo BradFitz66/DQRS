@@ -13,13 +13,12 @@ aspect=nil
 math=require("Resources.lib.mathx")
 string=require("Resources.lib.stringx")
 table=require("Resources.lib.tablex")
+tank_tileset=nil;
 --
 currentMap=nil;
 colliderWorld=nil;
 gameCam=nil;
-spriteLayer=nil;
-
-
+actors={}
 
 local player=nil;
 local platy=nil;
@@ -27,10 +26,8 @@ local canvas;
 local debugKeys=nil;
 local playing=true;
 local tick=require 'Resources.lib.tick'
-local Terebi=require "Resources.lib.terebi"
 local screen
-
-
+local tilelove = require "Resources.lib.tilelove"
 
 function round(number, nearest)
 	return math.round(number / 45) * 45;
@@ -93,9 +90,6 @@ function love.load()
 	tick.rate=.016
 	
 	local width, height, flags = love.window.getMode()
-	
-	Terebi.initializeLoveDefaults()
-	screen=Terebi.newScreen(256,384,1)
 	love.graphics.setDefaultFilter("nearest","nearest",0)
 
 	aspect=require("Resources.lib.aspect_ratio")
@@ -113,14 +107,15 @@ function love.load()
 	vector3=require("Resources.lib.brinevector3D")
 	HC=require("Resources.lib.HC-master")
 	gameCam=camera.new(0,0,8000,8000)
+	tank_tileset=tilelove.new_tilemap(8,8,love.image.newImageData("Resources/graphics/Tilemaps/CannonRoom/Tilemap_V1.png"))
 	--
 	colliderWorld=HC.new(25)
+	currentMap=require("Resources.scripts.TankInterior").Load();
 	player=require("Resources.scripts.Player").load()
 	player:loadTree("idle")
 	platy=require("Resources.scripts.Platypunk").new()
 	platy:loadTree("idle")
-
-	currentMap=require("Resources.scripts.TankInterior").Load()
+	
     table.insert(currentMap.map.collidees,player.collider)
 	love.graphics.setBackgroundColor(72/255,72/255,72/255)
 	love.graphics.setLineWidth(1)
@@ -134,30 +129,17 @@ function love.load()
 	}
 	for i = 1, 10 do 
 		local shell = require("Resources.scripts.TankShell").new()
-		table.insert(spriteLayer.sprites,shell)
 		shell.position=shell.position
+		table.insert(actors,shell)
 	end
-
-	table.insert(spriteLayer.sprites,player)
-	table.insert(spriteLayer.sprites,platy)
-	function spriteLayer:update(dt)
-		for _, sprite in pairs(self.sprites) do
-			sprite:update(dt)
-		end
-    end
-    
-    function spriteLayer:draw(dt)
-		for _, sprite in pairs(self.sprites) do
-			sprite:draw()
-		end
-	end
+	table.insert(actors,player)
+	table.insert(actors,platy)
 end
 
 local showAnotherWindow=false
---Use this for drawing objects
 function love.draw()
 	local width,height,flags=love.window.getMode()
-	--screen:draw() 
+	--Put all major draw functions into separate function so I can easily disable them for debugging purposes
 	drawFn()
 end
 
@@ -168,16 +150,17 @@ function drawFn()
 		love.graphics.clear()
 		gameCam:draw(function(l,t,w,h) 
 			currentMap.map:draw((-gameCam.x),(-gameCam.y),gameCam.sx,gameCam.sy)
-			table.sort(spriteLayer,function(a,b)
+			table.sort(actors,function(a,b)
 				return a.sprite.ZValue<b.sprite.ZValue
-			end)		
-			-- for _, actor in pairs(spriteLayer) do
-			-- 	spriteLayer:draw()
-			-- end
+			end)
+			for _, actor in pairs(actors) do
+				actor:draw()
+			end
 		end)
 		canvasTop:renderTo(function()
 			love.graphics.clear()
 			if(debug) then
+				local stats = love.graphics.getStats()
 				love.graphics.setColor(255,0,0)
 				love.graphics.rectangle("line", 0, 0, 256, 192)
 				love.graphics.setColor(255,255,255)
@@ -187,6 +170,10 @@ function drawFn()
 				love.graphics.print("Player blendtree animation frame: "..player.currentTree.currentAnimation:getFrame(),10,55)
 				love.graphics.print("Player blendtree vector: "..tostring(player.currentTree.vector).."\nPlayer move vector: "..tostring(player.moveVector),10,85)
 				love.graphics.print("Player in air: "..tostring(player.sprite.inAir),10,70)
+				love.graphics.print("Draw calls: "..tostring(stats.drawcalls),10,115)
+				love.graphics.print("Images loaded: "..tostring(stats.images),10,130)
+				love.graphics.print("Texture memory: "..tostring(math.floor(stats.texturememory/1000000)).."MB",10,145)
+				love.graphics.print("Batched drawcalls: "..tostring(stats.drawcallsbatched),10,160)
 			end	
 		end)
 	end)
@@ -198,11 +185,15 @@ end
 
 --Use this for any code that should be ran each frame
 function love.update(dt)
+	
 	if playing or timestep then
 		timestep=false
-		gameCam:setPosition(math.floor(player.position.x-(gameCam.w/10)),math.floor(player.position.y+128))
+		gameCam:setPosition(math.floor(player.position.x-(gameCam.w/12)),math.floor(player.position.y+96))
 		timer.update(dt)
-		currentMap.map.graphics:update(dt)
+		for _, actor in pairs(actors) do
+			actor:update(dt)
+		end
+		--currentMap.map.graphics:update(dt)
 	end
 	if(debug)then
 		debugKeys:update(dt)

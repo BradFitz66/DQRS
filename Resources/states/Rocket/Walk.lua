@@ -10,7 +10,7 @@ State.Update=function(owner,dt)
 	owner.currentTree:setVector(owner.moveVector)
 	if(owner.moveVector~=vector.new(0,0)) then
 		owner.position=owner.position+owner.moveVector*owner.speed*dt;
-	else
+	elseif owner.moveVector==vector.new(0,0) and owner.currentTree.currentAnimation:getFrame()==8 then
 		owner:changeState("Idle")
 	end
 	
