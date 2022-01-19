@@ -1,6 +1,7 @@
 local StateMachine={}
 StateMachine.__index=StateMachine
 
+--Simple and basic statemachine
 
 function StateMachine.new(owner)
 	local sM=setmetatable({},StateMachine)

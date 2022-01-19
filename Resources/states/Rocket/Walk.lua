@@ -6,8 +6,9 @@ State.Enter=function(owner)
 end
 
 State.Update=function(owner,dt) 
-	
-	owner.currentTree:setVector(owner.moveVector)
+	if(owner.moveVector~=vector.new(0,0)) then
+		owner.currentTree:setVector(owner.moveVector)
+	end
 	if(owner.moveVector~=vector.new(0,0)) then
 		owner.position=owner.position+owner.moveVector*owner.speed*dt;
 	elseif owner.moveVector==vector.new(0,0) and owner.currentTree.currentAnimation:getFrame()==8 then

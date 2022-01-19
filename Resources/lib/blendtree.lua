@@ -1,18 +1,20 @@
 local Blendtree={}
 Blendtree.__index=Blendtree
 
-function Blendtree.new(BlendTreeAnimations,BlendTreeVector,Name,owner,StartEvent,EndEvent,loop)
+function Blendtree.new(BlendTreeAnimations,BlendTreeVector,Name,owner,StartEvent,EndEvent,loop,persistFrame)
     local bT=setmetatable({},Blendtree)
     bT.animations=BlendTreeAnimations
     bT.name=Name
-    bT.vector=vector.new(0,0)
+    bT.persistFrame = persistFrame --Persist frame means that when we switch between two animations in the blendtree, the animation frame should stay the same (eg: if we switch between two walk animation directions at frame 4, the animation we switch to will be at frame 4)
+    bT.vector=vector.new(0,1)
     bT.lastvector=bT.vector
     bT.currentAnimation=bT.animations[1][1]
     bT.currentAnimation:setPauseAtEnd(not loop)
     bT.currentAnimation:setLooping(loop)
-    bT.startEvent=StartEvent and StartEvent or function() print("Ended") end
+    bT.startEvent=StartEvent and StartEvent or function() end
     bT.owner=owner
-    bT.endEvent= function() print("Ended") end
+    bT.sameDirectionFlag=false -- for animations that have frame persist, we don't want to persist the frame when "switching" between the same 
+    bT.endEvent= function() end
     bT.currentAnimation:setOnAnimationEnd(bT.endEvent)
     bT.loopAnim=loop;
     bT.frameOffset=bT.animations[1][3]
@@ -20,16 +22,16 @@ function Blendtree.new(BlendTreeAnimations,BlendTreeVector,Name,owner,StartEvent
 end
 
 function Blendtree:setVector(newVector)
-    if(newVector~=vector.new(0,0)) then
+    if(newVector~=vector.new(0,0) and newVector~=self.vector) then
         self.lastvector=self.vector
         self.vector=newVector
-        print(self.vector)
     end
 end
 
 function Blendtree:update(dt)
-    self.lastvector=self.lastvector:normalized()
-    self.vector=self.vector:normalized()
+    --self.lastvector=self.lastvector:normalized()
+    --self.vector=self.vector:normalized()
+    
     if(self.lastvector.dist(self.lastvector,self.vector)>.25) then
         self.lastvector=self.vector
         local VectorTable={}
@@ -40,8 +42,9 @@ function Blendtree:update(dt)
             return (a[2].dist2(a[2],self.vector))<(b[2].dist2(b[2],self.vector)) 
         end)
         
+
         local frames = #self.currentAnimation.frames
-        local frame = self.currentAnimation:getFrame()+1 < frames and self.currentAnimation:getFrame()+1 or 1
+        local frame = self.currentAnimation:getFrame()+1 < frames and self.currentAnimation:getFrame() or 1
         local prevAnim=self.currentAnimation;
         self.currentAnimation=VectorTable[1][1]
         self.frameOffset=VectorTable[1][3]

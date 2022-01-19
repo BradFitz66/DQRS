@@ -1,5 +1,6 @@
 local State={}
 State.__index=State
+--State definition for the state machine.
 
 function State.new(name)
 	local s=setmetatable({},State)

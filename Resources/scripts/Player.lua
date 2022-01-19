@@ -1,3 +1,4 @@
+--Player controller script. This contains animation handling and state handling. Due to the complex nature of this character controller, a state machine is used to handle different stuff such as walking, idling, jumping, etc.
 Player={}
 Player.__index=Player
 
@@ -9,6 +10,7 @@ function Player.load()
 	pData.sprite.parent=pData;
 	pData.sprite.bounciness=0;
 	pData.sprite.maxBounces=1;
+	--List of all animations. Blendtree is a module that lets me "blend" between multiple directional animations based on a vector
 	pData.animations={
 		['idle']=
 		blendtree.new({
@@ -184,7 +186,7 @@ function Player.load()
 	pData.states={
 		["Idle"]={pData.statemachine:addState(require("Resources.states.Rocket.Idle")),{}},
 		["Walk"]={pData.statemachine:addState(require("Resources.states.Rocket.Walk")),{}},
-		["Jump"]={pData.statemachine:addState(require("Resources.states.Rocket.Jump")),{"Blasting","Stretch","WallHit"}},
+		["Jump"]={pData.statemachine:addState(require("Resources.states.Rocket.Jump")),{"Blasting","Stretch","WallHit"}}, -- Blasting, Stretch and WallHit cannot transition into the jump state.
 		["Squish"]={pData.statemachine:addState(require("Resources.states.Rocket.Squish")),{"Jump","Stretch","Squished","Blasting","WallHit"}},
 		["Stretch"]={pData.statemachine:addState(require("Resources.states.Rocket.Stretch")),{}},
 		["Squished"]={pData.statemachine:addState(require("Resources.states.Rocket.Squished")),{}},
@@ -202,7 +204,8 @@ function Player.load()
 	pData.canThrow=true;
 	pData.superThrow=false;
 	pData.hitWall=false;
-	pData.wallHitDebounce=false --* I don't want to do this, but it seems like the easiest solution to stop the player from being stuck in a wallhit loop
+	pData.wallHitDebounce=false --Sometimes player can get stuck in an infinite loop of collision. Adding a debounce fixes this.
+	--Players input. ToDo: Major refactor of entire input system.
 	pData.input = Input.new {
 		controls = {
 			left = {'key:left', 'key:a', 'axis:leftx-', 'button:dpleft'},
@@ -217,16 +220,20 @@ function Player.load()
 		},
 		joystick = love.joystick.getJoysticks()[1],
 	}
+
 	pData.headCollider=colliderWorld:circle(-100,-100,5)
 	pData.headPosition=vector.new(0,0)
 	
 	pData.rotation=0
 	return pData
 end
-
+--Load a new blendtree.
 function Player:loadTree(animationName,keepVector,frame,pausedAtStart)
-	local oldVector=(keepVector and self.currentTree~=nil) and self.currentTree.vector or vector.new(0,0)
-	self.animations[animationName].vector=oldVector; --set vector to old vector before we load the animation
+	if(self.currentTree~=nil) then		
+		if(keepVector) then
+			self.animations[animationName].vector=self.currentTree.vector; 
+		end
+	end
 	self.currentTree=self.animations[animationName]
 	if(frame and pausedAtStart) then
 		self.currentTree.currentAnimation:setPaused(true)
@@ -243,7 +250,7 @@ function Player:loadTree(animationName,keepVector,frame,pausedAtStart)
 	end
 end
 
-
+--Draw the player
 function Player:draw()
 	self.sprite:draw()
 	if(self.currentTree.currentAnimation:isActive()) then
@@ -251,7 +258,9 @@ function Player:draw()
 
 		self.currentTree.currentAnimation:draw(math.floor(self.sprite.position.x),math.floor(self.sprite.position.y),self.rotation,self.scale.x,self.scale.y,offset.x,offset.y)
 	end
-	self.headCollider:draw("fill")
+	if(debug) then
+		self.headCollider:draw("fill")
+	end
 end
 
 function Player:changeState(newState)
@@ -292,6 +301,7 @@ function Player:update(dt)
 			local fixedDelta=vector.new(delta.x,delta.y)-(self.moveVector*self.speed):normalized()
 			for _, actor in pairs(actors) do
 				if(actor.sprite.collider==shape and not actor.sprite.pickedUp) then
+					--Handle collision with actor while in the blasting state.
 					if(self.statemachine.currentState.Name=="Blasting")then
 						local normalizedBlast=self.blastVelocity:normalized()
 						local initialVel = (vector3(self.blastVelocity.x,self.blastVelocity.y,0))
@@ -323,7 +333,7 @@ function Player:update(dt)
 					end
 				end
 			end
-			--Are we colliding with the map?
+			--Handle collisions with the collider of the currently loaded map
 			if(table.index_of(currentMap.map.colliderShapes,shape)~=nil) then
 				self.position=self.position+vector.new(fixedDelta.x,fixedDelta.y)
 				if(self.statemachine.currentState.Name=="Blasting")then
@@ -331,17 +341,22 @@ function Player:update(dt)
 						
 						--Angle we hit the wall at
 						local collisionAngle=math.abs((math.round((math.deg(math.atan2(absoluteDelta.y,absoluteDelta.x))))))
+
 						--Angle of the wall we hit
 						local hitAngle=math.abs(math.round((math.deg(math.atan2(math.abs(self.blastVelocity.y),math.abs(self.blastVelocity.x))))))
+						
 						local rounded=round(collisionAngle)
+						
 						--Very ugly. This is the 'bounce rules' that determine whether the player cann bounce or not
 						local canBounce = (rounded==90 and hitAngle<=90) or (rounded==45 and hitAngle== 45) or (rounded==0 and hitAngle<=45)
 						
 						collisionAngle= collisionAngle==45 and -collisionAngle or collisionAngle
+
 						--Here we check if there's a separation delta and if the angle of collision is divisible by 180 with no remainder or is within 10 degrees of it or 90 degrees (some flat wall aren't perfectly flat due to float precision)
 						if(not canBounce) then
 							return
 						end
+
 						self.position=self.position+vector.new(absoluteDelta.x,absoluteDelta.y)
 						self.wallHitDebounce=true;
 						local newDelta = vector.new(math.cos(math.rad(collisionAngle)),math.sin(math.rad(collisionAngle)))
@@ -372,10 +387,9 @@ function Player:update(dt)
 	else
 		self.moveVector=vector.new(0,0)
 	end
-
-	self.currentTree:update(dt)
 	self.input:update(dt)
 	self.statemachine:update(dt)
+	self.currentTree:update(dt)
 	if(self.statemachine.currentState.Name~="Stretch") then
 		self.headPosition=self.position
 	end
