@@ -13,11 +13,11 @@ function Blendtree.new(BlendTreeAnimations,BlendTreeVector,Name,owner,StartEvent
     bT.currentAnimation:setLooping(loop)
     bT.startEvent=StartEvent and StartEvent or function() end
     bT.owner=owner
-    bT.sameDirectionFlag=false -- for animations that have frame persist, we don't want to persist the frame when "switching" between the same 
     bT.endEvent= function() end
     bT.currentAnimation:setOnAnimationEnd(bT.endEvent)
     bT.loopAnim=loop;
     bT.frameOffset=bT.animations[1][3]
+    bT.switchAnimationFlag=false
     return bT
 end
 
@@ -25,14 +25,15 @@ function Blendtree:setVector(newVector)
     if(newVector~=vector.new(0,0) and newVector~=self.vector) then
         self.lastvector=self.vector
         self.vector=newVector
+        self.switchAnimationFlag=true;
     end
 end
 
 function Blendtree:update(dt)
-    --self.lastvector=self.lastvector:normalized()
-    --self.vector=self.vector:normalized()
-    
-    if(self.lastvector.dist(self.lastvector,self.vector)>.25) then
+    self.lastvector=self.lastvector:normalized()
+    self.vector=self.vector:normalized()
+    if(self.switchAnimationFlag) then
+        self.switchAnimationFlag=false
         self.lastvector=self.vector
         local VectorTable={}
         for _, v in pairs(self.animations) do
@@ -44,9 +45,12 @@ function Blendtree:update(dt)
         
 
         local frames = #self.currentAnimation.frames
-        local frame = self.currentAnimation:getFrame()+1 < frames and self.currentAnimation:getFrame() or 1
+        local frame = self.currentAnimation:getFrame()
+        local delayTimer = self.currentAnimation.delayTimer
         local prevAnim=self.currentAnimation;
+        --Switch to new animation
         self.currentAnimation=VectorTable[1][1]
+        --Offset from the origin of the sprite when drawing 
         self.frameOffset=VectorTable[1][3]
         self.currentAnimation:setLooping(self.loopAnim)
         self.currentAnimation:setPauseAtEnd(not self.loopAnim)
@@ -55,6 +59,7 @@ function Blendtree:update(dt)
             self.currentAnimation:onLoop()
         end
         self.currentAnimation:setFrame(frame)
+        self.currentAnimation.delayTimer=delayTimer
     end
     self.currentAnimation:update(dt)
 end

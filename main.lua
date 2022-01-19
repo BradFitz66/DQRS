@@ -133,7 +133,7 @@ function love.load()
 		table.insert(actors,shell)
 	end
 	table.insert(actors,player)
-	table.insert(actors,platy)
+	--table.insert(actors,platy)
 end
 
 local showAnotherWindow=false

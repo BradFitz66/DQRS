@@ -4,7 +4,7 @@ local endScale=vector.new(1,1)
 local angle,normamlTar,target,finalSpeed,newSpeed,distance,rX,rY
 local obstruction=false;
 State.Enter=function(owner)
-    owner:loadTree("stretch",true)
+    owner:loadTree("stretch",false)
     owner.scale=startScale
     local target= owner.position+owner.moveVector;
     local normalTar = (target - owner.position):normalized();
@@ -14,7 +14,7 @@ end
 
 State.Update=function(owner,dt) 
     if (owner.moveVector ~= vector.new(0,0)) then
-        owner.currentTree.vector = owner.moveVector
+        owner.currentTree:setVector(owner.moveVector)
 
         scaleProper=vector.new(owner.scale.x,(owner.scale.y+.5)*32)
         distance=owner.scale.dist(owner.scale,endScale);

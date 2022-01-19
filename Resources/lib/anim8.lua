@@ -328,7 +328,7 @@ return {
 					if(self.currentFrame==1) then
 						self:onLoop()
 					end
-					self.delayTimer = self.delayTimer + dt
+					self.delayTimer = self.delayTimer + 1*dt
 					if self.delayTimer > self.delays[self.currentFrame] then
 						self.delayTimer = 0
 						self.currentFrame = self.currentFrame + 1

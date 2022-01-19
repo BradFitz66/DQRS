@@ -13,7 +13,8 @@ function Player.load()
 	--List of all animations. Blendtree is a module that lets me "blend" between multiple directional animations based on a vector
 	pData.animations={
 		['idle']=
-		blendtree.new({
+		blendtree.new(
+			{
 			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/IdleFrames",true,compare,1,8),.06),vector.new(0,-1),vector.new(.5,.8)}, --up
 			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/IdleFrames",true,compare,9,16),.06),vector.new(.5,-.5),vector.new(.5,.8)}, --upright
 			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Rocket/IdleFrames",true,compare,17,24),.06),vector.new(1,0),vector.new(.5,.8)}, --right
@@ -220,7 +221,7 @@ function Player.load()
 		},
 		joystick = love.joystick.getJoysticks()[1],
 	}
-
+	--Head collider is for making sure player can't stretch their body through colliders.
 	pData.headCollider=colliderWorld:circle(-100,-100,5)
 	pData.headPosition=vector.new(0,0)
 	
@@ -231,7 +232,7 @@ end
 function Player:loadTree(animationName,keepVector,frame,pausedAtStart)
 	if(self.currentTree~=nil) then		
 		if(keepVector) then
-			self.animations[animationName].vector=self.currentTree.vector; 
+			self.animations[animationName]:setVector(self.currentTree.vector); 
 		end
 	end
 	self.currentTree=self.animations[animationName]
@@ -239,14 +240,10 @@ function Player:loadTree(animationName,keepVector,frame,pausedAtStart)
 		self.currentTree.currentAnimation:setPaused(true)
 		self.currentTree.currentAnimation:setFrame(frame)
 	end
-	if(self.currentTree.currentAnimation:getLooping()) then
-		--Gives better looping result on looping animations
-		self.currentTree.currentAnimation:setFrame(#self.currentTree.currentAnimation.frames)
-	else
-		--!print("Setting animation active again")
+	self.currentTree.currentAnimation:setFrame(1)
+	if(not self.currentTree.currentAnimation:getLooping()) then
 		self.currentTree.currentAnimation:setActive(true)
 		self.currentTree.currentAnimation:setPaused(false)
-		self.currentTree.currentAnimation:setFrame(1)
 	end
 end
 
