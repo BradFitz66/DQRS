@@ -1,7 +1,7 @@
 local State = require("Resources.scripts.State").new("Squish")
 State.Enter=function(owner)
 	owner.sprite.in_airr=false;
-    owner.sprite.localPosition=vector.new(0,0)
+    owner.sprite.local_position=vector.new(0,0)
 	owner:load_treeee("squish",true)
 end
 

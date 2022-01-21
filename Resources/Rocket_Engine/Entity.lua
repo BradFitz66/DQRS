@@ -25,8 +25,8 @@ function Entity.new(collider_position_x,collider_position_y,collider_width,colli
     e.name=""
     e.z_value=0
     e.hold_offset=vector.new(0,0)
-    e.pickedUp=false;
-    e.canPickup=true;
+    e.picked_up=false;
+    e.can_pickup=true;
     return e
 end
 
@@ -105,7 +105,7 @@ function Entity:update(dt,collisionOverride)
         self.velocity=vector3(0,0,0)
         self.local_position=vector.new(0,0)
     end
-    if(self.pickedUp) then
+    if(self.picked_up) then
         return
     end
     self.z_value=self.position.y+self.local_position.y

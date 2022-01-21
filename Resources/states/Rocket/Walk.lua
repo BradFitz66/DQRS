@@ -1,7 +1,7 @@
 local State = require("Resources.scripts.State").new("Walk")
 State.Enter=function(owner)
 	owner:load_tree("walk",false,false)
-	owner.sprite:add_forcee(1.5)
+	owner.sprite:add_force(1.5)
 
 end
 
@@ -14,12 +14,12 @@ State.Update=function(owner,dt)
 		return
 	end
 	
-	if(owner.sprite.in_airrr==false and owner.current_tree.current_animation:getFrame()==1) then
-		owner.sprite:add_forcee(1.5)
-	elseif owner.sprite.in_airrr and owner.current_tree.current_animation:getFrame()==1 then
-		owner.sprite.in_airrr=false
-		owner.sprite.localPosition=vector.new(0,0)
-		owner.sprite:add_forcee(1.5)
+	if(owner.sprite.in_air==false and owner.current_tree.current_animation:getFrame()==1) then
+		owner.sprite:add_force(1.5)
+	elseif owner.sprite.in_air and owner.current_tree.current_animation:getFrame()==1 then
+		owner.sprite.in_air=false
+		owner.sprite.local_position=vector.new(0,0)
+		owner.sprite:add_force(1.5)
 	end
 end
 

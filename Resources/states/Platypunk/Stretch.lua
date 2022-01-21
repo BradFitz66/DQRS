@@ -19,14 +19,14 @@ State.Update=function(owner,dt)
 				end
 				owner.current_tree.current_animation.paused=true
 				t=not t
-				owner.sprite.localPosition.x = t and 0.5 or -0.5
+				owner.sprite.local_position.x = t and 0.5 or -0.5
 				wait(.025)
 			end
 			owner:load_tree("stretch",true,false)
 			owner:change_state("Idle")
 			owner.current_tree.current_animation.paused=false
-			owner.sprite.localPosition.x = 0
-			owner.sprite.localPosition.y  = 0
+			owner.sprite.local_position.x = 0
+			owner.sprite.local_position.y  = 0
 		end)
 	end
 end

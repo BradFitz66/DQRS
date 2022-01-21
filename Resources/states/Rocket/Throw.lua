@@ -10,13 +10,13 @@ State.Enter=function(owner)
     end
     owner.can_throw=false
     local thrown = table.shift(owner.holding)[1]
-    thrown.sprite.canPickup=false
-    thrown.sprite.pickedUp=false
+    thrown.sprite.can_pickup=false
+    thrown.sprite.picked_up=false
     --thrown.sprite.in_airr=true;
     thrown.position=owner.position-vector.new(10)
-    thrown.sprite.localPosition.y=thrown.sprite.localPosition.y+owner.sprite.localPosition.y
-    timer.after(.2,function() thrown.sprite.canPickup=true end)
-    thrown.sprite:add_force_xyzyz(vector3((owner.current_tree.vector).x*(100*math.clamp(owner.blast_velocity:len()/15,1,3)),3,(owner.current_tree.vector).y*100*(math.clamp(owner.blast_velocity:len()/15,1,3))))
+    thrown.sprite.local_position.y=thrown.sprite.local_position.y+owner.sprite.local_position.y
+    timer.after(.2,function() thrown.sprite.can_pickup=true end)
+    thrown.sprite:add_force_xyz(vector3((owner.current_tree.vector).x*(100*math.clamp(owner.blast_velocity:len()/15,1,3)),3,(owner.current_tree.vector).y*100*(math.clamp(owner.blast_velocity:len()/15,1,3))))
 end
 
 State.Update=function(owner,dt)

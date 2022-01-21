@@ -344,7 +344,7 @@ function Player:update(dt)
 	
 	for i, held in pairs(self.holding) do
 		if(held~=nil) then
-			local posDiff=(self.position-self.sprite.localPosition)
+			local posDiff=(self.position-self.sprite.local_position)
 			local offset=vector.new(held[1].sprite.holdOffset.x,(held[1].sprite.holdOffset.y-(16*i)))
 			local endPoint= self.statemachine.current_state.Name=="Stretch" and (self.head_position)+offset or posDiff+offset
 			local heldSprite=held[1].sprite
@@ -363,7 +363,7 @@ function Player:update(dt)
 			local absoluteDelta=vector.new(math.abs(delta.x),math.abs(delta.y))
 			local fixedDelta=vector.new(delta.x,delta.y)-(self.move_vector*self.speed):normalized()
 			for _, actor in pairs(actors) do
-				if(actor.sprite.collider==shape and not actor.sprite.pickedUp) then
+				if(actor.sprite.collider==shape and not actor.sprite.picked_up) then
 					--Handle collision with actor while in the blasting state.
 					if(self.statemachine.current_state.Name=="Blasting")then
 						local normalizedBlast=self.blast_velocity:normalized()
@@ -373,16 +373,16 @@ function Player:update(dt)
 						initialVel=initialVel+vector3(0,3,0)
 						actor.sprite:add_force_xyz(initialVel)
 					else
-						if(actor.sprite.in_airr and actor.sprite.canPickup and #self.holding<3)then
-							local heightDifference=actor.sprite.localPosition.y - self.sprite.localPosition.y
+						if(actor.sprite.in_airr and actor.sprite.can_pickup and #self.holding<3)then
+							local heightDifference=actor.sprite.local_position.y - self.sprite.local_position.y
 							if(heightDifference < 20) then
 								actor.sprite.in_airr=false
 								--Picking up
-								actor.sprite.pickedUp=true;
+								actor.sprite.picked_up=true;
 								
 								actor.sprite.ZValue=10000*(#self.holding+1)
 								table.insert(self.holding,{actor,vector3(0,0,0)})
-								startPos=actor.sprite.localPosition
+								startPos=actor.sprite.local_position
 								if(actor.sprite.name=="NPC") then
 									actor:change_state("Held")
 								end
@@ -411,12 +411,12 @@ function Player:update(dt)
 						local rounded=round(collisionAngle)
 						
 						--Very ugly. This is the 'bounce rules' that determine whether the player cann bounce or not
-						local canBounce = (rounded==90 and hitAngle<=90) or (rounded==45 and hitAngle== 45) or (rounded==0 and hitAngle<=45)
+						local can_bounce = (rounded==90 and hitAngle<=90) or (rounded==45 and hitAngle== 45) or (rounded==0 and hitAngle<=45)
 						
 						collisionAngle= collisionAngle==45 and -collisionAngle or collisionAngle
 
 						--Here we check if there's a separation delta and if the angle of collision is divisible by 180 with no remainder or is within 10 degrees of it or 90 degrees (some flat wall aren't perfectly flat due to float precision)
-						if(not canBounce) then
+						if(not can_bounce) then
 							return
 						end
 

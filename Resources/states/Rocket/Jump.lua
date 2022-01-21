@@ -1,8 +1,8 @@
 local State = require("Resources.scripts.State").new("Jump")
 State.Enter=function(owner)
     owner.sprite.in_airr=false;
-    owner.sprite.localPosition=vector.new(0,0)
-    owner.sprite:add_forcee(3)
+    owner.sprite.local_position=vector.new(0,0)
+    owner.sprite:add_force(3)
     owner.scale=vector.new(1,1)
     owner.rotation=0
     owner:load_treeee("jump",true)
