@@ -10,7 +10,7 @@ State.Update=function(owner,dt)
         owner:changeState("Hurt")
     end
     if(owner.moveVector~=vector.new(0,0)) then
-        owner.currentTree.vector=owner.moveVector
+        owner.currentTree:setVector(owner.moveVector)
     end
 end
 

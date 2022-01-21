@@ -1,8 +1,21 @@
 local Platypunk={}
 local anim8=require("Resources.lib.anim8")
+local RTA=require("Resources.lib.RTA")
 local blendtree=require("Resources.lib.blendtree")
 
 Platypunk.__index=Platypunk
+
+local function get_sprite_quads(spriteprefix,index_start, index_end,atlas)
+	local quads={}
+	if index_start ~= index_end then
+		for i=index_start,index_end do
+			table.insert(quads,1,atlas.quads[spriteprefix..tostring(i)])
+		end
+	else 
+		table.insert(quads,1,atlas.quads[spriteprefix..tostring(index_start)])
+	end
+	return quads
+end
 
 local entity=require("Resources.scripts.Entity")
 function Platypunk.new()
@@ -10,21 +23,49 @@ function Platypunk.new()
 	punkData.sprite=entity.new(0,0,15,15)
 	punkData.sprite.parent=punkData;
 	punkData.sprite.name="NPC"
-	
+	punkData.sprites=RTA.newDynamicSize(0,0,0)
+	punkData.sprites:setFilter("nearest")
+	local sprites={
+		['idle']=loadImagesFromDirectory("Resources/graphics/Platypunk/Idle",true,compare,1,9),
+		['walk']=loadImagesFromDirectory("Resources/graphics/Platypunk/Walk",true,compare,1,55),
+		['stretch']=loadImagesFromDirectory("Resources/graphics/Platypunk/Stretch",true,compare,1,36),
+		['hurt']=loadImagesFromDirectory("Resources/graphics/Platypunk/Hurt",true,compare,1,3)
+	}
+	local prefixes={
+		"idle",
+		"walk",
+		"stretch",
+		"hurt"
+	}
+	punkData.sprites:setBakeAsPow2(true)
+	for _, prefix in pairs(prefixes) do
+		for i, sprite in ipairs(sprites[prefix]) do
+			punkData.sprites:add(sprite,prefix..tostring(i),true,"area")
+		end
+	end
+	punkData.sprites:bake("area")
+	punkData.sprites:hardBake("area")
+	print(punkData.sprites.image:getWidth(),punkData.sprites.image:getHeight())
+
+	prefixes=nil
+	sprites=nil;
+	collectgarbage("collect")
+
 	punkData.sprite.maxBounces=2;
-	local idleFrames=loadImagesFromDirectory("Resources/graphics/Platypunk/Idle",true,compare,1,9)
-	local walkFrames=loadImagesFromDirectory("Resources/graphics/Platypunk/Walk",true,compare,1,36)
-	local stretchFrames=loadImagesFromDirectory("Resources/graphics/Platypunk/Stretch",true,compare,1,36)
+	local idleFrames = get_sprite_quads("idle",1,9,punkData.sprites) --loadImagesFromDirectory("Resources/graphics/Platypunk/Idle",true,compare,1,9)
+	local walkFrames = get_sprite_quads("walk",1,36,punkData.sprites)
+	local stretchFrames = get_sprite_quads("stretch",1,36,punkData.sprites)
+	--Platypunk animations are bit more complex than the players so we have some hardcoded delay tables for some of the animations to improve how they look.
 	local walkDelays={0.03,0.03,0.07,0.13,0.03,0.03,0.03,0.03,0.07,0.13,0.03,0.03}
 	local stretchDelays={0.16,0.16,0.16,0.16,0.16,0.16,0.16,0.04,0.04,0.04,0.04,0.16}
 	local idleDelays={0.27,0.13,0.13,0.03}
 	punkData.animations={
 		['idle']=
 		blendtree.new({
-			{anim8.newAnimation({idleFrames[1],idleFrames[2],idleFrames[3],idleFrames[2]},idleDelays),vector.new(0,-1),vector.new(.5,.8)}, --up
-			{anim8.newAnimation({idleFrames[7],idleFrames[8],idleFrames[9],idleFrames[8]},idleDelays),vector.new(1,0),vector.new(.5,.8)}, --right
-			{anim8.newAnimation({idleFrames[4],idleFrames[5],idleFrames[6],idleFrames[5]},idleDelays),vector.new(0,1),vector.new(.5,.8)}, -- down
-			{anim8.newAnimation({idleFrames[7],idleFrames[8],idleFrames[9],idleFrames[8]},idleDelays,nil,nil,true),vector.new(-1,0),vector.new(.5,.8)}, --left
+			{anim8.newAnimation({idleFrames[1],idleFrames[2],idleFrames[3],idleFrames[2]},idleDelays,nil,punkData.sprites.image),vector.new(0,-1),vector.new(.5,.8)}, --up
+			{anim8.newAnimation({idleFrames[7],idleFrames[8],idleFrames[9],idleFrames[8]},idleDelays,nil,punkData.sprites.image),vector.new(1,0),vector.new(.5,.8)}, --right
+			{anim8.newAnimation({idleFrames[4],idleFrames[5],idleFrames[6],idleFrames[5]},idleDelays,nil,punkData.sprites.image),vector.new(0,1),vector.new(.5,.8)}, -- down
+			{anim8.newAnimation({idleFrames[7],idleFrames[8],idleFrames[9],idleFrames[8]},idleDelays,nil,punkData.sprites.image,true),vector.new(-1,0),vector.new(.5,.8)}, --left
 			},
 			vector.new(0,0),
 			"idle",
@@ -35,10 +76,10 @@ function Platypunk.new()
 		),
 		['walk']=
 		blendtree.new({
-			{anim8.newAnimation(table.range(walkFrames,1,12),walkDelays,nil),vector.new(0,-1),vector.new(.5,.8)}, --up
-			{anim8.newAnimation(table.range(walkFrames,13,24),walkDelays,nil),vector.new(1,0),vector.new(.5,.8)}, --right
-			{anim8.newAnimation(table.range(walkFrames,25,36),walkDelays,nil),vector.new(0,1),vector.new(.5,.8)}, -- down
-			{anim8.newAnimation(table.range(walkFrames,13,24),walkDelays,nil,nil,true),vector.new(-1,0),vector.new(.5,.8)}, --left
+			{anim8.newAnimation(table.range(walkFrames,1,12),walkDelays,nil,punkData.sprites.image),vector.new(0,-1),vector.new(.5,.8)}, --up
+			{anim8.newAnimation(table.range(walkFrames,13,24),walkDelays,nil,punkData.sprites.image),vector.new(1,0),vector.new(.5,.8)}, --right
+			{anim8.newAnimation(table.range(walkFrames,25,36),walkDelays,nil,punkData.sprites.image),vector.new(0,1),vector.new(.5,.8)}, -- down
+			{anim8.newAnimation(table.range(walkFrames,13,24),walkDelays,nil,punkData.sprites.image,true),vector.new(-1,0),vector.new(.5,.8)}, --left
 			},
 			vector.new(0,0),
 			"walk",
@@ -49,10 +90,10 @@ function Platypunk.new()
 		),
 		['stretch']=
 		blendtree.new({
-			{anim8.newAnimation(table.range(stretchFrames,12,1),stretchDelays,nil),vector.new(0,-1),vector.new(.5,.8)}, --up
-			{anim8.newAnimation(table.range(stretchFrames,24,13),stretchDelays,nil),vector.new(1,0),vector.new(.5,.8)}, --right
-			{anim8.newAnimation(table.range(stretchFrames,36,25),stretchDelays,nil),vector.new(0,1),vector.new(.5,.8)}, -- down
-			{anim8.newAnimation(table.range(stretchFrames,24,13),stretchDelays,nil,nil,true),vector.new(-1,0),vector.new(.5,.8)}, --left
+			{anim8.newAnimation(table.range(stretchFrames,12,1),stretchDelays,nil,punkData.sprites.image),vector.new(0,-1),vector.new(.5,.8)}, --up
+			{anim8.newAnimation(table.range(stretchFrames,24,13),stretchDelays,nil,punkData.sprites.image),vector.new(1,0),vector.new(.5,.8)}, --right
+			{anim8.newAnimation(table.range(stretchFrames,36,25),stretchDelays,nil,punkData.sprites.image),vector.new(0,1),vector.new(.5,.8)}, -- down
+			{anim8.newAnimation(table.range(stretchFrames,24,13),stretchDelays,nil,punkData.sprites.image,true),vector.new(-1,0),vector.new(.5,.8)}, --left
 			},
 			vector.new(0,0),
 			"stretch",

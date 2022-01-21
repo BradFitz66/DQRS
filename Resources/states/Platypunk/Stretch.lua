@@ -3,7 +3,7 @@ local db=false;
 State.Enter=function(owner)
 	owner:loadTree("stretch",true,false)
 	owner.currentTree.currentFrame=0
-	owner.currentTree.vector=owner.moveVector
+	owner.currentTree.vector:setVector(owner.moveVector)
 	db=false
 end
 local t=false
@@ -19,10 +19,8 @@ State.Update=function(owner,dt)
 				end
 				owner.currentTree.currentAnimation.paused=true
 				t=not t
-				local treeVec =owner.currentTree.vector
 				owner.sprite.localPosition.x = t and 0.5 or -0.5
 				wait(.025)
-
 			end
 			owner:loadTree("stretch",true,false)
 			owner:changeState("Idle")

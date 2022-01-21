@@ -23,7 +23,7 @@ end
 
 
 function Map:draw(x,y,sx,sy)
-    self.graphics:draw("Cannon room",x,y)
+    self.graphics:draw_map("Cannon room",x,y)
     if(debug) then
         -- for i=1, #self.colliderShapes do
         --     love.graphics.setColor(0,255,0)

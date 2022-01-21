@@ -10,7 +10,8 @@ end
 
 State.Update=function(owner,dt) 
     if(owner.moveVector~=vector.new(0,0)) then
-        owner.currentTree.vector=owner.moveVector;
+        
+        owner.currentTree:setVector(owner.moveVector);
         owner.position = owner.position + owner.moveVector*owner.speed*dt;
     end
     if(owner.sprite.inAir==false) then

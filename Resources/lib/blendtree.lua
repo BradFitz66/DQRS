@@ -6,7 +6,7 @@ function Blendtree.new(BlendTreeAnimations,BlendTreeVector,Name,owner,StartEvent
     bT.animations=BlendTreeAnimations
     bT.name=Name
     bT.persistFrame = persistFrame --Persist frame means that when we switch between two animations in the blendtree, the animation frame should stay the same (eg: if we switch between two walk animation directions at frame 4, the animation we switch to will be at frame 4)
-    bT.vector=vector.new(0,1)
+    bT.vector=vector.new(0,-1)
     bT.lastvector=bT.vector
     bT.currentAnimation=bT.animations[1][1]
     bT.currentAnimation:setPauseAtEnd(not loop)

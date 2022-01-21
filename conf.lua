@@ -7,4 +7,11 @@ function love.conf(t)
 	t.window.minwidth = 256            
     t.window.minheight = 384
 	t.vsync=false;
+
+
+	t.modules.mouse    = false
+	t.modules.physics  = false
+	t.modules.thread   = false
+	t.modules.touch    = false
+	t.modules.video    = false
 end

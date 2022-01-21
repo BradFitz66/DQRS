@@ -45,6 +45,7 @@ end
 function compare(a,b)
 	local num1 = tonumber(string.sub(a,0,-5))
 	local num2 = tonumber(string.sub(b,0,-5))
+	
 	return num1<num2
 end
 
@@ -133,10 +134,9 @@ function love.load()
 		table.insert(actors,shell)
 	end
 	table.insert(actors,player)
-	--table.insert(actors,platy)
+	table.insert(actors,platy)
 end
 
-local showAnotherWindow=false
 function love.draw()
 	local width,height,flags=love.window.getMode()
 	--Put all major draw functions into separate function so I can easily disable them for debugging purposes

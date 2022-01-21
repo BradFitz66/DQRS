@@ -328,7 +328,7 @@ function piefiller:keypressed(key)
 			
 			for i,v in ipairs(parsed) do 
 				local instance = {
-					"-----"..(v.name or "def@"..v.def).."-----",
+					"-----"..((v.name or "def@")..v.def).."-----",
 					"source:"..v.src..":"..v.def,
 					"current line: "..v.cur, 
 					"time: "..v.time,

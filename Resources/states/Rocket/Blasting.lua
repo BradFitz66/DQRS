@@ -13,7 +13,7 @@ State.Enter=function(owner)
     endPosDiff = -(owner.position - endPos):normalized();
     distanceTravelled=0;
     lastPos=owner.position
-    owner.currentTree.vector=endPosDiff
+    owner.currentTree:setVector(endPosDiff);
 end
 
 State.Update=function(owner,dt)
