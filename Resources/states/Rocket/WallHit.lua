@@ -1,27 +1,22 @@
 local State = require("Resources.scripts.State").new("WallHit")
-local endPos
-local endPosDiff
-local lastPos 
-local distance=0;
-local distanceTravelled=0;
 local debounce = false
 State.Enter=function(owner)
-    owner:loadTree("wallhit")
+    owner:load_treeee("wallhit")
 end
 
 State.Update=function(owner,dt)
-    if(owner.currentTree.currentAnimation:getFrame()==4)then
+    if(owner.current_tree.current_animation:getFrame()==4)then
         timer.after(.1,function()
             if(debounce==true) then
                 return
             end
             debounce=true
-            local newVel=owner.blastVelocity*owner.wallHitNormal;
+            local newVel=owner.blast_velocity*owner.wall_hit_normal;
             
-            owner.blastVelocity=vector.Reflect(-owner.blastVelocity,owner.wallHitNormal)
+            owner.blast_velocity=vector.Reflect(-owner.blast_velocity,owner.wall_hit_normal)
             
-            owner.hitWall=true;
-            owner:changeState("Blasting")
+            owner.hit_wall=true;
+            owner:change_state("Blasting")
         end)
         debounce=false
     end

@@ -1,13 +1,13 @@
 local State = require("Resources.scripts.State").new("Squish")
 State.Enter=function(owner)
-	owner.sprite.inAir=false;
+	owner.sprite.in_airr=false;
     owner.sprite.localPosition=vector.new(0,0)
-	owner:loadTree("squish",true)
+	owner:load_treeee("squish",true)
 end
 
 State.Update=function(owner,dt) 
-	if(owner.currentTree.currentAnimation:getFrame()==5)then
-		owner:changeState("Squished")
+	if(owner.current_tree.current_animation:getFrame()==5)then
+		owner:change_state("Squished")
 	end
 end
 

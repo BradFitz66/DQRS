@@ -5,28 +5,28 @@ local lastPos
 local distance=0;
 local distanceTravelled=0;
 State.Enter=function(owner)
-    if(owner.currentTree.name~="blasting") then
-        owner:loadTree("throw",true)
+    if(owner.current_tree.name~="blasting") then
+        owner:load_tree("throw",true)
     end
-    owner.canThrow=false
+    owner.can_throw=false
     local thrown = table.shift(owner.holding)[1]
     thrown.sprite.canPickup=false
     thrown.sprite.pickedUp=false
-    --thrown.sprite.inAir=true;
+    --thrown.sprite.in_airr=true;
     thrown.position=owner.position-vector.new(10)
     thrown.sprite.localPosition.y=thrown.sprite.localPosition.y+owner.sprite.localPosition.y
     timer.after(.2,function() thrown.sprite.canPickup=true end)
-    thrown.sprite:AddForceXYZ(vector3((owner.currentTree.vector).x*(100*math.clamp(owner.blastVelocity:len()/15,1,3)),3,(owner.currentTree.vector).y*100*(math.clamp(owner.blastVelocity:len()/15,1,3))))
+    thrown.sprite:add_force_xyzyz(vector3((owner.current_tree.vector).x*(100*math.clamp(owner.blast_velocity:len()/15,1,3)),3,(owner.current_tree.vector).y*100*(math.clamp(owner.blast_velocity:len()/15,1,3))))
 end
 
 State.Update=function(owner,dt)
-    if(owner.currentTree.currentAnimation:getFrame()==8)then
-        owner:changeState("Idle")
+    if(owner.current_tree.current_animation:getFrame()==8)then
+        owner:change_state("Idle")
     end
 end
 
 State.Exit=function(owner)
-    owner.canThrow=true
+    owner.can_throw=true
 end
 
 

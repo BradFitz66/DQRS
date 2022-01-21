@@ -4,23 +4,23 @@ local endScale=vector.new(1,1)
 local angle,normamlTar,target,finalSpeed,newSpeed,distance,rX,rY
 local obstruction=false;
 State.Enter=function(owner)
-    owner:loadTree("stretch",false)
+    owner:load_tree("stretch",false)
     owner.scale=startScale
-    local target= owner.position+owner.moveVector;
+    local target= owner.position+owner.move_vectorr;
     local normalTar = (target - owner.position):normalized();
     angle = math.atan2(normalTar.y, normalTar.x) + math.rad(90) --! 1/(math.pi * 2 / 360);
     owner.rotation=angle
 end
 
 State.Update=function(owner,dt) 
-    if (owner.moveVector ~= vector.new(0,0)) then
-        owner.currentTree:setVector(owner.moveVector)
+    if (owner.move_vectorr ~= vector.new(0,0)) then
+        owner.current_tree:setVector(owner.move_vectorr)
 
         scaleProper=vector.new(owner.scale.x,(owner.scale.y+.5)*32)
         distance=owner.scale.dist(owner.scale,endScale);
         newSpeed = 1.5;
         finalSpeed = (distance / newSpeed);
-        target= owner.position+owner.moveVector;
+        target= owner.position+owner.move_vectorr;
         -- get the angle
         normalTar = (target - owner.position):normalized();
         angle = math.atan2(normalTar.y, normalTar.x) + math.rad(90) --* 1/(math.pi * 2 / 360);
@@ -68,7 +68,7 @@ State.Update=function(owner,dt)
         if (owner.scale.dist(owner.scale,startScale)<=0.005) then
             owner.rotation=0
             owner.scale=vector.new(1,1)
-            owner:changeState("Squished")
+            owner:change_state("Squished")
         end
     end
     if (owner.input:released("jump"))then
@@ -80,9 +80,9 @@ State.Update=function(owner,dt)
         local mag = maxPower:len();
         local maxPowerAligned=maxPower:rotated(owner.rotation);
         maxPowerAligned = -maxPowerAligned;
-        owner.blastVelocity = vector.Lerp(vector.new(0,0), maxPowerAligned, (owner.scale - startScale):len() / (endScale - startScale):len());
-        --print("Blast velocity: "..tostring(owner.blastVelocity))
-        owner:changeState("Blasting")
+        owner.blast_velocity = vector.Lerp(vector.new(0,0), maxPowerAligned, (owner.scale - startScale):len() / (endScale - startScale):len());
+        --print("Blast velocity: "..tostring(owner.blast_velocity))
+        owner:change_state("Blasting")
         
     end
 end

@@ -5,15 +5,15 @@ local lastPos
 local distance=0;
 local distanceTravelled=0;
 State.Enter=function(owner)
-    owner:loadTree("blasting",true)
+    owner:load_tree("blasting",true)
     owner.scale=vector.new(1,1)
     owner.rotation=0
-    endPos=owner.position+owner.blastVelocity
+    endPos=owner.position+owner.blast_velocity
     distance = owner.position.dist(owner.position,endPos)
     endPosDiff = -(owner.position - endPos):normalized();
     distanceTravelled=0;
     lastPos=owner.position
-    owner.currentTree:setVector(endPosDiff);
+    owner.current_tree:setVector(endPosDiff);
 end
 
 State.Update=function(owner,dt)
@@ -22,12 +22,12 @@ State.Update=function(owner,dt)
         distanceTravelled=distanceTravelled+owner.position.dist(owner.position,lastPos)
         lastPos=owner.position
 
-        owner.blastVelocity=owner.blastVelocity*(1-((distanceTravelled/distance)*.25))
+        owner.blast_velocity=owner.blast_velocity*(1-((distanceTravelled/distance)*.25))
     else
         print("Ended blast. Can super throw.")
-        owner.blastVelocity=vector.new(0,0)
+        owner.blast_velocity=vector.new(0,0)
         
-        owner:changeState("Idle")
+        owner:change_state("Idle")
     end
 end
 

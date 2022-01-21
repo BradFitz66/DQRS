@@ -26,10 +26,10 @@ function Platypunk.new()
 	punkData.sprites=RTA.newDynamicSize(0,0,0)
 	punkData.sprites:setFilter("nearest")
 	local sprites={
-		['idle']=loadImagesFromDirectory("Resources/graphics/Platypunk/Idle",true,compare,1,9),
-		['walk']=loadImagesFromDirectory("Resources/graphics/Platypunk/Walk",true,compare,1,55),
-		['stretch']=loadImagesFromDirectory("Resources/graphics/Platypunk/Stretch",true,compare,1,36),
-		['hurt']=loadImagesFromDirectory("Resources/graphics/Platypunk/Hurt",true,compare,1,3)
+		['idle']=load_images_from_directory("Resources/graphics/Platypunk/Idle",true,compare,1,9),
+		['walk']=load_images_from_directory("Resources/graphics/Platypunk/Walk",true,compare,1,55),
+		['stretch']=load_images_from_directory("Resources/graphics/Platypunk/Stretch",true,compare,1,36),
+		['hurt']=load_images_from_directory("Resources/graphics/Platypunk/Hurt",true,compare,1,3)
 	}
 	local prefixes={
 		"idle",
@@ -105,10 +105,10 @@ function Platypunk.new()
 
 		['held']=
 		blendtree.new({
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Platypunk/Held",true,compare,3,4),.18,nil),vector.new(0,-1),vector.new(.5,.8)}, --up
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Platypunk/Held",true,compare,1,2),.18,nil),vector.new(1,0),vector.new(.6,.5)}, --right
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Platypunk/Held",true,compare,5,6),.18,nil),vector.new(0,1),vector.new(.5,.8)}, -- down
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Platypunk/Held",true,compare,1,2),.18,nil,nil,true),vector.new(-1,0),vector.new(.6,.5)}, --left
+			{anim8.newAnimation(load_images_from_directory("Resources/graphics/Platypunk/Held",true,compare,3,4),.18,nil),vector.new(0,-1),vector.new(.5,.8)}, --up
+			{anim8.newAnimation(load_images_from_directory("Resources/graphics/Platypunk/Held",true,compare,1,2),.18,nil),vector.new(1,0),vector.new(.6,.5)}, --right
+			{anim8.newAnimation(load_images_from_directory("Resources/graphics/Platypunk/Held",true,compare,5,6),.18,nil),vector.new(0,1),vector.new(.5,.8)}, -- down
+			{anim8.newAnimation(load_images_from_directory("Resources/graphics/Platypunk/Held",true,compare,1,2),.18,nil,nil,true),vector.new(-1,0),vector.new(.6,.5)}, --left
 			},
 			vector.new(0,0),
 			"held",
@@ -119,10 +119,10 @@ function Platypunk.new()
 		),
 		['hurt']=
 		blendtree.new({
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Platypunk/Hurt",true,compare,2,2),.18,nil),vector.new(0,-1),vector.new(.5,.8)}, --up
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Platypunk/Hurt",true,compare,1,1),.18,nil,nil,true),vector.new(1,0),vector.new(.5,.8)}, --right
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Platypunk/Hurt",true,compare,3,3),.18,nil),vector.new(0,1),vector.new(.5,.8)}, -- down
-			{anim8.newAnimation(loadImagesFromDirectory("Resources/graphics/Platypunk/Hurt",true,compare,1,1),.18,nil),vector.new(-1,0),vector.new(.5,.8)}, --left
+			{anim8.newAnimation(load_images_from_directory("Resources/graphics/Platypunk/Hurt",true,compare,2,2),.18,nil),vector.new(0,-1),vector.new(.5,.8)}, --up
+			{anim8.newAnimation(load_images_from_directory("Resources/graphics/Platypunk/Hurt",true,compare,1,1),.18,nil,nil,true),vector.new(1,0),vector.new(.5,.8)}, --right
+			{anim8.newAnimation(load_images_from_directory("Resources/graphics/Platypunk/Hurt",true,compare,3,3),.18,nil),vector.new(0,1),vector.new(.5,.8)}, -- down
+			{anim8.newAnimation(load_images_from_directory("Resources/graphics/Platypunk/Hurt",true,compare,1,1),.18,nil),vector.new(-1,0),vector.new(.5,.8)}, --left
 			},
 			vector.new(0,0),
 			"hurt",
@@ -133,8 +133,8 @@ function Platypunk.new()
 		),
 	}
 	
-	punkData.moveVector=vector.new(0,0)
-	punkData.currentTree=currentTree
+	punkData.move_vector=vector.new(0,0)
+	punkData.current_tree=current_tree
 	punkData.statemachine=require("Resources.scripts.StateMachine").new(punkData)
 	--This contains the Platypunks states. It stores the actual state module + a table of the states that can't transition to it
 	punkData.states={
@@ -145,7 +145,7 @@ function Platypunk.new()
 		["Hurt"]={punkData.statemachine:addState(require("Resources.states.Hurt")),{}}
 	}
 	
-	punkData.statemachine:changeState("Idle")
+	punkData.statemachine:change_state("Idle")
 	punkData.speed=32;
 	punkData.scale=vector.new(1,1)
 	punkData.position=vector.new(200,200)
@@ -156,53 +156,64 @@ function Platypunk.new()
 	return punkData
 end
 
-function Platypunk:loadTree(animationName,keepVector,frame,pausedAtStart)
-	local oldVector=(keepVector and self.currentTree~=nil) and self.currentTree.vector or vector.new(0,0)
-	self.animations[animationName].vector=oldVector; --set vector to old vector before we load the animation
-	self.currentTree=self.animations[animationName]
-	if(frame and pausedAtStart) then
-		self.currentTree.currentAnimation:setPaused(true)
-		self.currentTree.currentAnimation:setFrame(frame)
+function Platypunk:load_tree(animation_name,keep_vector,frame,pause_at_start)
+	local oldVector=(keep_vector and self.current_tree~=nil) and self.current_tree.vector or vector.new(0,0)
+	self.animations[animation_name].vector=oldVector; --set vector to old vector before we load the animation
+	self.current_tree=self.animations[animation_name]
+	if(frame and pause_at_start) then
+		self.current_tree.current_animation:setPaused(true)
+		self.current_tree.current_animation:setFrame(frame)
 	end
-	if(self.currentTree.currentAnimation:getLooping()) then
+	if(self.current_tree.current_animation:getLooping()) then
 		--Gives better looping result on looping animations
-		self.currentTree.currentAnimation:setFrame(#self.currentTree.currentAnimation.frames)
+		self.current_tree.current_animation:setFrame(#self.current_tree.current_animation.frames)
 	else
 		--!print("Setting animation active again")
-		self.currentTree.currentAnimation:setActive(true)
-		self.currentTree.currentAnimation:setPaused(false)
-		self.currentTree.currentAnimation:setFrame(1)
+		self.current_tree.current_animation:setActive(true)
+		self.current_tree.current_animation:setPaused(false)
+		self.current_tree.current_animation:setFrame(1)
 	end
 	
 end
 
 function Platypunk:draw()
 	self.sprite:draw()
-	if(self.currentTree.currentAnimation:isActive()) then
-		local offset=vector.new(self.currentTree.currentAnimation:getWidth()*self.currentTree.frameOffset.x,self.currentTree.currentAnimation:getHeight()*self.currentTree.frameOffset.y):round()
-		self.currentTree.currentAnimation:draw(math.round(self.sprite.position.x),math.round(self.sprite.position.y),self.rotation,self.scale.x,self.scale.y,offset.x,offset.y)
+	if(self.current_tree.current_animation:isActive()) then
+		local offset=vector.new(
+			self.current_tree.current_animation:getWidth()*self.current_tree.frameOffset.x,
+			self.current_tree.current_animation:getHeight()*self.current_tree.frameOffset.y
+		):round()
+		self.current_tree.current_animation:draw(
+			math.round(self.sprite.position.x),
+			math.round(self.sprite.position.y),
+			self.rotation,
+			self.scale.x,
+			self.scale.y,
+			offset.x,
+			offset.y
+		)
 	end
 end
 
-function Platypunk:changeState(newState)
-	local currentState=self.statemachine.currentState.Name
-	if(newState==currentState)then
+function Platypunk:change_state(new_state)
+	local current_state=self.statemachine.current_state.Name
+	if(new_state==current_state)then
 		--!print("Can't switch to new state because it's already the current state")
 		return
 	end
-	if(table.index_of(self.states[newState][2],currentState))then
-		--!print("Can't switch to new state because the current state is not allowed to switch to it ("..currentState.." to "..newState..")")
+	if(table.index_of(self.states[new_state][2],current_state))then
+		--!print("Can't switch to new state because the current state is not allowed to switch to it ("..current_state.." to "..newState..")")
 		return
 	end
-	self.statemachine:changeState(newState)
+	self.statemachine:change_state(new_state)
 end
 
 function Platypunk:update(dt)
 	self.statemachine:update(dt)
-	self.currentTree:update(dt)
+	self.current_tree:update(dt)
 	self.sprite:update(dt,nil)
-	if(self.sprite.inAir==true and self.statemachine.currentState.Name~="Hurt") then
-		self:changeState("Hurt")
+	if(self.sprite.in_airr==true and self.statemachine.current_state.Name~="Hurt") then
+		self:change_state("Hurt")
 	end
 end
 

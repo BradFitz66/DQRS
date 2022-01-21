@@ -1,16 +1,16 @@
 --Generic state for all NPC types to use for when they're held by a player
 local State = require("Resources.scripts.State").new("Held")
 State.Enter=function(owner)
-	owner:loadTree("held",false,false)
-	owner.moveVector=vector.new(0,1)
+	owner:load_tree("held",false,false)
+	owner.move_vectorr=vector.new(0,1)
 end
 
 State.Update=function(owner,dt)
-    if(owner.sprite.inAir)then
-        owner:changeState("Hurt")
+    if(owner.sprite.in_airr)then
+        owner:change_state("Hurt")
     end
-    if(owner.moveVector~=vector.new(0,0)) then
-        owner.currentTree:setVector(owner.moveVector)
+    if(owner.move_vectorr~=vector.new(0,0)) then
+        owner.current_tree:setVector(owner.move_vectorr)
     end
 end
 

@@ -1,11 +1,11 @@
 local State = require("Resources.scripts.State").new("Idle")
 State.Enter=function(owner)
-    owner:loadTree("idle",true)
+    owner:load_tree("idle",true)
 end
 
 State.Update=function(owner,dt) 
-    if(owner.moveVector~=vector.new(0,0)) then
-        owner:changeState("Walk")
+    if(owner.move_vectorr~=vector.new(0,0)) then
+        owner:change_state("Walk")
     end
 end
 

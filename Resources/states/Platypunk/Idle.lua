@@ -1,10 +1,10 @@
 local State = require("Resources.scripts.State").new("Idle")
 State.Enter=function(owner)
-    owner:loadTree("idle",true)
+    owner:load_tree("idle",true)
     timer.after(5,function() 
-        if(owner.statemachine.currentState.Name=="Idle") then
+        if(owner.statemachine.current_state.Name=="Idle") then
             owner.walkDest=vector.new(200,200)+vector.randomInsideUnitCircle(50)
-            owner:changeState("Walk")
+            owner:change_state("Walk")
         end
         
     end)

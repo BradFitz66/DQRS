@@ -1,7 +1,9 @@
 local State={}
 State.__index=State
---State definition for the state machine.
 
+---Create a new state
+---@param name string
+---@return table
 function State.new(name)
 	local s=setmetatable({},State)
 	s.Name=name and name or "UnnamedState"

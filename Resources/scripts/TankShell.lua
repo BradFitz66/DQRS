@@ -31,20 +31,20 @@ local halfRotations={
 
 function tankshell:update(dt)
     self.sprite:update(dt,function()
-        for shape, delta in pairs(colliderWorld:collisions(self.sprite.collider)) do
+        for shape, delta in pairs(collider_world:collisions(self.sprite.collider)) do
             local absoluteDelta=vector.new(math.abs(delta.x),math.abs(delta.y))
             for _, actor in pairs(actors) do
                 if(actor.sprite.collider==shape and actor.type=="ammo") then
                     local heightDiff = self.sprite.localPosition.y - actor.sprite.localPosition.y 
                     local speed=vector3.getLength(self.sprite.velocity)/16
-                    if(actor.sprite.inAir==false and not table.index_of(self.hitObjects,actor) and not actor.sprite.pickedUp and heightDiff <= 35 and speed>4) then
+                    if(actor.sprite.in_airr==false and not table.index_of(self.hitObjects,actor) and not actor.sprite.pickedUp and heightDiff <= 35 and speed>4) then
                         table.insert(self.hitObjects,actor)
                         table.insert(actor.hitObjects,self)
                         local initialVel = (vector3(self.sprite.velocity.x/2,self.sprite.velocity.z,0))
                         initialVel.z=initialVel.y;
                         initialVel.y=0;
                         initialVel=initialVel+vector3(0,3,0)
-                        actor.sprite:AddForceXYZ(initialVel)
+                        actor.sprite:add_force_xyzyz(initialVel)
                         timer.after(1,function()
                             table.clear(self.hitObjects)
                             table.clear(actor.hitObjects)
@@ -70,10 +70,10 @@ function tankshell:update(dt)
                 local y = -self.sprite.velocity.y;
                 local startingSpeed = -self.sprite.velocity
                 startingSpeed.y=y
-                self.sprite.inAir=false
-                local wallHitNormal=vector.new(roundToNthDecimal(newDelta.y,1),roundToNthDecimal(newDelta.x,1)):normalized()
+                self.sprite.in_airr=false
+                local wallHitNormal=vector.new(round_to_Nth_decimal(newDelta.y,1),round_to_Nth_decimal(newDelta.x,1)):normalized()
                 local reflectionVector = startingSpeed:mirrorOn(vector3(wallHitNormal.y,0,wallHitNormal.x))
-                self.sprite:AddForceXYZ(reflectionVector)
+                self.sprite:add_force_xyzyz(reflectionVector)
                 timer.after(.05,function()
                     self.wallHitDebounce=false;
                 end)
