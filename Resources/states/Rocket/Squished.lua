@@ -1,8 +1,8 @@
-local State = require("Resources.scripts.State").new("Squished")
+local State = require("Resources.lib.Rocket_Engine.State").new("Squished")
 State.Enter=function(owner)
-	owner.sprite.in_airr=false;
+	owner.sprite.in_air=false;
     owner.sprite.local_position=vector.new(0,0)
-    owner:load_treeee("squished",true)
+    owner:load_tree("squished",true)
     local t = true
     timer.script(function(wait)
         for i=1,5 do
@@ -22,7 +22,7 @@ State.Enter=function(owner)
 end
 
 State.Update=function(owner,dt) 
-	if(owner.move_vectorr~=vector.new(0,0))then
+	if(owner.move_vector~=vector.new(0,0))then
 		owner:change_state("Stretch")
 	end
 end

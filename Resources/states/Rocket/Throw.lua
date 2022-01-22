@@ -1,4 +1,4 @@
-local State = require("Resources.scripts.State").new("Throw")
+local State = require("Resources.lib.Rocket_Engine.State").new("Throw")
 local endPos
 local endPosDiff
 local lastPos 
@@ -12,7 +12,7 @@ State.Enter=function(owner)
     local thrown = table.shift(owner.holding)[1]
     thrown.sprite.can_pickup=false
     thrown.sprite.picked_up=false
-    --thrown.sprite.in_airr=true;
+    --thrown.sprite.in_air=true;
     thrown.position=owner.position-vector.new(10)
     thrown.sprite.local_position.y=thrown.sprite.local_position.y+owner.sprite.local_position.y
     timer.after(.2,function() thrown.sprite.can_pickup=true end)

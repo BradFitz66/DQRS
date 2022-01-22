@@ -1,8 +1,8 @@
-local State = require("Resources.scripts.State").new("Squish")
+local State = require("Resources.lib.Rocket_Engine.State").new("Squish")
 State.Enter=function(owner)
-	owner.sprite.in_airr=false;
+	owner.sprite.in_air=false;
     owner.sprite.local_position=vector.new(0,0)
-	owner:load_treeee("squish",true)
+	owner:load_tree("squish",true)
 end
 
 State.Update=function(owner,dt) 

@@ -1,7 +1,7 @@
-local State = require("Resources.scripts.State").new("WallHit")
+local State = require("Resources.lib.Rocket_Engine.State").new("WallHit")
 local debounce = false
 State.Enter=function(owner)
-    owner:load_treeee("wallhit")
+    owner:load_tree("wallhit")
 end
 
 State.Update=function(owner,dt)

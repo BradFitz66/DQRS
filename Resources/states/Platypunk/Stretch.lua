@@ -1,9 +1,9 @@
-local State = require("Resources.scripts.State").new("Stretch")
+local State = require("Resources.lib.Rocket_Engine.State").new("Stretch")
 local db=false;
 State.Enter=function(owner)
 	owner:load_tree("stretch",true,false)
 	owner.current_tree.currentFrame=0
-	owner.current_tree:setVector(owner.move_vectorr)
+	owner.current_tree:set_vector(owner.move_vector)
 	db=false
 end
 local t=false

@@ -1,13 +1,17 @@
 local floor,ceil,pi,sqrt=math.floor,math.ceil,math.pi,math.sqrt
-local gameCam=nil;
 local aspect=nil
 
 --Define global modules
-Input=nil
-HC=nil
+Input=require("Resources.lib.Input")
+HC=require("Resources.lib.HC-master")
+timer = require("Resources.lib.HUMP.timer")
+vector=require("Resources.lib.HUMP.vector")
 math=require("Resources.lib.mathx")
 string=require("Resources.lib.stringx")
 table=require("Resources.lib.tablex")
+vector3=require("Resources.lib.brinevector3D")
+gameCam=nil;
+
 --
 
 currentMap=nil;
@@ -16,7 +20,6 @@ actors={}
 
 local player=nil;
 local platy=nil;
-local canvas;
 local debugKeys=nil;
 local playing=true;
 local tick=require 'Resources.lib.tick'
@@ -33,10 +36,9 @@ function love.load()
 	canvasTop= love.graphics.newCanvas(aspect.dig_w, aspect.dig_h/2)
 	canvasBottom= love.graphics.newCanvas(aspect.dig_w, aspect.dig_h/2)
 	--Load modules
-	Input=require("Resources.lib.Input")
-	HC=require("Resources.lib.HC-master")
 	gameCam=require("Resources.lib.gamera").new(0,0,8000,8000)
 	--
+	
 	collider_world=HC.new(25)
 	currentMap=require("Resources.scripts.TankInterior").Load();
 

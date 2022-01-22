@@ -1,15 +1,13 @@
-local State = require("Resources.scripts.State").new("Walk")
+local State = require("Resources.lib.Rocket_Engine.State").new("Walk")
 State.Enter=function(owner)
 	owner:load_tree("walk",false,false)
-	owner.sprite:add_force(1.5)
-
 end
 
 State.Update=function(owner,dt) 
-	owner.current_tree:setVector(owner.move_vectorr)
-	if(owner.move_vectorr~=vector.new(0,0)) then
-		owner.position=owner.position+owner.move_vectorr*owner.speed*dt;
-	elseif owner.move_vectorr==vector.new(0,0) and (owner.current_tree.current_animation:getFrame()==11 and owner.current_tree.current_animation.delayTimer>=0.048)  then
+	owner.current_tree:set_vector(owner.move_vector)
+	if(owner.move_vector~=vector.new(0,0)) then
+		owner.position=owner.position+owner.move_vector*owner.speed*dt;
+	elseif owner.move_vector==vector.new(0,0) and (owner.current_tree.current_animation:getFrame()==11 and owner.current_tree.current_animation.delayTimer>=0.048)  then
 		owner:change_state("Idle")
 		return
 	end

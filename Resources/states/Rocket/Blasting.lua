@@ -1,4 +1,4 @@
-local State = require("Resources.scripts.State").new("Blasting")
+local State = require("Resources.lib.Rocket_Engine.State").new("Blasting")
 local endPos
 local endPosDiff
 local lastPos 
@@ -13,7 +13,7 @@ State.Enter=function(owner)
     endPosDiff = -(owner.position - endPos):normalized();
     distanceTravelled=0;
     lastPos=owner.position
-    owner.current_tree:setVector(endPosDiff);
+    owner.current_tree:set_vector(endPosDiff);
 end
 
 State.Update=function(owner,dt)

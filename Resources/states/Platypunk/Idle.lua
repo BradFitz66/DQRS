@@ -1,4 +1,4 @@
-local State = require("Resources.scripts.State").new("Idle")
+local State = require("Resources.lib.Rocket_Engine.State").new("Idle")
 State.Enter=function(owner)
     owner:load_tree("idle",true)
     timer.after(5,function() 

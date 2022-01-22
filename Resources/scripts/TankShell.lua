@@ -1,11 +1,11 @@
 local tankshell={}
 tankshell.__index=tankshell
-local entity=require("Resources/scripts/Entity")
+local entity=require("Resources.lib.Rocket_Engine.Entity")
 function tankshell.new()
     local ts=setmetatable({}, tankshell)
     ts.sprite=entity.new(10,5,10,10)
-    ts.sprite.holdOffset=vector.new(-10,-10)
-    ts.sprite.maxBounces=2
+    ts.sprite.hold_offset=vector.new(-10,-10)
+    ts.sprite.max_bounces=2
     ts.sprite_image=love.graphics.newImage("Resources/graphics/TankShell.png")
     ts.sprite.parent=ts
     ts.position=vector.new(256,300)
@@ -19,7 +19,6 @@ function tankshell.new()
     return ts
 end
 
---!AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 local validDiffs ={
 
 }
@@ -37,7 +36,7 @@ function tankshell:update(dt)
                 if(actor.sprite.collider==shape and actor.type=="ammo") then
                     local heightDiff = self.sprite.local_position.y - actor.sprite.local_position.y 
                     local speed=vector3.getLength(self.sprite.velocity)/16
-                    if(actor.sprite.in_airr==false and not table.index_of(self.hitObjects,actor) and not actor.sprite.picked_up and heightDiff <= 35 and speed>4) then
+                    if(actor.sprite.in_air==false and not table.index_of(self.hitObjects,actor) and not actor.sprite.picked_up and heightDiff <= 35 and speed>4) then
                         table.insert(self.hitObjects,actor)
                         table.insert(actor.hitObjects,self)
                         local initialVel = (vector3(self.sprite.velocity.x/2,self.sprite.velocity.z,0))
@@ -52,7 +51,7 @@ function tankshell:update(dt)
                     end
                 end
             end
-            if(table.index_of(currentMap.map.colliderShapes,shape)~=nil and not self.wall_hit_debounce and not (delta.x==0 and delta.y==0)) then
+            if(table.index_of(currentMap.map.collider_shapes,shape)~=nil and not self.wall_hit_debounce and not (delta.x==0 and delta.y==0)) then
                 self.position=self.position+vector.new(delta.x,delta.y)
                 local cA=math.abs((math.round((math.deg(math.atan2(absoluteDelta.y,absoluteDelta.x))))))
                 local hA=math.abs(math.round((math.deg(math.atan2(math.abs(self.sprite.velocity.z),math.abs(self.sprite.velocity.x))))))
@@ -70,7 +69,7 @@ function tankshell:update(dt)
                 local y = -self.sprite.velocity.y;
                 local startingSpeed = -self.sprite.velocity
                 startingSpeed.y=y
-                self.sprite.in_airr=false
+                self.sprite.in_air=false
                 local wallHitNormal=vector.new(round_to_Nth_decimal(newDelta.y,1),round_to_Nth_decimal(newDelta.x,1)):normalized()
                 local reflectionVector = startingSpeed:mirrorOn(vector3(wallHitNormal.y,0,wallHitNormal.x))
                 self.sprite:add_force_xyz(reflectionVector)

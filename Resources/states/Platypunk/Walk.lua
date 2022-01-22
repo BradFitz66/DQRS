@@ -1,4 +1,4 @@
-local State = require("Resources.scripts.State").new("Walk")
+local State = require("Resources.lib.Rocket_Engine.State").new("Walk")
 State.Enter=function(owner)
 	owner:load_tree("walk",false,false)
 end
@@ -14,7 +14,7 @@ State.Update=function(owner,dt)
 	owner.move_vectorrr=(owner.walkDest-owner.position):normalized()*owner.speed
 	owner.position=owner.position + owner.move_vectorrr * dt
 	if(owner.move_vectorrr~=vector.new(0,0))then
-		owner.current_tree:setVector(owner.move_vectorrr:normalized())
+		owner.current_tree:set_vector(owner.move_vectorrr:normalized())
 	end
 end
 

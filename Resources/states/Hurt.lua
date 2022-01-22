@@ -1,7 +1,7 @@
-local State = require("Resources.scripts.State").new("Hurt")
+local State = require("Resources.lib.Rocket_Engine.State").new("Hurt")
 local db=false;
 State.Enter=function(owner)
-    if(owner.sprite.in_airr==false) then
+    if(owner.sprite.in_air==false) then
         owner:change_state("Idle")
         return
     end
@@ -12,7 +12,7 @@ State.Enter=function(owner)
 end
 
 State.Update=function(owner,dt)
-    if(owner.sprite.in_airr==false) then
+    if(owner.sprite.in_air==false) then
         timer.after(.25,function()
             if(db==true)then return end 
             db=true

@@ -1,7 +1,10 @@
 local Platypunk={}
+
 local anim8=require("Resources.lib.anim8")
 local RTA=require("Resources.lib.RTA")
-local blendtree=require("Resources.lib.blendtree")
+local blendtree=require("Resources.lib.Rocket_Engine.blendtree")
+local image_utils = require("Resources.lib.Rocket_Engine.ImageUtils")
+local entity=require("Resources.lib.Rocket_Engine.Entity")
 
 Platypunk.__index=Platypunk
 
@@ -17,7 +20,6 @@ local function get_sprite_quads(spriteprefix,index_start, index_end,atlas)
 	return quads
 end
 
-local entity=require("Resources.scripts.Entity")
 function Platypunk.new()
 	local punkData=setmetatable({},Platypunk)
 	punkData.sprite=entity.new(0,0,15,15)
@@ -26,10 +28,10 @@ function Platypunk.new()
 	punkData.sprites=RTA.newDynamicSize(0,0,0)
 	punkData.sprites:setFilter("nearest")
 	local sprites={
-		['idle']=load_images_from_directory("Resources/graphics/Platypunk/Idle",true,compare,1,9),
-		['walk']=load_images_from_directory("Resources/graphics/Platypunk/Walk",true,compare,1,55),
-		['stretch']=load_images_from_directory("Resources/graphics/Platypunk/Stretch",true,compare,1,36),
-		['hurt']=load_images_from_directory("Resources/graphics/Platypunk/Hurt",true,compare,1,3)
+		['idle']=image_utils.load_images_from_directory("Resources/graphics/Platypunk/Idle",true,image_utils.compare,1,9),
+		['walk']=image_utils.load_images_from_directory("Resources/graphics/Platypunk/Walk",true,image_utils.compare,1,55),
+		['stretch']=image_utils.load_images_from_directory("Resources/graphics/Platypunk/Stretch",true,image_utils.compare,1,36),
+		['hurt']=image_utils.load_images_from_directory("Resources/graphics/Platypunk/Hurt",true,image_utils.compare,1,3)
 	}
 	local prefixes={
 		"idle",
@@ -51,10 +53,10 @@ function Platypunk.new()
 	sprites=nil;
 	collectgarbage("collect")
 
-	punkData.sprite.maxBounces=2;
-	local idleFrames = get_sprite_quads("idle",1,9,punkData.sprites) --loadImagesFromDirectory("Resources/graphics/Platypunk/Idle",true,compare,1,9)
-	local walkFrames = get_sprite_quads("walk",1,36,punkData.sprites)
-	local stretchFrames = get_sprite_quads("stretch",1,36,punkData.sprites)
+	punkData.sprite.max_bounces=2;
+	local idleFrames = table.reverse(get_sprite_quads("idle",1,9,punkData.sprites))
+	local walkFrames = table.reverse(get_sprite_quads("walk",1,36,punkData.sprites))
+	local stretchFrames = table.reverse(get_sprite_quads("stretch",1,36,punkData.sprites))
 	--Platypunk animations are bit more complex than the players so we have some hardcoded delay tables for some of the animations to improve how they look.
 	local walkDelays={0.03,0.03,0.07,0.13,0.03,0.03,0.03,0.03,0.07,0.13,0.03,0.03}
 	local stretchDelays={0.16,0.16,0.16,0.16,0.16,0.16,0.16,0.04,0.04,0.04,0.04,0.16}
@@ -105,10 +107,10 @@ function Platypunk.new()
 
 		['held']=
 		blendtree.new({
-			{anim8.newAnimation(load_images_from_directory("Resources/graphics/Platypunk/Held",true,compare,3,4),.18,nil),vector.new(0,-1),vector.new(.5,.8)}, --up
-			{anim8.newAnimation(load_images_from_directory("Resources/graphics/Platypunk/Held",true,compare,1,2),.18,nil),vector.new(1,0),vector.new(.6,.5)}, --right
-			{anim8.newAnimation(load_images_from_directory("Resources/graphics/Platypunk/Held",true,compare,5,6),.18,nil),vector.new(0,1),vector.new(.5,.8)}, -- down
-			{anim8.newAnimation(load_images_from_directory("Resources/graphics/Platypunk/Held",true,compare,1,2),.18,nil,nil,true),vector.new(-1,0),vector.new(.6,.5)}, --left
+			{anim8.newAnimation(image_utils.load_images_from_directory("Resources/graphics/Platypunk/Held",true,image_utils.compare,3,4),.18,nil),vector.new(0,-1),vector.new(.5,.8)}, --up
+			{anim8.newAnimation(image_utils.load_images_from_directory("Resources/graphics/Platypunk/Held",true,image_utils.compare,1,2),.18,nil),vector.new(1,0),vector.new(.6,.5)}, --right
+			{anim8.newAnimation(image_utils.load_images_from_directory("Resources/graphics/Platypunk/Held",true,image_utils.compare,5,6),.18,nil),vector.new(0,1),vector.new(.5,.8)}, -- down
+			{anim8.newAnimation(image_utils.load_images_from_directory("Resources/graphics/Platypunk/Held",true,image_utils.compare,1,2),.18,nil,nil,true),vector.new(-1,0),vector.new(.6,.5)}, --left
 			},
 			vector.new(0,0),
 			"held",
@@ -119,10 +121,10 @@ function Platypunk.new()
 		),
 		['hurt']=
 		blendtree.new({
-			{anim8.newAnimation(load_images_from_directory("Resources/graphics/Platypunk/Hurt",true,compare,2,2),.18,nil),vector.new(0,-1),vector.new(.5,.8)}, --up
-			{anim8.newAnimation(load_images_from_directory("Resources/graphics/Platypunk/Hurt",true,compare,1,1),.18,nil,nil,true),vector.new(1,0),vector.new(.5,.8)}, --right
-			{anim8.newAnimation(load_images_from_directory("Resources/graphics/Platypunk/Hurt",true,compare,3,3),.18,nil),vector.new(0,1),vector.new(.5,.8)}, -- down
-			{anim8.newAnimation(load_images_from_directory("Resources/graphics/Platypunk/Hurt",true,compare,1,1),.18,nil),vector.new(-1,0),vector.new(.5,.8)}, --left
+			{anim8.newAnimation(image_utils.load_images_from_directory("Resources/graphics/Platypunk/Hurt",true,image_utils.compare,2,2),.18,nil),vector.new(0,-1),vector.new(.5,.8)}, --up
+			{anim8.newAnimation(image_utils.load_images_from_directory("Resources/graphics/Platypunk/Hurt",true,image_utils.compare,1,1),.18,nil,nil,true),vector.new(1,0),vector.new(.5,.8)}, --right
+			{anim8.newAnimation(image_utils.load_images_from_directory("Resources/graphics/Platypunk/Hurt",true,image_utils.compare,3,3),.18,nil),vector.new(0,1),vector.new(.5,.8)}, -- down
+			{anim8.newAnimation(image_utils.load_images_from_directory("Resources/graphics/Platypunk/Hurt",true,image_utils.compare,1,1),.18,nil),vector.new(-1,0),vector.new(.5,.8)}, --left
 			},
 			vector.new(0,0),
 			"hurt",
@@ -135,14 +137,14 @@ function Platypunk.new()
 	
 	punkData.move_vector=vector.new(0,0)
 	punkData.current_tree=current_tree
-	punkData.statemachine=require("Resources.scripts.StateMachine").new(punkData)
+	punkData.statemachine=require("Resources.lib.Rocket_Engine.StateMachine").new(punkData)
 	--This contains the Platypunks states. It stores the actual state module + a table of the states that can't transition to it
 	punkData.states={
-		["Idle"]={punkData.statemachine:addState(require("Resources.states.Platypunk.Idle")),{}},
-		["Walk"]={punkData.statemachine:addState(require("Resources.states.Platypunk.Walk")),{}},
-		["Stretch"]={punkData.statemachine:addState(require("Resources.states.Platypunk.Stretch")),{}},
-		["Held"]={punkData.statemachine:addState(require("Resources.states.Held")),{}},
-		["Hurt"]={punkData.statemachine:addState(require("Resources.states.Hurt")),{}}
+		["Idle"]={punkData.statemachine:add_state(require("Resources.states.Platypunk.Idle")),{}},
+		["Walk"]={punkData.statemachine:add_state(require("Resources.states.Platypunk.Walk")),{}},
+		["Stretch"]={punkData.statemachine:add_state(require("Resources.states.Platypunk.Stretch")),{}},
+		["Held"]={punkData.statemachine:add_state(require("Resources.states.Held")),{}},
+		["Hurt"]={punkData.statemachine:add_state(require("Resources.states.Hurt")),{}}
 	}
 	
 	punkData.statemachine:change_state("Idle")
@@ -180,8 +182,8 @@ function Platypunk:draw()
 	self.sprite:draw()
 	if(self.current_tree.current_animation:isActive()) then
 		local offset=vector.new(
-			self.current_tree.current_animation:getWidth()*self.current_tree.frameOffset.x,
-			self.current_tree.current_animation:getHeight()*self.current_tree.frameOffset.y
+			self.current_tree.current_animation:getWidth()*self.current_tree.frame_offset.x,
+			self.current_tree.current_animation:getHeight()*self.current_tree.frame_offset.y
 		):round()
 		self.current_tree.current_animation:draw(
 			math.round(self.sprite.position.x),
@@ -212,7 +214,7 @@ function Platypunk:update(dt)
 	self.statemachine:update(dt)
 	self.current_tree:update(dt)
 	self.sprite:update(dt,nil)
-	if(self.sprite.in_airr==true and self.statemachine.current_state.Name~="Hurt") then
+	if(self.sprite.in_air==true and self.statemachine.current_state.Name~="Hurt") then
 		self:change_state("Hurt")
 	end
 end

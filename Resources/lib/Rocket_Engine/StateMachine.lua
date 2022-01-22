@@ -35,7 +35,7 @@ function StateMachine:change_state(changing_to)
 		self.current_state=self.states[changing_to]
 		self.current_state.Enter(self.owner)
 	else
-		error("Couldn't not find state "..changing_to..". Make sure the state is a valid state of this statemachine (add it with StateMachine:addState)")
+		error("Couldn't not find state "..changing_to..". Make sure the state is a valid state of this statemachine (add it with StateMachine:add_state)")
 	end
 end
 ---Update statemachine and current running state

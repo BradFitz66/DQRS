@@ -15,7 +15,7 @@ function Blendtree.new(blend_tree_animations,blend_tree_vector,Name,owner,start_
     bT.owner=owner
     bT.end_event= end_event and end_event or function() end
     bT.current_animation:setOnAnimationEnd(bT.end_event)
-    bT.loopAnim=loop;
+    bT.loop_anim=loop;
     bT.frame_offset=bT.animations[1][3]
     bT.switch_animation_flag=false
     return bT
@@ -52,8 +52,8 @@ function Blendtree:update(dt)
         self.current_animation=vector_table[1][1]
         --Offset from the origin of the sprite when drawing 
         self.frame_offset=vector_table[1][3]
-        self.current_animation:setLooping(self.loopAnim)
-        self.current_animation:setPauseAtEnd(not self.loopAnim)
+        self.current_animation:setLooping(self.loop_anim)
+        self.current_animation:setPauseAtEnd(not self.loop_anim)
         self.current_animation:setOnAnimationEnd(self.end_event)
         if(frame==1)then
             self.current_animation:onLoop()

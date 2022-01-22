@@ -1,6 +1,7 @@
 ---A tilemap loader that tries to be agnostic to whichever editor you use.
 
 local tilelove={}
+local vector = require("Resources.lib.HUMP.vector")
 local RTA=require("Resources.lib.RTA")
 tilelove.__index=tilelove
 

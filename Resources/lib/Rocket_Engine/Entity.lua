@@ -1,5 +1,8 @@
 --Base module for entities (players, ammo, enemies, etc)
 local Entity={}
+local vector = require("Resources.lib.HUMP.vector")
+local vector3 = require("Resources.lib.brinevector3D")
+
 Entity.__index=Entity
 ---Create a new entity
 ---@param collider_position_x number
@@ -38,6 +41,7 @@ function Entity:add_force(y)
     self.starting_velocity =vector3(0,y,0)
     self.velocity=vector3(0,y,0)
     self.bounces_left=self.max_bounces
+    print(self.bounces_left)
 end
 
 function Entity:add_force_xyz(vec)
@@ -79,11 +83,12 @@ function Entity:update(dt,collisionOverride)
         --self.collider:setRotation((self.parent.rotation))
     end
     --Update the faux physics
+
     if(self.in_air and (self.bounces_left > 0 and self.velocity.y ~= 0)) then
         self.velocity = self.velocity + vector3(0, -9.81, 0) * dt;
-        local BounceDelta = vector.new(0,1) * self.velocity.y * dt;
-        local Xdelta = ((vector3(1,0,0) * self.velocity.x) + (vector3(0,1,0) * self.velocity.z));
-        if ((self.local_position + BounceDelta).y <= 0) then
+        local bounce_delta = vector.new(0,1) * self.velocity.y * dt;
+        local x_delta = ((vector3(1,0,0) * self.velocity.x) + (vector3(0,1,0) * self.velocity.z));
+        if ((self.local_position + bounce_delta).y <= 0) then
             
             --we hit the ground
             self.velocity.y = self.velocity.y * -1
@@ -94,13 +99,13 @@ function Entity:update(dt,collisionOverride)
             --pos += Vector3.up * self.velocity * Time.deltaTime;
             self.bounces_left = self.bounces_left - 1;
         end
-        local spritePos = self.local_position + BounceDelta * dt;
+        local spritePos = self.local_position + bounce_delta * dt;
         spritePos.y = math.Clamp(spritePos.y, 0, math.huge);
-        local mainPos = self.parent.position + vector.new(Xdelta.x,Xdelta.y)*dt;
+        local mainPos = self.parent.position + vector.new(x_delta.x,x_delta.y)*dt;
         
         self.local_position = spritePos;
         self.parent.position = mainPos;
-    else
+    else 
         self.in_air=false
         self.velocity=vector3(0,0,0)
         self.local_position=vector.new(0,0)
@@ -113,7 +118,7 @@ function Entity:update(dt,collisionOverride)
         collisionOverride()
     else
         for shape, delta in pairs(collider_world:collisions(self.collider)) do
-            if(table.index_of(currentMap.map.colliderShapes,shape)~=nil) then
+            if(table.index_of(currentMap.map.collider_shapes,shape)~=nil) then
                 self.parent.position=self.parent.position+vector.new(delta.x,delta.y)
             end
         end

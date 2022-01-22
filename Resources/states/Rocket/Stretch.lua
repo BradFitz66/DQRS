@@ -1,42 +1,43 @@
-local State = require("Resources.scripts.State").new("Stretch")
+local State = require("Resources.lib.Rocket_Engine.State").new("Stretch")
 local startScale=vector.new(1.1,.37);
 local endScale=vector.new(1,1)
 local angle,normamlTar,target,finalSpeed,newSpeed,distance,rX,rY
 local obstruction=false;
+local math_utils=require("Resources.lib.Rocket_Engine.MathUtils")
 State.Enter=function(owner)
     owner:load_tree("stretch",false)
     owner.scale=startScale
-    local target= owner.position+owner.move_vectorr;
+    local target= owner.position+owner.move_vector;
     local normalTar = (target - owner.position):normalized();
     angle = math.atan2(normalTar.y, normalTar.x) + math.rad(90) --! 1/(math.pi * 2 / 360);
     owner.rotation=angle
 end
 
 State.Update=function(owner,dt) 
-    if (owner.move_vectorr ~= vector.new(0,0)) then
-        owner.current_tree:setVector(owner.move_vectorr)
+    if (owner.move_vector ~= vector.new(0,0)) then
+        owner.current_tree:set_vector(owner.move_vector)
 
         scaleProper=vector.new(owner.scale.x,(owner.scale.y+.5)*32)
         distance=owner.scale.dist(owner.scale,endScale);
         newSpeed = 1.5;
         finalSpeed = (distance / newSpeed);
-        target= owner.position+owner.move_vectorr;
+        target= owner.position+owner.move_vector;
         -- get the angle
         normalTar = (target - owner.position):normalized();
         angle = math.atan2(normalTar.y, normalTar.x) + math.rad(90) --* 1/(math.pi * 2 / 360);
-        rX,rY=rotate_point(owner.position.x,owner.position.y,40*owner.scale.y,(angle-math.rad(90)))
+        rX,rY=math_utils.rotate_point(owner.position.x,owner.position.y,40*owner.scale.y,(angle-math.rad(90)))
     
 
         owner.headPosition=vector.new(owner.position.x,(owner.position.y + 40*owner.scale.y))
-        --rotate the headCollider and check for obstruction before rotating the actual player. This avoids the player being able to rotate into walls
+        --rotate the head_collider and check for obstruction before rotating the actual player. This avoids the player being able to rotate into walls
         owner.headPosition.x=rX
         owner.headPosition.y=rY
-        owner.headCollider:moveTo(owner.headPosition.x,owner.headPosition.y)
+        owner.head_collider:moveTo(owner.headPosition.x,owner.headPosition.y)
     
         obstruction=false
 
-        for _, v in pairs(currentMap.map.colliderShapes) do
-            if(owner.headCollider:collidesWith(v))then
+        for _, v in pairs(currentMap.map.collider_shapes) do
+            if(owner.head_collider:collidesWith(v))then
                 obstruction=true;
             end
         end
@@ -53,13 +54,13 @@ State.Update=function(owner,dt)
         local finalSpeed = (distance / newSpeed);
         
         angle = math.atan2(normalTar.y, normalTar.x) + math.rad(90) --* 1/(math.pi * 2 / 360);
-        rX,rY=rotate_point(owner.position.x,owner.position.y,40*owner.scale.y,(angle-math.rad(90)))
+        rX,rY=math_utils.rotate_point(owner.position.x,owner.position.y,40*owner.scale.y,(angle-math.rad(90)))
 
         owner.headPosition=vector.new(owner.position.x,(owner.position.y + 40*owner.scale.y))
-        --rotate the headCollider and check for obstruction before rotating the actual player. This avoids the player being able to rotate into walls
+        --rotate the head_collider and check for obstruction before rotating the actual player. This avoids the player being able to rotate into walls
         owner.headPosition.x=rX
         owner.headPosition.y=rY
-        owner.headCollider:moveTo(owner.headPosition.x,owner.headPosition.y)
+        owner.head_collider:moveTo(owner.headPosition.x,owner.headPosition.y)
         
         owner.scale = vector.Lerp(owner.scale, startScale, dt / finalSpeed);
         headPosition=owner.position-scaleProper:rotated(owner.rotation);
@@ -90,7 +91,7 @@ end
 State.Exit=function(owner)
     owner.rotation=0
     owner.scale=vector.new(1,1)
-    owner.headCollider:moveTo(-1000000,-10000000)
+    owner.head_collider:moveTo(-1000000,-10000000)
     --State.collider:moveTo(-1000000,-10000000)
 end
 

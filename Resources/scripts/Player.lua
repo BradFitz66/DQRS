@@ -1,9 +1,11 @@
 --Player controller script. This contains animation handling and state handling. Due to the complex nature of this character controller, a state machine is used to handle different stuff such as walking, idling, jumping, etc.
 Player={}
 Player.__index=Player
-
 local RTA=require("Resources.lib.RTA")
 local entity=require("Resources.lib.Rocket_Engine.Entity")
+local image_utils=require("Resources.lib.Rocket_Engine.ImageUtils")
+local blendtree=require("Resources.lib.Rocket_Engine.blendtree")
+local anim8=require("Resources.lib.anim8")
 
 --Helper function to return a table of quads from the sprite atlas
 local function get_sprite_quads(spriteprefix,index_start, index_end,atlas)
@@ -30,17 +32,17 @@ function Player.load()
 	pData.sprite=entity.new(0,1,12,12)
 	pData.sprite.parent=pData;
 	pData.sprite.bounciness=0;
-	pData.sprite.maxBounces=1;
+	pData.sprite.max_bounces=1;
 	pData.sprites=RTA.newDynamicSize()
 	pData.sprites:setFilter("nearest")
 	local sprites={
-		['idle']=load_images_from_directory("Resources/graphics/Rocket/IdleFrames",true,compare,1,64),
-		['walk']=load_images_from_directory("Resources/graphics/Rocket/WalkFrames",true,compare,1,55),
-		['throw']=load_images_from_directory("Resources/graphics/Rocket/ThrowFrames",true,compare,1,64),
-		['jump']=load_images_from_directory("Resources/graphics/Rocket/JumpFrames",true,compare,1,80),
-		['squish']=load_images_from_directory("Resources/graphics/Rocket/SquishFrames",true,compare,1,40),
-		['stretch']=load_images_from_directory("Resources/graphics/Rocket/StretchFrames",true,compare,1,4),
-		['wallhit']=load_images_from_directory("Resources/graphics/Rocket/WallHitFrames",true,compare,1,32)
+		['idle']=image_utils.load_images_from_directory("Resources/graphics/Rocket/IdleFrames",true,image_utils.compare,1,64),
+		['walk']=image_utils.load_images_from_directory("Resources/graphics/Rocket/WalkFrames",true,image_utils.compare,1,55),
+		['throw']=image_utils.load_images_from_directory("Resources/graphics/Rocket/ThrowFrames",true,image_utils.compare,1,64),
+		['jump']=image_utils.load_images_from_directory("Resources/graphics/Rocket/JumpFrames",true,image_utils.compare,1,80),
+		['squish']=image_utils.load_images_from_directory("Resources/graphics/Rocket/SquishFrames",true,image_utils.compare,1,40),
+		['stretch']=image_utils.load_images_from_directory("Resources/graphics/Rocket/StretchFrames",true,image_utils.compare,1,4),
+		['wallhit']=image_utils.load_images_from_directory("Resources/graphics/Rocket/WallHitFrames",true,image_utils.compare,1,32)
 		--64 + 55 + 64 + 80 + 40 + 4 + 32 = 339 textures
 	}
 	local prefixes={
@@ -238,7 +240,7 @@ function Player.load()
 	
 	pData.move_vector=vector.new(0,0)
 	pData.current_tree=current_tree
-	pData.statemachine=require("Resources.scripts.StateMachine").new(pData)
+	pData.statemachine=require("Resources.lib.Rocket_Engine.StateMachine").new(pData)
 	--This contains the players states. It stores the actual state module + a table of the states that can't transition to it
 	pData.states={
 		["Idle"]={pData.statemachine:add_state(require("Resources.states.Rocket.Idle")),{}},
@@ -288,7 +290,7 @@ end
 function Player:load_tree(animationName,keepVector,frame,pausedAtStart)
 	if(self.current_tree~=nil) then		
 		if(keepVector) then
-			self.animations[animationName]:setVector(self.current_tree.vector); 
+			self.animations[animationName]:set_vector(self.current_tree.vector); 
 		end
 	end
 	self.current_tree=self.animations[animationName]
@@ -308,8 +310,8 @@ function Player:draw()
 	self.sprite:draw()
 	if(self.current_tree.current_animation:isActive()) then
 		local offset=vector.new(
-			self.current_tree.current_animation:getWidth()*self.current_tree.frameOffset.x,
-			self.current_tree.current_animation:getHeight()*self.current_tree.frameOffset.y
+			self.current_tree.current_animation:getWidth()*self.current_tree.frame_offset.x,
+			self.current_tree.current_animation:getHeight()*self.current_tree.frame_offset.y
 		):round()
 		self.current_tree.current_animation:draw(
 			math.floor(self.sprite.position.x),
@@ -345,7 +347,7 @@ function Player:update(dt)
 	for i, held in pairs(self.holding) do
 		if(held~=nil) then
 			local posDiff=(self.position-self.sprite.local_position)
-			local offset=vector.new(held[1].sprite.holdOffset.x,(held[1].sprite.holdOffset.y-(16*i)))
+			local offset=vector.new(held[1].sprite.hold_offset.x,(held[1].sprite.hold_offset.y-(16*i)))
 			local endPoint= self.statemachine.current_state.Name=="Stretch" and (self.head_position)+offset or posDiff+offset
 			local heldSprite=held[1].sprite
 			local heldVelocity=held[2]
@@ -373,10 +375,10 @@ function Player:update(dt)
 						initialVel=initialVel+vector3(0,3,0)
 						actor.sprite:add_force_xyz(initialVel)
 					else
-						if(actor.sprite.in_airr and actor.sprite.can_pickup and #self.holding<3)then
+						if(actor.sprite.in_air and actor.sprite.can_pickup and #self.holding<3)then
 							local heightDifference=actor.sprite.local_position.y - self.sprite.local_position.y
 							if(heightDifference < 20) then
-								actor.sprite.in_airr=false
+								actor.sprite.in_air=false
 								--Picking up
 								actor.sprite.picked_up=true;
 								
@@ -397,7 +399,7 @@ function Player:update(dt)
 				end
 			end
 			--Handle collisions with the collider of the currently loaded map
-			if(table.index_of(currentMap.map.colliderShapes,shape)~=nil) then
+			if(table.index_of(currentMap.map.collider_shapes,shape)~=nil) then
 				self.position=self.position+vector.new(fixedDelta.x,fixedDelta.y)
 				if(self.statemachine.current_state.Name=="Blasting")then
 					if(not (delta.x==0 and delta.y==0) and not self.wall_hit_debounce) then
