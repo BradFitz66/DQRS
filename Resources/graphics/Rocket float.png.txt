@@ -1,0 +1,1 @@
+1.png.png 0 1, 2.png.png 0 1, 3.png.png 31 1, 4.png.png 63 0, 5.png.png 0 33, 6.png.png 31 33, 7.png.png 63 32, 8.png.png 0 66, 9.png.png 31 66, 10.png.png 63 65, 11.png.png 0 97, 12.png.png 31 97, 13.png.png 63 97, 14.png.png 0 130, 15.png.png 31 130.

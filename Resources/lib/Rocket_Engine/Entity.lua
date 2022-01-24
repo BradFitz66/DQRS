@@ -70,7 +70,7 @@ end
 
 
 
-function Entity:update(dt,collisionOverride)
+function Entity:update(dt,collision_override)
     
     if(self.parent==nil) then
         self.position = self.position + self.velocity * dt;
@@ -96,7 +96,6 @@ function Entity:update(dt,collisionOverride)
             self.velocity.x = self.velocity.x - (self.starting_velocity.x / self.max_bounces);
             self.velocity.z = self.velocity.z - (self.starting_velocity.z / self.max_bounces);
 
-            --pos += Vector3.up * self.velocity * Time.deltaTime;
             self.bounces_left = self.bounces_left - 1;
         end
         local spritePos = self.local_position + bounce_delta * dt;
@@ -114,8 +113,8 @@ function Entity:update(dt,collisionOverride)
         return
     end
     self.z_value=self.position.y+self.local_position.y
-    if(collisionOverride~=nil) then
-        collisionOverride()
+    if(collision_override~=nil) then
+        collision_override()
     else
         for shape, delta in pairs(collider_world:collisions(self.collider)) do
             if(table.index_of(currentMap.map.collider_shapes,shape)~=nil) then

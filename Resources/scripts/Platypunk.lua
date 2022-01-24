@@ -47,7 +47,6 @@ function Platypunk.new()
 	end
 	punkData.sprites:bake("area")
 	punkData.sprites:hardBake("area")
-	print(punkData.sprites.image:getWidth(),punkData.sprites.image:getHeight())
 
 	prefixes=nil
 	sprites=nil;
@@ -150,10 +149,10 @@ function Platypunk.new()
 	punkData.statemachine:change_state("Idle")
 	punkData.speed=32;
 	punkData.scale=vector.new(1,1)
-	punkData.position=vector.new(200,200)
+	punkData.position=vector.new(400,400)
 	punkData.image=love.graphics.newImage("Resources/graphics/Platypunk/Idle/1.png")
     punkData.walkDest=vector.new(0,0)
-	punkData.sprite.position=vector.new(200,200)
+	punkData.sprite.position=vector.new(400,400)
 	punkData.rotation=0
 	return punkData
 end

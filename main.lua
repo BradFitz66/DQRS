@@ -1,4 +1,4 @@
-local floor,ceil,pi,sqrt=math.floor,math.ceil,math.pi,math.sqrt
+floor,ceil,pi,sqrt,sin,cos=math.floor,math.ceil,math.pi,math.sqrt,math.sin,math.cos
 local aspect=nil
 
 --Define global modules
@@ -11,12 +11,15 @@ string=require("Resources.lib.stringx")
 table=require("Resources.lib.tablex")
 vector3=require("Resources.lib.brinevector3D")
 gameCam=nil;
-
+rect = nil;
+world=require("Resources.lib.bump").newWorld(24);
 --
 
+--global variables
 currentMap=nil;
 collider_world=nil;
 actors={}
+elapsed_time=0;
 
 local player=nil;
 local platy=nil;
@@ -38,13 +41,14 @@ function love.load()
 	--Load modules
 	gameCam=require("Resources.lib.gamera").new(0,0,8000,8000)
 	--
-	
-	collider_world=HC.new(25)
+
+	collider_world=HC.new(64)
 	currentMap=require("Resources.scripts.TankInterior").Load();
 
 	player=require("Resources.scripts.Player").load()
 	player:load_tree("idle")
 	platy=require("Resources.scripts.Platypunk").new()
+	
 	platy:load_tree("idle")
 	
 	love.graphics.setBackgroundColor(72/255,72/255,72/255)
@@ -64,6 +68,8 @@ function love.load()
 	end
 	table.insert(actors,player)
 	table.insert(actors,platy)
+	rect = collider_world:rectangle(150,150,20,20)
+	rect.flags={bouncy=false,trigger=false,canCollide=true}
 end
 
 function love.draw()
@@ -85,6 +91,9 @@ function draw_fn()
 			for _, actor in pairs(actors) do
 				actor:draw()
 			end
+			if(debug) then
+				rect:draw("line")
+			end		
 		end)
 		canvasTop:renderTo(function()
 			love.graphics.clear()
@@ -94,16 +103,17 @@ function draw_fn()
 				love.graphics.setColor(255,0,0)
 				love.graphics.rectangle("line", 0, 0, 256, 192)
 				love.graphics.setColor(255,255,255)
-				love.graphics.print("FPS: "..tostring(love.timer.getFPS()),10,10)
-				love.graphics.print("Player state: "..player.statemachine.current_state.Name,10,25)
-				love.graphics.print("Player blendtree: "..player.current_tree.name,10,40)
-				love.graphics.print("Player blendtree animation frame: "..player.current_tree.current_animation:getFrame(),10,55)
-				love.graphics.print("Player blendtree vector: "..tostring(player.current_tree.vector).."\nPlayer move vector: "..tostring(player.move_vector),10,85)
-				love.graphics.print("Player in air: "..tostring(player.sprite.in_air),10,70)
-				love.graphics.print("Draw calls: "..tostring(stats.drawcalls),10,115)
-				love.graphics.print("Images loaded: "..tostring(stats.images),10,130)
-				love.graphics.print("Texture memory: "..tostring(math.floor(stats.texturememory/1000000)).."MB",10,145)
-				love.graphics.print("Batched drawcalls: "..tostring(stats.drawcallsbatched),10,160)
+				love.graphics.print("FPS: "..tostring(love.timer.getFPS()),10,0)
+				love.graphics.print("Player state: "..player.statemachine.current_state.Name,10,15)
+				love.graphics.print("Player blendtree: "..player.current_tree.name,10,30)
+				love.graphics.print("Player blendtree animation frame: "..player.current_tree.current_animation:getFrame(),10,45)
+				love.graphics.print("Player blendtree vector: "..tostring(player.current_tree.vector).."\nPlayer move vector: "..tostring(player.move_vector),10,75)
+				love.graphics.print("Player in air: "..tostring(player.sprite.in_air),10,60)
+				love.graphics.print("Draw calls: "..tostring(stats.drawcalls),10,105)
+				love.graphics.print("Images loaded: "..tostring(stats.images),10,120)
+				love.graphics.print("Texture memory: "..tostring(math.floor(stats.texturememory/1000000)).."MB",10,135)
+				love.graphics.print("Batched drawcalls: "..tostring(stats.drawcallsbatched),10,150)
+				love.graphics.print("Elapsed time: "..tostring(elapsed_time),10,165)
 			end	
 		end)
 	end)
@@ -114,9 +124,10 @@ function love.resize(w, h)
 end
 
 function love.update(dt)
-	
 	if playing or timestep then
 		timestep=false
+		elapsed_time=elapsed_time + 1
+
 		gameCam:setPosition(math.floor(player.position.x-(gameCam.w/12)),math.floor(player.position.y+96))
 		timer.update(dt)
 		for _, actor in pairs(actors) do

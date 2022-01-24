@@ -42,8 +42,9 @@ function Player.load()
 		['jump']=image_utils.load_images_from_directory("Resources/graphics/Rocket/JumpFrames",true,image_utils.compare,1,80),
 		['squish']=image_utils.load_images_from_directory("Resources/graphics/Rocket/SquishFrames",true,image_utils.compare,1,40),
 		['stretch']=image_utils.load_images_from_directory("Resources/graphics/Rocket/StretchFrames",true,image_utils.compare,1,4),
-		['wallhit']=image_utils.load_images_from_directory("Resources/graphics/Rocket/WallHitFrames",true,image_utils.compare,1,32)
-		--64 + 55 + 64 + 80 + 40 + 4 + 32 = 339 textures
+		['wallhit']=image_utils.load_images_from_directory("Resources/graphics/Rocket/WallHitFrames",true,image_utils.compare,1,32),
+		['float']=image_utils.load_images_from_directory("Resources/graphics/Rocket/FloatFrames",true,image_utils.compare,1,15),
+		['charge']=image_utils.load_images_from_directory("Resources/graphics/Rocket/ChargeFrames",true,image_utils.compare,1,15),
 	}
 	local prefixes={
 		"idle",
@@ -52,7 +53,9 @@ function Player.load()
 		"jump",
 		"squish",
 		"stretch",
-		"wallhit"
+		"wallhit",
+		"float",
+		"charge"
 	}
 	pData.sprites:setBakeAsPow2(false)
 	for _, prefix in pairs(prefixes) do
@@ -62,7 +65,6 @@ function Player.load()
 	end
 	
 	pData.sprites:hardBake()
-	print(count_dictionary(pData.sprites.quads))
 	prefixes=nil
 	sprites=nil;
 	collectgarbage("collect")
@@ -108,14 +110,14 @@ function Player.load()
 		),
 		['walk']=
 		blendtree.new({
-			{anim8.newAnimation(table.reverse(get_sprite_quads("walk",1,11,pData.sprites)),.06,nil,pData.sprites.image),vector.new(0,-1),vector.new(.5,.8)}, --up
-			{anim8.newAnimation(table.reverse(get_sprite_quads("walk",12,22,pData.sprites)),.06,nil,pData.sprites.image,true),vector.new(.5,-.5),vector.new(.5,.8)}, --upright
-			{anim8.newAnimation(table.reverse(get_sprite_quads("walk",23,33,pData.sprites)),.06,nil,pData.sprites.image,true),vector.new(1,0),vector.new(.5,.8)}, --right
-			{anim8.newAnimation(table.reverse(get_sprite_quads("walk",34,44,pData.sprites)),.06,nil,pData.sprites.image,true),vector.new(.5,.7),vector.new(.5,.8)}, --downright
-			{anim8.newAnimation(table.reverse(get_sprite_quads("walk",45,55,pData.sprites)),.06,nil,pData.sprites.image),vector.new(0,1),vector.new(.5,.8)}, -- down
-			{anim8.newAnimation(table.reverse(get_sprite_quads("walk",34,44,pData.sprites)),.06,nil,pData.sprites.image),vector.new(-.5,.7),vector.new(.5,.8)}, --downleft
-			{anim8.newAnimation(table.reverse(get_sprite_quads("walk",23,33,pData.sprites)),.06,nil,pData.sprites.image),vector.new(-1,0),vector.new(.5,.8)}, --left
-			{anim8.newAnimation(table.reverse(get_sprite_quads("walk",12,22,pData.sprites)),.06,nil,pData.sprites.image),vector.new(-.5,-.5),vector.new(.5,.8)}, --upleft
+			{anim8.newAnimation(table.reverse(get_sprite_quads("walk",1,11,pData.sprites)), {0.04,0.04,0.04,0.04,0.06,0.06,0.04,0.04,0.06,0.06,0.06},nil,pData.sprites.image),vector.new(0,-1),vector.new(.5,.8)}, --up
+			{anim8.newAnimation(table.reverse(get_sprite_quads("walk",12,22,pData.sprites)),{0.04,0.04,0.04,0.04,0.06,0.06,0.04,0.04,0.06,0.06,0.06},nil,pData.sprites.image,true),vector.new(.5,-.5),vector.new(.5,.8)}, --upright
+			{anim8.newAnimation(table.reverse(get_sprite_quads("walk",23,33,pData.sprites)),{0.04,0.04,0.04,0.04,0.06,0.06,0.04,0.04,0.06,0.06,0.06},nil,pData.sprites.image,true),vector.new(1,0),vector.new(.5,.8)}, --right
+			{anim8.newAnimation(table.reverse(get_sprite_quads("walk",34,44,pData.sprites)),{0.04,0.04,0.04,0.04,0.06,0.06,0.04,0.04,0.06,0.06,0.06},nil,pData.sprites.image,true),vector.new(.5,.7),vector.new(.5,.8)}, --downright
+			{anim8.newAnimation(table.reverse(get_sprite_quads("walk",45,55,pData.sprites)),{0.04,0.04,0.04,0.04,0.06,0.06,0.04,0.04,0.06,0.06,0.06},nil,pData.sprites.image),vector.new(0,1),vector.new(.5,.8)}, -- down
+			{anim8.newAnimation(table.reverse(get_sprite_quads("walk",34,44,pData.sprites)),{0.04,0.04,0.04,0.04,0.06,0.06,0.04,0.04,0.06,0.06,0.06},nil,pData.sprites.image),vector.new(-.5,.7),vector.new(.5,.8)}, --downleft
+			{anim8.newAnimation(table.reverse(get_sprite_quads("walk",23,33,pData.sprites)),{0.04,0.04,0.04,0.04,0.06,0.06,0.04,0.04,0.06,0.06,0.06},nil,pData.sprites.image),vector.new(-1,0),vector.new(.5,.8)}, --left
+			{anim8.newAnimation(table.reverse(get_sprite_quads("walk",12,22,pData.sprites)),{0.04,0.04,0.04,0.04,0.06,0.06,0.04,0.04,0.06,0.06,0.06},nil,pData.sprites.image),vector.new(-.5,-.5),vector.new(.5,.8)}, --upleft
 			},
 			vector.new(0,0),
 			"walk",
@@ -235,6 +237,44 @@ function Player.load()
 			nil,
 			function() end,
 			false
+		),
+		['float']=
+		blendtree.new(
+			{
+				{anim8.newAnimation(table.reverse(get_sprite_quads("float",1,3,pData.sprites)),.1,nil,pData.sprites.image),vector.new(0,-1),vector.new(.5,.8)}, --up
+				{anim8.newAnimation(table.reverse(get_sprite_quads("float",4,6,pData.sprites)),.1,nil,pData.sprites.image),vector.new(.5,-.5),vector.new(.5,.8)}, --upright
+				{anim8.newAnimation(table.reverse(get_sprite_quads("float",7,9,pData.sprites)),.1,nil,pData.sprites.image),vector.new(1,0),vector.new(.5,.8)}, --right
+				{anim8.newAnimation(table.reverse(get_sprite_quads("float",10,12,pData.sprites)),.1,nil,pData.sprites.image),vector.new(.5,.7),vector.new(.5,.8)}, --downright
+				{anim8.newAnimation(table.reverse(get_sprite_quads("float",13,15,pData.sprites)),.1,nil,pData.sprites.image),vector.new(0,1),vector.new(.5,.8)}, -- down
+				{anim8.newAnimation(table.reverse(get_sprite_quads("float",10,12,pData.sprites)),.1,nil,pData.sprites.image,true),vector.new(-.5,.7),vector.new(.5,.8)}, --downleft
+				{anim8.newAnimation(table.reverse(get_sprite_quads("float",7,9,pData.sprites)),.1,nil,pData.sprites.image,true),vector.new(-1,0),vector.new(.5,.8)}, --left
+				{anim8.newAnimation(table.reverse(get_sprite_quads("float",4,6,pData.sprites)),.1,nil,pData.sprites.image,true),vector.new(-.5,-.5),vector.new(.5,.8)}, --upleft
+				},
+			vector.new(0,0),
+			"float",
+			pData,
+			nil,
+			function() end,
+			true
+		),
+		['elastoblast']=
+		blendtree.new(
+			{
+				{anim8.newAnimation(table.reverse(get_sprite_quads("charge",1,3,pData.sprites)),0,nil,pData.sprites.image),vector.new(0,-1),vector.new(.5,.9)}, --up
+				{anim8.newAnimation(table.reverse(get_sprite_quads("charge",1,3,pData.sprites)),0,nil,pData.sprites.image),vector.new(.5,-.5),vector.new(.5,.9)}, --upright
+				{anim8.newAnimation(table.reverse(get_sprite_quads("charge",1,3,pData.sprites)),0,nil,pData.sprites.image),vector.new(1,0),vector.new(.7,.9)}, --right
+				{anim8.newAnimation(table.reverse(get_sprite_quads("charge",1,3,pData.sprites)),0,nil,pData.sprites.image),vector.new(.5,.5),vector.new(.5,.9)}, --downright
+				{anim8.newAnimation(table.reverse(get_sprite_quads("charge",1,3,pData.sprites)),0,nil,pData.sprites.image),vector.new(0,1),vector.new(.5,.9)}, --down
+				{anim8.newAnimation(table.reverse(get_sprite_quads("charge",1,3,pData.sprites)),0,nil,pData.sprites.image),vector.new(-.5,.5),vector.new(.5,.9)}, --downleft
+				{anim8.newAnimation(table.reverse(get_sprite_quads("charge",1,3,pData.sprites)),0,nil,pData.sprites.image),vector.new(-1,0),vector.new(0.3,.9)}, --left
+				{anim8.newAnimation(table.reverse(get_sprite_quads("charge",1,3,pData.sprites)),0,nil,pData.sprites.image),vector.new(-.5,-.5),vector.new(.5,.9)}, --upleft
+			},
+			vector.new(0,0),
+			"elastoblast",
+			pData,
+			nil,
+			function() end,
+			true
 		)
 	}
 	
@@ -245,13 +285,14 @@ function Player.load()
 	pData.states={
 		["Idle"]={pData.statemachine:add_state(require("Resources.states.Rocket.Idle")),{}},
 		["Walk"]={pData.statemachine:add_state(require("Resources.states.Rocket.Walk")),{}},
-		["Jump"]={pData.statemachine:add_state(require("Resources.states.Rocket.Jump")),{"Blasting","Stretch","WallHit"}}, -- Blasting, Stretch and WallHit cannot transition into the jump state.
-		["Squish"]={pData.statemachine:add_state(require("Resources.states.Rocket.Squish")),{"Jump","Stretch","Squished","Blasting","WallHit"}},
+		["Jump"]={pData.statemachine:add_state(require("Resources.states.Rocket.Jump")),{"Blasting","Stretch","WallHit","Elastoblast"}}, -- Blasting, Stretch and WallHit cannot transition into the jump state.
+		["Squish"]={pData.statemachine:add_state(require("Resources.states.Rocket.Squish")),{"Jump","Stretch","Squished","Blasting","WallHit","Elastoblast"}},
 		["Stretch"]={pData.statemachine:add_state(require("Resources.states.Rocket.Stretch")),{}},
 		["Squished"]={pData.statemachine:add_state(require("Resources.states.Rocket.Squished")),{}},
 		["Blasting"]={pData.statemachine:add_state(require("Resources.states.Rocket.Blasting")),{}},
 		["WallHit"]={pData.statemachine:add_state(require("Resources.states.Rocket.WallHit")),{"Throw"}},
-		["Throw"]={pData.statemachine:add_state(require("Resources.states.Rocket.Throw")),{"WallHit"}}
+		["Throw"]={pData.statemachine:add_state(require("Resources.states.Rocket.Throw")),{"WallHit"}},
+		["Float"]={pData.statemachine:add_state(require("Resources.states.Rocket.Float")),{""}},
 	}
 	pData.statemachine:change_state("Idle")
 	pData.speed=96;
@@ -261,8 +302,10 @@ function Player.load()
 	pData.wall_hit_normal=vector.new(0,0)
 	pData.blast_velocity=vector.new(0,0)
 	pData.can_throw=true;
+	pData.can_float=true;
 	pData.super_throw=false;
 	pData.hit_wall=false;
+	pData.full_charge_elastoblast=false;
 	pData.wall_hit_debounce=false --Sometimes player can get stuck in an infinite loop of collision. Adding a debounce fixes this.
 	--Players input. ToDo: Major refactor of entire input system.
 	pData.input = Input.new {
@@ -286,6 +329,9 @@ function Player.load()
 	pData.rotation=0
 	return pData
 end
+
+
+
 --Load a new blendtree.
 function Player:load_tree(animationName,keepVector,frame,pausedAtStart)
 	if(self.current_tree~=nil) then		
@@ -343,7 +389,6 @@ end
 
 
 function Player:update(dt)
-	
 	for i, held in pairs(self.holding) do
 		if(held~=nil) then
 			local posDiff=(self.position-self.sprite.local_position)
@@ -382,7 +427,7 @@ function Player:update(dt)
 								--Picking up
 								actor.sprite.picked_up=true;
 								
-								actor.sprite.ZValue=10000*(#self.holding+1)
+								actor.sprite.z_value=10000*(#self.holding+1)
 								table.insert(self.holding,{actor,vector3(0,0,0)})
 								startPos=actor.sprite.local_position
 								if(actor.sprite.name=="NPC") then
@@ -398,8 +443,11 @@ function Player:update(dt)
 					end
 				end
 			end
+			if(#in_range_colliders>0 and shape==in_range_colliders[2]) then
+				print("!")
+			end
 			--Handle collisions with the collider of the currently loaded map
-			if(table.index_of(currentMap.map.collider_shapes,shape)~=nil) then
+			if(shape.flags~=nil and shape.flags.canCollide) then
 				self.position=self.position+vector.new(fixedDelta.x,fixedDelta.y)
 				if(self.statemachine.current_state.Name=="Blasting")then
 					if(not (delta.x==0 and delta.y==0) and not self.wall_hit_debounce) then
@@ -410,7 +458,7 @@ function Player:update(dt)
 						--Angle of the wall we hit
 						local hitAngle=math.abs(math.round((math.deg(math.atan2(math.abs(self.blast_velocity.y),math.abs(self.blast_velocity.x))))))
 						
-						local rounded=round(collisionAngle)
+						local rounded=math.round(collisionAngle)
 						
 						--Very ugly. This is the 'bounce rules' that determine whether the player cann bounce or not
 						local can_bounce = (rounded==90 and hitAngle<=90) or (rounded==45 and hitAngle== 45) or (rounded==0 and hitAngle<=45)
@@ -425,13 +473,13 @@ function Player:update(dt)
 						self.position=self.position+vector.new(absoluteDelta.x,absoluteDelta.y)
 						self.wall_hit_debounce=true;
 						local newDelta = vector.new(math.cos(math.rad(collisionAngle)),math.sin(math.rad(collisionAngle)))
-						self.wall_hit_normal=vector.new(round_to_Nth_decimal(newDelta.y,1),round_to_Nth_decimal(newDelta.x,1))
+						self.wall_hit_normal=vector.new(math.round_to_Nth_decimal(newDelta.y,1),math.round_to_Nth_decimal(newDelta.x,1))
 						self:change_state("WallHit")
 						self.hit_wall=true;
 						timer.after(10,function()
 							self.hit_wall=false;
 						end)
-						self.current_tree.vector=self.blast_velocity:mirrorOn(self.wall_hit_normal)
+						self.current_tree:set_vector(self.blast_velocity:mirrorOn(self.wall_hit_normal))
 						timer.after(.025,function()
 							self.wall_hit_debounce=false;
 						end)
@@ -459,7 +507,13 @@ function Player:update(dt)
 		self.head_position=self.position
 	end
 	if(self.input:down("jump")) then
-		self:change_state("Squish")
+		if(self.statemachine.current_state.Name~="Jump" and self.statemachine.current_state.Name~="Float") then
+			self:change_state("Squish")
+		else
+			if(self.can_float) then
+				self:change_state("Float")
+			end
+		end
 	end
 	if(self.input:released("jump")) then
 		self:change_state("Jump")

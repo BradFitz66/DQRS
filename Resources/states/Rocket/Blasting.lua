@@ -5,7 +5,11 @@ local lastPos
 local distance=0;
 local distanceTravelled=0;
 State.Enter=function(owner)
-    owner:load_tree("blasting",true)
+    if(owner.full_charge_elastoblast) then
+        owner:load_tree("blasting",true)
+    else
+        owner:load_tree("blasting",true)
+    end
     owner.scale=vector.new(1,1)
     owner.rotation=0
     endPos=owner.position+owner.blast_velocity
@@ -18,15 +22,17 @@ end
 
 State.Update=function(owner,dt)
     if-(distanceTravelled-distance)>.04 then
-        owner.position=owner.position+endPosDiff*256*dt
+        local speed = 256 * (owner.full_charge_elastoblast==true and 1.53 or 1);
+        owner.position=owner.position+endPosDiff*(speed)*dt
         distanceTravelled=distanceTravelled+owner.position.dist(owner.position,lastPos)
         lastPos=owner.position
-
         owner.blast_velocity=owner.blast_velocity*(1-((distanceTravelled/distance)*.25))
     else
         print("Ended blast. Can super throw.")
         owner.blast_velocity=vector.new(0,0)
-        
+        if(owner.full_charge_elastoblast) then
+            owner.full_charge_elastoblast=false;
+        end    
         owner:change_state("Idle")
     end
 end

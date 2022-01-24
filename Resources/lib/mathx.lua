@@ -6,6 +6,16 @@ local mathx = setmetatable({}, {
 	__index = math,
 })
 
+--map a range to another 
+function mathx.map_range(a1, a2, b1, b2, s )
+    return b1 + (s-a1)*(b2-b1)/(a2-a1)
+end
+
+function mathx.round_to_Nth_decimal(num, n)
+	local mult = 10^(n or 0)
+	return math.floor(num * mult + 0.5) / mult
+end
+
 --wrap v around range [lo, hi)
 function mathx.wrap(v, lo, hi)
 	local range = hi - lo

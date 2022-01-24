@@ -1,5 +1,6 @@
 local State = require("Resources.lib.Rocket_Engine.State").new("Idle")
 State.Enter=function(owner)
+    owner.can_float=true
     owner:load_tree("idle",true)
 end
 
