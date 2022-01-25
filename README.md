@@ -9,5 +9,5 @@ I'd also like to state that this is mostly a 'high level' reverse engineering an
 If, for some insane reason, you want to work on this with me, you can DM me on discord (Garf#6969). I cannot provide any form of payment so it'll be purely something you'll have to do in your own time. Main thing I would like to do is rip more tilesets from the game so if you want to help and can do that it'd be great.
 
 # Disclaimer
-Contains ripped assets from the game. Most (like Rocket and the Playpunk's sprites) are stuff that already exist online. The tileset that can be found in Resources/graphics/Tilemaps/CannonRoom was directly ripped from the ROM by me and manually recolored and thus may have slight inaccuracies in color.
+Contains ripped assets from the game. None of the graphics were drawn by me and all credit go to the original artists. Most (like Rocket and the Playpunk's sprites) are stuff that already exist online. The tileset that can be found in Resources/graphics/Tilemaps/CannonRoom was directly ripped from the ROM by me and manually recolored and thus may have slight inaccuracies in color.
 
