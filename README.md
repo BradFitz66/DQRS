@@ -11,3 +11,7 @@ If, for some insane reason, you want to work on this with me, you can DM me on d
 # Disclaimer
 Contains ripped assets from the game. None of the graphics were drawn by me and all credit go to the original artists. Most (like Rocket and the Playpunk's sprites) are stuff that already exist online. The tileset that can be found in Resources/graphics/Tilemaps/CannonRoom was directly ripped from the ROM by me and manually recolored and thus may have slight inaccuracies in color.
 
+
+To run, you can drag the root folder onto Love.exe.
+If you are unable to run, you may need to download this https://github.com/lzubiaur/clipper-lua and move clipper.dll to your love installation folder.
+If you still get errors, make an issue with a screenshot of the error.
