@@ -13,20 +13,23 @@ vector3=require("Resources.lib.brinevector3D")
 gameCam=nil;
 rect = nil;
 world=require("Resources.lib.bump").newWorld(24);
+clipper = require 'Resources.lib.clipper.clipper'
 --
-
+--	.flags={bouncy=false,trigger=false,canCollide=true}
 --global variables
 currentMap=nil;
 collider_world=nil;
 actors={}
 elapsed_time=0;
-
+clipper_to_hc_polygon={}
 local player=nil;
 local platy=nil;
 local debugKeys=nil;
 local playing=true;
 local tick=require 'Resources.lib.tick'
-
+result=nil;
+local test_trigger;
+local test_bouncy;
 
 function love.load()
 	tick.rate=.016
@@ -68,9 +71,33 @@ function love.load()
 	end
 	table.insert(actors,player)
 	table.insert(actors,platy)
-	rect = collider_world:rectangle(150,150,20,20)
-	rect.flags={bouncy=false,trigger=false,canCollide=true}
+
+	
+	--Test for a trigger collider. Trigger colliders can be walked through and run a function when something enters it.
+	test_trigger=collider_world:rectangle(340,230,75,40)
+	test_trigger.flags={bouncy=false,trigger=true,canCollide=true,
+	trigger_function=function(this_trigger,entity) 
+		if(entity.type=="ammo" and entity.going_into_cannon==false) then
+			--Center of collider
+			local height=2
+			local targ_x,targ_y=this_trigger._polygon.centroid.x+10,this_trigger._polygon.centroid.y-10
+			entity.going_into_cannon=true
+			entity.in_air=false
+			local x_vel=(targ_x - entity.parent.position.x) / (math.sqrt(-3*height/-9.81));
+			local z_vel=(targ_y - entity.parent.position.y) / (math.sqrt(-3*height/-9.81));
+			entity:add_force_xyz(vector3(x_vel,height,z_vel))
+			entity.bounces_left=1
+			
+		end
+	end}
+	--[[Bouncy colliders are colliders that can't be walked through but can be jumped over. 
+	The player cannot land on them and will instead bounce on them until they exit the collider]]
+	
+	test_bouncy=collider_world:rectangle(220,200,50,50)
+	test_bouncy.flags={bouncy=true,trigger=false,canCollide=true}
 end
+
+
 
 function love.draw()
 	local width,height,flags=love.window.getMode()
@@ -91,8 +118,14 @@ function draw_fn()
 			for _, actor in pairs(actors) do
 				actor:draw()
 			end
-			if(debug) then
-				rect:draw("line")
+			if(result~=nil) then
+				love.graphics.setColor(1,1,0,1)
+				result:draw()
+				love.graphics.setColor(1,1,1,1)
+				love.graphics.setColor(0,1,0,1)
+				test_trigger:draw()
+				test_bouncy:draw()
+				love.graphics.setColor(1,1,1,1)
 			end		
 		end)
 		canvasTop:renderTo(function()

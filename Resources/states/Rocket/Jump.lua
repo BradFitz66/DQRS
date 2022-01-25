@@ -17,7 +17,11 @@ State.Update=function(owner,dt)
         owner.position = owner.position + owner.move_vector*owner.speed*dt;
     end
     if(not owner.sprite.in_air) then
-        owner:change_state("Idle")
+        if(owner.inside_bouncy) then
+            owner.sprite:add_force(3)
+        else
+            owner:change_state("Idle")
+        end
     end
 end
 

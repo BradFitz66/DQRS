@@ -98,7 +98,6 @@ State.Update=function(owner,dt)
         maxPowerAligned = -maxPowerAligned;
         owner.full_charge_elastoblast=fully_charged
         owner.blast_velocity = vector.Lerp(vector.new(0,0), maxPowerAligned, (owner.scale - startScale):len() / (endScale - startScale):len());
-        print(owner.blast_velocity)
         --print("Blast velocity: "..tostring(owner.blast_velocity))
         owner:change_state("Blasting")
         
@@ -107,7 +106,6 @@ end
 
 State.Exit=function(owner)
     if(not changing_to_charge) then
-        print("Resetting scale")
         --Don't reset rotation and scale if we're charging full power elastoblast
         owner.rotation=0
         owner.scale=vector.new(1,1)

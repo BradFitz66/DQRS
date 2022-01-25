@@ -25,8 +25,13 @@ State.Update=function(owner,dt)
             Unsure if this is a sine wave, or some sort of noise.]] 
         owner.sprite.velocity.y = magic_formulae
     else
-        owner:change_state("Squish")
-        owner.can_float=true
+        if(owner.inside_bouncy) then
+            owner:change_state("Jump")
+            timer.after(1,function() owner.can_float=true end)
+        else
+            owner:change_state("Squish")
+            owner.can_float=true
+        end
     end
 end
 

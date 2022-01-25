@@ -41,7 +41,6 @@ function Entity:add_force(y)
     self.starting_velocity =vector3(0,y,0)
     self.velocity=vector3(0,y,0)
     self.bounces_left=self.max_bounces
-    print(self.bounces_left)
 end
 
 function Entity:add_force_xyz(vec)
@@ -77,7 +76,6 @@ function Entity:update(dt,collision_override)
         self.collider:moveTo(self.position.x,self.position.y)
     else
         self.position=(self.parent.position+-self.local_position)
-        
         self.local_position=(self.local_position+vector.new(0,self.velocity.y));
         self.collider:moveTo(((math.round(self.parent.position.x+self.collider_pos.x))),((math.round(self.parent.position.y+self.collider_pos.y))))
         --self.collider:setRotation((self.parent.rotation))
@@ -104,7 +102,11 @@ function Entity:update(dt,collision_override)
         
         self.local_position = spritePos;
         self.parent.position = mainPos;
-    else 
+    else
+        if(self.going_into_cannon) then
+            table.remove_value(actors,self.parent)
+            return
+        end
         self.in_air=false
         self.velocity=vector3(0,0,0)
         self.local_position=vector.new(0,0)
@@ -114,10 +116,21 @@ function Entity:update(dt,collision_override)
     end
     self.z_value=self.position.y+self.local_position.y
     if(collision_override~=nil) then
+        for shape, delta in pairs(collider_world:collisions(self.collider)) do            
+            if(shape.flags and shape.flags.trigger) then
+				shape.flags.trigger_function(shape,self)
+                return
+            end
+        end
         collision_override()
     else
         for shape, delta in pairs(collider_world:collisions(self.collider)) do
-            if(table.index_of(currentMap.map.collider_shapes,shape)~=nil) then
+            
+            if(shape.flags~=nil and shape.flags.canCollide) then
+                if(shape.flags and shape.flags.trigger) then
+                    shape.flags.trigger_function(shape,self)
+                    return
+                end    
                 self.parent.position=self.parent.position+vector.new(delta.x,delta.y)
             end
         end

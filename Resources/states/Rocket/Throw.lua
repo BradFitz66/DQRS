@@ -16,7 +16,14 @@ State.Enter=function(owner)
     thrown.position=owner.position-vector.new(10)
     thrown.sprite.local_position.y=thrown.sprite.local_position.y+owner.sprite.local_position.y
     timer.after(.2,function() thrown.sprite.can_pickup=true end)
-    thrown.sprite:add_force_xyz(vector3((owner.current_tree.vector).x*(100*math.clamp(owner.blast_velocity:len()/15,1,3)),3,(owner.current_tree.vector).y*100*(math.clamp(owner.blast_velocity:len()/15,1,3))))
+    local start_pos = thrown.sprite.position
+    thrown.sprite:add_force_xyz(
+        vector3(
+        (owner.current_tree.vector).x*(100*math.clamp(owner.blast_velocity:len()/15,1,3)),
+        3,
+        (owner.current_tree.vector).y*100*(math.clamp(owner.blast_velocity:len()/15,1,3))
+    )
+    )
 end
 
 State.Update=function(owner,dt)

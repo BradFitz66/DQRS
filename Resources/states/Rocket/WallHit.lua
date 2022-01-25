@@ -12,8 +12,8 @@ State.Update=function(owner,dt)
             end
             debounce=true
             local newVel=owner.blast_velocity*owner.wall_hit_normal;
-            
-            owner.blast_velocity=vector.Reflect(-owner.blast_velocity,owner.wall_hit_normal)
+            --vector.Reflect(-owner.blast_velocity,owner.wall_hit_normal)
+            owner.blast_velocity=vector.Reflect(owner.blast_velocity,owner.wall_hit_normal)
             
             owner.hit_wall=true;
             owner:change_state("Blasting")

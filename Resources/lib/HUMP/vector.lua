@@ -101,8 +101,8 @@ function vector.__mul(a,b,scale)
 	elseif type(b) == "number" then
 		return new(b*a.x, b*a.y)
 	else
-		assert(isvector(a) and isvector(b), "Mul: wrong argument types (<vector> or <number> expected)")
-		return (a.x*b.x+a.y*b.y)
+		--assert(isvector(a) and isvector(b), "Mul: wrong argument types (<vector> or <number> expected)")
+		return new(a.x*b.x,a.y*b.y)
 	end
 end
 

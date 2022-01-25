@@ -5,14 +5,15 @@ function tankshell.new()
     local ts=setmetatable({}, tankshell)
     ts.sprite=entity.new(10,5,10,10)
     ts.sprite.hold_offset=vector.new(-10,-10)
+    ts.sprite.type="ammo"
+    ts.sprite.name="tankshell"
+    ts.sprite.going_into_cannon=false
     ts.sprite.max_bounces=2
     ts.sprite_image=love.graphics.newImage("Resources/graphics/TankShell.png")
     ts.sprite.parent=ts
     ts.position=vector.new(256,300)
     ts.rotation=0
     ts.scale=vector.new(1,1)
-    ts.type="ammo"
-    ts.name="tankshell"
     ts.color={math.random(1,255)/255,math.random(1,255)/255,math.random(1,255)/255}
     ts.wall_hit_debounce=false
     ts.hitObjects={}
@@ -29,7 +30,7 @@ local halfRotations={
 }
 
 function tankshell:update(dt)
-    self.sprite:update(dt,function()
+    self.sprite:update(dt,nil--[[function()
         for shape, delta in pairs(collider_world:collisions(self.sprite.collider)) do
             local absoluteDelta=vector.new(math.abs(delta.x),math.abs(delta.y))
             for _, actor in pairs(actors) do
@@ -78,7 +79,7 @@ function tankshell:update(dt)
                 end)
             end
         end    
-    end)
+    end--]])
 end
 
 function tankshell:draw()

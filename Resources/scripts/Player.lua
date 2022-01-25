@@ -30,6 +30,7 @@ end
 function Player.load()
 	local pData=setmetatable({},Player)
 	pData.sprite=entity.new(0,1,12,12)
+	pData.sprite.name="Player"
 	pData.sprite.parent=pData;
 	pData.sprite.bounciness=0;
 	pData.sprite.max_bounces=1;
@@ -304,6 +305,7 @@ function Player.load()
 	pData.can_throw=true;
 	pData.can_float=true;
 	pData.super_throw=false;
+	pData.inside_bouncy=false;
 	pData.hit_wall=false;
 	pData.full_charge_elastoblast=false;
 	pData.wall_hit_debounce=false --Sometimes player can get stuck in an infinite loop of collision. Adding a debounce fixes this.
@@ -443,53 +445,38 @@ function Player:update(dt)
 					end
 				end
 			end
-			if(#in_range_colliders>0 and shape==in_range_colliders[2]) then
-				print("!")
-			end
 			--Handle collisions with the collider of the currently loaded map
 			if(shape.flags~=nil and shape.flags.canCollide) then
+				if(self.statemachine.current_state.Name=="Jump" or self.statemachine.current_state.Name=="Float") then
+					if(shape.flags.bouncy) then
+						self.inside_bouncy=true
+						return
+					end
+				end
 				self.position=self.position+vector.new(fixedDelta.x,fixedDelta.y)
 				if(self.statemachine.current_state.Name=="Blasting")then
-					if(not (delta.x==0 and delta.y==0) and not self.wall_hit_debounce) then
-						
-						--Angle we hit the wall at
-						local collisionAngle=math.abs((math.round((math.deg(math.atan2(absoluteDelta.y,absoluteDelta.x))))))
+					--[[Sometimes when we hit a wall while bouncing, delta returns as 0,0 which it shouldn't. 
+						We need to wait until it gives us something we can work with]]
+					if(not self.wall_hit_debounce and not(vector.new(delta.x,delta.y)==vector.new(0,0))) then
+						local normal = vector.new(
+							delta.x+(self.blast_velocity.x*math.sign(delta.x)),
+							delta.y+(self.blast_velocity.y*math.sign(delta.y))
+						):normalized():round()
 
-						--Angle of the wall we hit
-						local hitAngle=math.abs(math.round((math.deg(math.atan2(math.abs(self.blast_velocity.y),math.abs(self.blast_velocity.x))))))
-						
-						local rounded=math.round(collisionAngle)
-						
-						--Very ugly. This is the 'bounce rules' that determine whether the player cann bounce or not
-						local can_bounce = (rounded==90 and hitAngle<=90) or (rounded==45 and hitAngle== 45) or (rounded==0 and hitAngle<=45)
-						
-						collisionAngle= collisionAngle==45 and -collisionAngle or collisionAngle
-
-						--Here we check if there's a separation delta and if the angle of collision is divisible by 180 with no remainder or is within 10 degrees of it or 90 degrees (some flat wall aren't perfectly flat due to float precision)
-						if(not can_bounce) then
-							return
-						end
-
-						self.position=self.position+vector.new(absoluteDelta.x,absoluteDelta.y)
 						self.wall_hit_debounce=true;
-						local newDelta = vector.new(math.cos(math.rad(collisionAngle)),math.sin(math.rad(collisionAngle)))
-						self.wall_hit_normal=vector.new(math.round_to_Nth_decimal(newDelta.y,1),math.round_to_Nth_decimal(newDelta.x,1))
+						self.wall_hit_normal=normal
+
 						self:change_state("WallHit")
 						self.hit_wall=true;
 						timer.after(10,function()
 							self.hit_wall=false;
 						end)
-						self.current_tree:set_vector(self.blast_velocity:mirrorOn(self.wall_hit_normal))
+						self.current_tree:set_vector(vector.Reflect(self.blast_velocity,self.wall_hit_normal))
 						timer.after(.025,function()
 							self.wall_hit_debounce=false;
 						end)
 					end
-				else
-					if(self.statemachine.current_state.Name=="Blasting")then
-						self:change_state("Idle")
-					end
 				end
-
 			end
 		end
 	end)
@@ -503,6 +490,7 @@ function Player:update(dt)
 	self.statemachine:update(dt)
 	self.current_tree:update(dt)
 	self.input:update(dt)
+	self.inside_bouncy=false
 	if(self.statemachine.current_state.Name~="Stretch") then
 		self.head_position=self.position
 	end

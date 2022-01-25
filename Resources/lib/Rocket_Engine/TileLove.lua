@@ -200,7 +200,7 @@ These offsets are in tiles, not pixels (i.e. and offset_y of 1 will move the lay
 ---@param metadata table
 ---@param offset_x number
 ---@param offset_y number
-function tilelove:add_layer_to_map(map_id,layer_data,is_collision_layer,metadata,offset_x,offset_y)
+function tilelove:add_layer_to_map(map_id,layer_data,is_collision_layer,metadata,offset_x,offset_y,is_visible)
     local map = self.maps[map_id]
     local layer_tile_data=self:load_map_from_image(layer_data)
     local layer_data = self:bake_map(layer_tile_data[1])
@@ -214,29 +214,50 @@ function tilelove:add_layer_to_map(map_id,layer_data,is_collision_layer,metadata
             tile.y=tile.y + (offset_y * self.tile_height)
         end
     end
-    local layer_table = {data=layer_data, visible=true, metadata= (metadata~=nil and metadata or {}), bounds=layer_tile_data[2]}
+    local layer_table = {data=layer_data, visible=is_visible, metadata= (metadata~=nil and metadata or {}), bounds=layer_tile_data[2]}
     self.maps[map_id].layers[#self.maps["Cannon room"].layers+1]=layer_table
     if(is_collision_layer) then
-        for _, tile in pairs(layer_data) do
+        local clipped_polygon_buffer;
+        local clipper_instance = clipper.new()
+        local clipper_to_hc_polygon={}
+        for tile_index = 1, #layer_data do
+            local tile = layer_data[tile_index]
             if(not isAllTransparent(self.atlas.images[tile.index].data)) then
-                -- local tile_collider=collider_world:rectangle(
-                --     tile.x*self.tile_width,
-                --     tile.y*self.tile_height,
-                --     self.tile_width+1.5,
-                --     self.tile_height+1
-                -- )
-                world:add({name="A"},
-                    tile.x*self.tile_width,
-                    tile.y*self.tile_height,
-                    self.tile_width+1.5,
+                local tile_collider=collider_world:rectangle(
+                    tile.x*(self.tile_width),
+                    tile.y*(self.tile_height),
+                    self.tile_width+1,
                     self.tile_height+1
                 )
-                --collider_world:hash():add
-                --tile_collider.flags={bouncy=false,trigger=false,canCollide=true}
-                --table.insert(self.colliders,1,tile_collider)
-                --collider_world:register(tile_collider,tile_collider._polygon:bbox())
+                local clipper_poly = clipper.polygon(0)
+                --Add the vertices from the tile_collider to the clipper polygon
+                for _, vertex in pairs(tile_collider._polygon.vertices) do
+                    clipper_poly:add(vertex.x,vertex.y)
+                end
+                --[[If there's currently no clipper_polygon_buffer, we add the new empty clipper poly to it. 
+                    Otherwise, we add the polygon buffer as the clip subject and add the new clipper polygon as the clipper and then union them
+                ]]
+                if(clipped_polygon_buffer~=nil) then
+                    clipper_instance:add_subject(clipped_polygon_buffer)
+                    clipper_instance:add_clip(clipper_poly)
+                    clipped_polygon_buffer=clipper_instance:execute('union','positive','positive',true)
+                else
+                    clipped_polygon_buffer=clipper_poly
+                end
             end
         end
+        result=clipped_polygon_buffer
+        for i = 1, result:size() do
+			for j = 1, result:get(i):size() do
+				local point = result:get(i):get(j)
+				table.insert(clipper_to_hc_polygon,1,tonumber(point.y))
+				table.insert(clipper_to_hc_polygon,1,tonumber(point.x))
+			end
+		end
+		result=collider_world:polygon(unpack(clipper_to_hc_polygon))
+		result.flags={bouncy=false,trigger=false,canCollide=true}
+        clipped_polygon_buffer=nil
+        collectgarbage("collect")
     end
     
 end

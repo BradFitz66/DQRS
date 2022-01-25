@@ -28,7 +28,6 @@ State.Update=function(owner,dt)
         lastPos=owner.position
         owner.blast_velocity=owner.blast_velocity*(1-((distanceTravelled/distance)*.25))
     else
-        print("Ended blast. Can super throw.")
         owner.blast_velocity=vector.new(0,0)
         if(owner.full_charge_elastoblast) then
             owner.full_charge_elastoblast=false;
