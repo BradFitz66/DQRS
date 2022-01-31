@@ -15,6 +15,8 @@ rect = nil;
 world=require("Resources.lib.bump").newWorld(24);
 clipper = require 'Resources.lib.clipper.clipper'
 control_scheme=nil;
+input_provider=require("Resources.lib.Rocket_Engine.Systems.Input.InputProvider")
+input_provider:add_state(require("Resources.lib.Rocket_Engine.Systems.Input.PlayerInput"))
 --
 --	.flags={bouncy=false,trigger=false,canCollide=true}
 --global variables
@@ -132,6 +134,7 @@ function love.resize(w, h)
 end
 
 function love.update(dt)
+	control_scheme:update(dt)
 	--#region canvas drawing
 	canvasBottom:renderTo(function()
 		love.graphics.clear()

@@ -7,13 +7,13 @@
 
 
 local Handler={}
+Handler.__index={}
+function Handler.new(o)
+    local new_handler=setmetatable(o,Handler) or setmetatable({},Handler)
 
-function Handler:new(o)
-    o=o or {}
-    o.request_handler=function() end
-    setmetatable(o,self)
-    
-    return o
+    new_handler.request_handler=function() end
+    new_handler.successor=nil
+    return new_handler
 end
 
 function Handler:set_successor(o)
@@ -24,8 +24,12 @@ end
 ---Handle a request and pass it up the chain
 ---@param request any
 function Handler:handle_request(request)
-    self.request_handler(request)
-    self.set_successor:handle_request(request)
+    if(successor~=nil) then
+        self.successor:handle_request(request)
+        return
+    end
+
+    return self.request_handler(request)
 end
 
 return Handler

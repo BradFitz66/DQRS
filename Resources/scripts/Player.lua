@@ -303,11 +303,11 @@ function Player.load()
 	pData.full_charge_elastoblast=false;
 	pData.wall_hit_debounce=false --Sometimes player can get stuck in an infinite loop of collision. Adding a debounce fixes this.
 	--Players input. ToDo: Major refactor of entire input system.
-	pData.input = 
+	pData.input=control_scheme
 	--Head collider is for making sure player can't stretch their body through colliders.
 	pData.head_collider=collider_world:circle(-100,-100,5)
 	pData.head_position=vector.new(0,0)
-	
+	pData.input_state=nil
 	pData.rotation=0
 	return pData
 end
@@ -371,6 +371,7 @@ end
 
 
 function Player:update(dt)
+	self.input_state = input_provider:get_current_input_state()
 	for i, held in pairs(self.holding) do
 		if(held~=nil) then
 			local posDiff=(self.position-self.sprite.local_position)
@@ -461,21 +462,19 @@ function Player:update(dt)
 			end
 		end
 	end)
-	local hori,vert=self.input:get 'move'
 
-	if(vector.new(hori,vert)~=vector.new(0,0)) then
-		self.move_vector=(vector.new(hori,vert)):normalized()
+	if(self.input_state.move_vector~=vector.new(0,0)) then
+		self.move_vector=self.input_state.move_vector
 	else
 		self.move_vector=vector.new(0,0)
 	end
 	self.statemachine:update(dt)
 	self.current_tree:update(dt)
-	self.input:update(dt)
 	self.inside_bouncy=false
 	if(self.statemachine.current_state.Name~="Stretch") then
 		self.head_position=self.position
 	end
-	if(self.input:down("jump")) then
+	if(self.input_state.space_down) then
 		print("!")
 		if(self.statemachine.current_state.Name~="Jump" and self.statemachine.current_state.Name~="Float") then
 			self:change_state("Squish")
@@ -485,10 +484,10 @@ function Player:update(dt)
 			end
 		end
 	end
-	if(self.input:released("jump")) then
+	if(self.input_state.space_up) then
 		self:change_state("Jump")
 	end
-	if(self.input:pressed("action")) then
+	if(self.input_state.action_down) then
 		if(#self.holding>0 and self.can_throw) then
 			if(self.statemachine.current_state.Name~="Blasting" and self.statemachine.current_state.Name~="Float") then
 				self:change_state("Throw")
