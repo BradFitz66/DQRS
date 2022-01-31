@@ -1,6 +1,6 @@
 local TankInterior={}
 TankInterior.__index=TankInterior
-local tilelove = require "Resources.lib.Rocket_Engine.TileLove"
+local tilelove = require "Resources.lib.Rocket_Engine.Systems.TileLove"
 local vector = require("Resources.lib.HUMP.vector")
 
 
@@ -16,7 +16,7 @@ function TankInterior.Load()
     map_tiles=nil
     baked_map=nil
     collectgarbage("collect")
-    tank.map= require("Resources.lib.Rocket_Engine.Map").new(nil,tank_tileset)
+    tank.map= require("Resources.lib.Rocket_Engine.World.Map").new(nil,tank_tileset)
     tank.map.origin_offset=vector.new(100,250)
     tank.map.colliders={}
     

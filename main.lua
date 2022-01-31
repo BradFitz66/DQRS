@@ -14,6 +14,7 @@ gameCam=nil;
 rect = nil;
 world=require("Resources.lib.bump").newWorld(24);
 clipper = require 'Resources.lib.clipper.clipper'
+control_scheme=nil;
 --
 --	.flags={bouncy=false,trigger=false,canCollide=true}
 --global variables
@@ -34,6 +35,21 @@ local test_bouncy;
 function love.load()
 	tick.rate=.016
 	
+	control_scheme=Input.new {
+		controls = {
+			left = {'key:left', 'key:a', 'axis:leftx-', 'button:dpleft'},
+			right = {'key:right', 'key:d', 'axis:leftx+', 'button:dpright'},
+			up = {'key:up', 'key:w', 'axis:lefty-', 'button:dpup'},
+			down = {'key:down', 'key:s', 'axis:lefty+', 'button:dpdown'},
+			jump = {"key:space"},
+			action = {'key:lshift', 'button:a'},
+		},
+		pairs = {
+			move = {'left', 'right', 'up', 'down'}
+		},
+		joystick = love.joystick.getJoysticks()[1],
+	}
+	
 	local width, height, flags = love.window.getMode()
 	love.graphics.setDefaultFilter("nearest","nearest",0)
 
@@ -46,6 +62,7 @@ function love.load()
 	--
 
 	collider_world=HC.new(64)
+	print(collider_world:hash())
 	currentMap=require("Resources.scripts.TankInterior").Load();
 
 	player=require("Resources.scripts.Player").load()
@@ -108,6 +125,14 @@ end
 function draw_fn()
 	love.graphics.draw(canvasBottom, aspect.x, aspect.y+(192*aspect.scale), 0, aspect.scale)
 	love.graphics.draw(canvasTop, aspect.x, aspect.y, 0, aspect.scale)
+end
+
+function love.resize(w, h)
+	aspect:resize(w,h)
+end
+
+function love.update(dt)
+	--#region canvas drawing
 	canvasBottom:renderTo(function()
 		love.graphics.clear()
 		gameCam:draw(function(l,t,w,h) 
@@ -128,36 +153,31 @@ function draw_fn()
 				love.graphics.setColor(1,1,1,1)
 			end		
 		end)
-		canvasTop:renderTo(function()
-			love.graphics.clear()
-			if(debug) then
-				--Debug/performance stats
-				local stats = love.graphics.getStats()
-				love.graphics.setColor(255,0,0)
-				love.graphics.rectangle("line", 0, 0, 256, 192)
-				love.graphics.setColor(255,255,255)
-				love.graphics.print("FPS: "..tostring(love.timer.getFPS()),10,0)
-				love.graphics.print("Player state: "..player.statemachine.current_state.Name,10,15)
-				love.graphics.print("Player blendtree: "..player.current_tree.name,10,30)
-				love.graphics.print("Player blendtree animation frame: "..player.current_tree.current_animation:getFrame(),10,45)
-				love.graphics.print("Player blendtree vector: "..tostring(player.current_tree.vector).."\nPlayer move vector: "..tostring(player.move_vector),10,75)
-				love.graphics.print("Player in air: "..tostring(player.sprite.in_air),10,60)
-				love.graphics.print("Draw calls: "..tostring(stats.drawcalls),10,105)
-				love.graphics.print("Images loaded: "..tostring(stats.images),10,120)
-				love.graphics.print("Texture memory: "..tostring(math.floor(stats.texturememory/1000000)).."MB",10,135)
-				love.graphics.print("Batched drawcalls: "..tostring(stats.drawcallsbatched),10,150)
-				love.graphics.print("Elapsed time: "..tostring(elapsed_time),10,165)
-			end	
-		end)
 	end)
-end
-
-function love.resize(w, h)
-	aspect:resize(w,h)
-end
-
-function love.update(dt)
+	canvasTop:renderTo(function()
+		love.graphics.clear()
+		if(debug) then
+			--Debug/performance stats
+			local stats = love.graphics.getStats()
+			love.graphics.setColor(255,0,0)
+			love.graphics.rectangle("line", 0, 0, 256, 192)
+			love.graphics.setColor(255,255,255)
+			love.graphics.print("FPS: "..tostring(love.timer.getFPS()),10,0)
+			love.graphics.print("Player state: "..player.statemachine.current_state.Name,10,15)
+			love.graphics.print("Player blendtree: "..player.current_tree.name,10,30)
+			love.graphics.print("Player blendtree animation frame: "..player.current_tree.current_animation:getFrame(),10,45)
+			love.graphics.print("Player blendtree vector: "..tostring(player.current_tree.vector).."\nPlayer move vector: "..tostring(player.move_vector),10,75)
+			love.graphics.print("Player in air: "..tostring(player.sprite.in_air),10,60)
+			love.graphics.print("Draw calls: "..tostring(stats.drawcalls),10,105)
+			love.graphics.print("Images loaded: "..tostring(stats.images),10,120)
+			love.graphics.print("Texture memory: "..tostring(math.floor(stats.texturememory/1000000)).."MB",10,135)
+			love.graphics.print("Batched drawcalls: "..tostring(stats.drawcallsbatched),10,150)
+			love.graphics.print("Elapsed time: "..tostring(elapsed_time),10,165)
+		end	
+	end)
+	--#endregion
 	if playing or timestep then
+	
 		timestep=false
 		elapsed_time=elapsed_time + 1
 

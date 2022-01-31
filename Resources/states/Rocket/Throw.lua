@@ -1,11 +1,11 @@
-local State = require("Resources.lib.Rocket_Engine.State").new("Throw")
+local State = require("Resources.lib.Rocket_Engine.State Machine.State").new("Throw")
 local endPos
 local endPosDiff
 local lastPos 
 local distance=0;
 local distanceTravelled=0;
 State.Enter=function(owner)
-    if(owner.current_tree.name~="blasting") then
+    if(owner.current_tree.name~="blasting" and owner.current_tree.name~="float") then
         owner:load_tree("throw",true)
     end
     owner.can_throw=false
@@ -28,6 +28,7 @@ end
 
 State.Update=function(owner,dt)
     if(owner.current_tree.current_animation:getFrame()==8)then
+        print("!!")
         owner:change_state("Idle")
     end
 end

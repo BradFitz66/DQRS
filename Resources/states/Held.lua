@@ -1,5 +1,5 @@
 --Generic state for all NPC types to use for when they're held by a player
-local State = require("Resources.lib.Rocket_Engine.State").new("Held")
+local State = require("Resources.lib.Rocket_Engine.State Machine.State").new("Held")
 State.Enter=function(owner)
 	owner:load_tree("held",false,false)
 	owner.move_vector=vector.new(0,1)

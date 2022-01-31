@@ -1,4 +1,4 @@
-local State = require("Resources.lib.Rocket_Engine.State").new("Walk")
+local State = require("Resources.lib.Rocket_Engine.State Machine.State").new("Walk")
 State.Enter=function(owner)
 	owner:load_tree("walk",false,false)
 end

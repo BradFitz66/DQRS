@@ -1,6 +1,6 @@
 local tankshell={}
 tankshell.__index=tankshell
-local entity=require("Resources.lib.Rocket_Engine.Entity")
+local entity=require("Resources.lib.Rocket_Engine.Objects.Entity")
 function tankshell.new()
     local ts=setmetatable({}, tankshell)
     ts.sprite=entity.new(10,5,10,10)

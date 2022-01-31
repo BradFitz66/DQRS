@@ -2,9 +2,9 @@ local Platypunk={}
 
 local anim8=require("Resources.lib.anim8")
 local RTA=require("Resources.lib.RTA")
-local blendtree=require("Resources.lib.Rocket_Engine.blendtree")
-local image_utils = require("Resources.lib.Rocket_Engine.ImageUtils")
-local entity=require("Resources.lib.Rocket_Engine.Entity")
+local blendtree=require("Resources.lib.Rocket_Engine.Animation.blendtree")
+local image_utils = require("Resources.lib.Rocket_Engine.Utils.ImageUtils")
+local entity=require("Resources.lib.Rocket_Engine.Objects.Entity")
 
 Platypunk.__index=Platypunk
 
@@ -136,7 +136,7 @@ function Platypunk.new()
 	
 	punkData.move_vector=vector.new(0,0)
 	punkData.current_tree=current_tree
-	punkData.statemachine=require("Resources.lib.Rocket_Engine.StateMachine").new(punkData)
+	punkData.statemachine=require("Resources.lib.Rocket_Engine.State Machine.StateMachine").new(punkData)
 	--This contains the Platypunks states. It stores the actual state module + a table of the states that can't transition to it
 	punkData.states={
 		["Idle"]={punkData.statemachine:add_state(require("Resources.states.Platypunk.Idle")),{}},

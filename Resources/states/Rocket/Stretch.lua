@@ -1,9 +1,9 @@
-local State = require("Resources.lib.Rocket_Engine.State").new("Stretch")
+local State = require("Resources.lib.Rocket_Engine.State Machine.State").new("Stretch")
 local startScale=vector.new(1.1,.37);
 local endScale=vector.new(1,1)
 local angle,normamlTar,target,finalSpeed,newSpeed,distance,rX,rY
 local obstruction=false;
-local math_utils=require("Resources.lib.Rocket_Engine.MathUtils")
+local math_utils=require("Resources.lib.Rocket_Engine.Utils.MathUtils")
 local charge_timer=0;
 local curScale=startScale
 local fully_charged=false
@@ -48,7 +48,7 @@ State.Update=function(owner,dt)
     
         obstruction=false
 
-        for _, v in pairs(currentMap.map.collider_shapes) do
+        for _, v in pairs(collider_world:hash():inSameCells(owner.head_position.x,owner.head_position.y,owner.head_position.x+5,owner.head_position.y+5)) do
             if(owner.head_collider:collidesWith(v))then
                 obstruction=true;
             end

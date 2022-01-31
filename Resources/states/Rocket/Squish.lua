@@ -1,4 +1,4 @@
-local State = require("Resources.lib.Rocket_Engine.State").new("Squish")
+local State = require("Resources.lib.Rocket_Engine.State Machine.State").new("Squish")
 State.Enter=function(owner)
 	owner.sprite.in_air=false;
     owner.sprite.local_position=vector.new(0,0)

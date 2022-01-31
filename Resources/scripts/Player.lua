@@ -2,9 +2,9 @@
 Player={}
 Player.__index=Player
 local RTA=require("Resources.lib.RTA")
-local entity=require("Resources.lib.Rocket_Engine.Entity")
-local image_utils=require("Resources.lib.Rocket_Engine.ImageUtils")
-local blendtree=require("Resources.lib.Rocket_Engine.blendtree")
+local entity=require("Resources.lib.Rocket_Engine.Objects.Entity")
+local image_utils=require("Resources.lib.Rocket_Engine.Utils.ImageUtils")
+local blendtree=require("Resources.lib.Rocket_Engine.Animation.blendtree")
 local anim8=require("Resources.lib.anim8")
 
 --Helper function to return a table of quads from the sprite atlas
@@ -18,13 +18,6 @@ local function get_sprite_quads(spriteprefix,index_start, index_end,atlas)
 		table.insert(quads,1,atlas.quads[spriteprefix..tostring(index_start)])
 	end
 	return quads
-end
-local function count_dictionary(dictionary)
-    local count=0;
-    for _, value in pairs(dictionary) do
-        count=count+1
-    end
-    return count;
 end
 
 function Player.load()
@@ -281,7 +274,7 @@ function Player.load()
 	
 	pData.move_vector=vector.new(0,0)
 	pData.current_tree=current_tree
-	pData.statemachine=require("Resources.lib.Rocket_Engine.StateMachine").new(pData)
+	pData.statemachine=require("Resources.lib.Rocket_Engine.State Machine.StateMachine").new(pData)
 	--This contains the players states. It stores the actual state module + a table of the states that can't transition to it
 	pData.states={
 		["Idle"]={pData.statemachine:add_state(require("Resources.states.Rocket.Idle")),{}},
@@ -310,20 +303,7 @@ function Player.load()
 	pData.full_charge_elastoblast=false;
 	pData.wall_hit_debounce=false --Sometimes player can get stuck in an infinite loop of collision. Adding a debounce fixes this.
 	--Players input. ToDo: Major refactor of entire input system.
-	pData.input = Input.new {
-		controls = {
-			left = {'key:left', 'key:a', 'axis:leftx-', 'button:dpleft'},
-			right = {'key:right', 'key:d', 'axis:leftx+', 'button:dpright'},
-			up = {'key:up', 'key:w', 'axis:lefty-', 'button:dpup'},
-			down = {'key:down', 'key:s', 'axis:lefty+', 'button:dpdown'},
-			jump = {"key:space"},
-			action = {'key:lshift', 'button:a'},
-		},
-		pairs = {
-			move = {'left', 'right', 'up', 'down'}
-		},
-		joystick = love.joystick.getJoysticks()[1],
-	}
+	pData.input = 
 	--Head collider is for making sure player can't stretch their body through colliders.
 	pData.head_collider=collider_world:circle(-100,-100,5)
 	pData.head_position=vector.new(0,0)
@@ -410,7 +390,8 @@ function Player:update(dt)
 	self.sprite:update(dt,function()
 		for shape, delta in pairs(collider_world:collisions(self.sprite.collider)) do
 			local absoluteDelta=vector.new(math.abs(delta.x),math.abs(delta.y))
-			local fixedDelta=vector.new(delta.x,delta.y)-(self.move_vector*self.speed):normalized()
+			local m_vector=self.move_vector
+			local fixedDelta=vector.new(delta.x,delta.y)-(m_vector*self.speed):normalized()
 			for _, actor in pairs(actors) do
 				if(actor.sprite.collider==shape and not actor.sprite.picked_up) then
 					--Handle collision with actor while in the blasting state.
@@ -453,7 +434,7 @@ function Player:update(dt)
 						return
 					end
 				end
-				self.position=self.position+vector.new(fixedDelta.x,fixedDelta.y)
+				self.position=self.position+vector.new(delta.x,delta.y)
 				if(self.statemachine.current_state.Name=="Blasting")then
 					--[[Sometimes when we hit a wall while bouncing, delta returns as 0,0 which it shouldn't. 
 						We need to wait until it gives us something we can work with]]
@@ -495,6 +476,7 @@ function Player:update(dt)
 		self.head_position=self.position
 	end
 	if(self.input:down("jump")) then
+		print("!")
 		if(self.statemachine.current_state.Name~="Jump" and self.statemachine.current_state.Name~="Float") then
 			self:change_state("Squish")
 		else
@@ -508,12 +490,12 @@ function Player:update(dt)
 	end
 	if(self.input:pressed("action")) then
 		if(#self.holding>0 and self.can_throw) then
-			if(self.statemachine.current_state.Name~="Blasting") then
+			if(self.statemachine.current_state.Name~="Blasting" and self.statemachine.current_state.Name~="Float") then
 				self:change_state("Throw")
-			else
+			elseif self.statemachine.current_state.Name=="Blasting" or self.statemachine.current_state.Name=="Float" then
 				--Hack to bypass the change state function so we can stay in the blasting state while throwing
 				self.states["Throw"][1].Enter(self)
-				timer.after(.5,function() self.states["Throw"][1].Exit(self)	end)
+				timer.after(.5,function() self.states["Throw"][1].Exit(self) end)
 			end
 		end
 	end
