@@ -22,7 +22,6 @@ end
 function input_provider:get_current_input_state()
     local input_state=table.copy(self.input_state)
     for _, state in pairs(self.states) do
-        print(state:handle_request(input_state))
         input_state=state:handle_request(input_state)
     end
     return input_state

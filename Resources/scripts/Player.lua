@@ -475,7 +475,6 @@ function Player:update(dt)
 		self.head_position=self.position
 	end
 	if(self.input_state.space_down) then
-		print("!")
 		if(self.statemachine.current_state.Name~="Jump" and self.statemachine.current_state.Name~="Float") then
 			self:change_state("Squish")
 		else

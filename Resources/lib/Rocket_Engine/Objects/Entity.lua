@@ -70,7 +70,6 @@ end
 
 
 function Entity:update(dt,collision_override)
-    
     if(self.parent==nil) then
         self.position = self.position + self.velocity * dt;
         self.collider:moveTo(self.position.x,self.position.y)
