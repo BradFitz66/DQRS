@@ -58,7 +58,7 @@ function Player.load()
 		end
 	end
 	
-	pData.sprites:hardBake()
+	pData.sprites:hardBake("width")
 	prefixes=nil
 	sprites=nil;
 	collectgarbage("collect")

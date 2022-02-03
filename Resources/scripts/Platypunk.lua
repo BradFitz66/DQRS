@@ -45,8 +45,7 @@ function Platypunk.new()
 			punkData.sprites:add(sprite,prefix..tostring(i),true,"area")
 		end
 	end
-	punkData.sprites:bake("area")
-	punkData.sprites:hardBake("area")
+	punkData.sprites:hardBake()
 
 	prefixes=nil
 	sprites=nil;

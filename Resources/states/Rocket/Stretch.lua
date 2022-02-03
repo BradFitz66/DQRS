@@ -49,7 +49,7 @@ State.Update=function(owner,dt)
         obstruction=false
 
         for _, v in pairs(collider_world:hash():inSameCells(owner.head_position.x,owner.head_position.y,owner.head_position.x+5,owner.head_position.y+5)) do
-            if(v.attached_to ~= nil and v.attached_to.type == "ammo") then
+            if(v.attached_to ~= nil) then
                 break
             end
             if(owner.head_collider:collidesWith(v))then

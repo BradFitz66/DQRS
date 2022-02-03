@@ -1,4 +1,8 @@
 floor,ceil,pi,sqrt,sin,cos=math.floor,math.ceil,math.pi,math.sqrt,math.sin,math.cos
+local lib_path = love.filesystem.getSaveDirectory() .. "/libraries"
+local extension = jit.os == "Windows" and "dll" or jit.os == "Linux" and "so" or jit.os == "OSX" and "dylib"
+package.cpath = string.format("%s;%s/?.%s", package.cpath, lib_path, extension)
+
 --#region variables and modules
 Input=require("Resources.lib.Input")
 HC=require("Resources.lib.HC-master")
@@ -8,6 +12,7 @@ math=require("Resources.lib.mathx")
 string=require("Resources.lib.stringx")
 table=require("Resources.lib.tablex")
 vector3=require("Resources.lib.brinevector3D")
+
 gameCam=nil;
 rect = nil;
 world=require("Resources.lib.bump").newWorld(24);
@@ -15,10 +20,7 @@ clipper = require 'Resources.lib.clipper.clipper'
 control_scheme=nil;
 input_provider=require("Resources.lib.Rocket_Engine.Systems.Input.InputProvider")
 input_provider:add_state(require("Resources.lib.Rocket_Engine.Systems.Input.PlayerInput"))
-local lib_path = love.filesystem.getSaveDirectory() .. "/libraries"
-local extension = jit.os == "Windows" and "dll" or jit.os == "Linux" and "so" or jit.os == "OSX" and "dylib"
-package.cpath = string.format("%s;%s/?.%s", package.cpath, lib_path, extension)
-local imgui = require "Resources.lib.cimgui" -- cimgui is the folder containing the Lua module (the "src" folder in the github repository)
+imgui = require "Resources.lib.cimgui" -- cimgui is the folder containing the Lua module (the "src" folder in the github repository)
 --
 --	.flags={bouncy=false,trigger=false,canCollide=true}
 --global variables
@@ -35,6 +37,8 @@ local tick=require 'Resources.lib.tick'
 result=nil;
 local test_trigger;
 local test_bouncy;
+local sub_window=require("Resources.lib.Rocket_Engine.Miscellaneous.Subwindow")
+local windows={}
 --#endregion
 function love.load(args)
 	imgui.Init()
@@ -63,7 +67,8 @@ function love.load(args)
 	--Load modules
 	gameCam=require("Resources.lib.gamera").new(0,0,8000,8000)
 	--
-
+	table.insert(windows,1,sub_window.new(canvasBottom,vector.new(0,0),vector.new(256,192+20),{title="Game"},vector.new(-8,-8)))
+	table.insert(windows,1,sub_window.new(canvasDebug,vector.new(0,0),vector.new(256,192+20),{title="Debug info"},vector.new(-8,-8)))
 	collider_world=HC.new(64)
 	print(collider_world:hash())
 	currentMap=require("Resources.scripts.TankInterior").Load();
@@ -197,26 +202,15 @@ end
 local game_window_pos
 local debug_window_pos
 function draw_fn()
-	
 	imgui.WindowFlags("NoTitleBar", "NoBackground", "HorizontalScrollbar","NoResize","NoCollapse")
-	imgui.SetNextWindowSize(imgui.ImVec2_Float(258,192+16))
-	if imgui.Begin("Game window") then
-		game_window_pos = imgui.GetWindowContentRegionMin();
-		game_window_pos.x = game_window_pos.x + imgui.GetWindowPos().x;
-		game_window_pos.y = game_window_pos.y + imgui.GetWindowPos().y;
-    end
-	imgui.SetNextWindowSize(imgui.ImVec2_Float(258,192+16))
-	if imgui.Begin("Debug window") then
-		debug_window_pos = imgui.GetWindowContentRegionMin();
-		debug_window_pos.x = debug_window_pos.x + imgui.GetWindowPos().x;
-		debug_window_pos.y = debug_window_pos.y + imgui.GetWindowPos().y;
-    end
-    imgui.End()
-
+	for _, window in pairs(windows) do
+		window:display_window()
+	end
 	imgui.Render()
     imgui.RenderDrawLists()
-	love.graphics.draw(canvasDebug, debug_window_pos.x-7, debug_window_pos.y-7, 0, 1)
-	love.graphics.draw(canvasBottom, game_window_pos.x-7, game_window_pos.y-7, 0, 1)
+	for _, window in pairs(windows) do
+		window:display_canvas()
+	end
 end
 
 function love.resize(w, h)
@@ -244,34 +238,6 @@ love.mousereleased = function(x, y, button, ...)
     end
 end
 
-love.wheelmoved = function(x, y)
-    imgui.WheelMoved(x, y)
-    if not imgui.GetWantCaptureMouse() then
-        -- your code here 
-    end
-end
-
-love.keypressed = function(key, ...)
-    imgui.KeyPressed(key)
-    if not imgui.GetWantCaptureKeyboard() then
-        -- your code here 
-    end
-end
-
-love.keyreleased = function(key, ...)
-    imgui.KeyReleased(key)
-    if not imgui.GetWantCaptureKeyboard() then
-        -- your code here 
-    end
-end
-
-love.textinput = function(t)
-    imgui.TextInput(t)
-    if not imgui.GetWantCaptureKeyboard() then
-        -- your code here 
-    end
-end
-
 love.quit = function()
     return imgui.Shutdown()
 end
@@ -280,29 +246,6 @@ end
 
 love.joystickadded = function(joystick)
     imgui.JoystickAdded(joystick)
-    -- your code here 
-end
-
-love.joystickremoved = function(joystick)
-    imgui.JoystickRemoved()
-    -- your code here 
-end
-
-love.gamepadpressed = function(joystick, button)
-    imgui.GamepadPressed(button)
-    -- your code here 
-end
-
-love.gamepadreleased = function(joystick, button)
-    imgui.GamepadReleased(button)
-    -- your code here 
-end
-
--- choose threshold for considering analog controllers active, defaults to 0 if unspecified
-local threshold = 0.2 
-
-love.gamepadaxis = function(joystick, axis, value)
-    imgui.GamepadAxis(axis, value, threshold)
     -- your code here 
 end
 --#endregion
