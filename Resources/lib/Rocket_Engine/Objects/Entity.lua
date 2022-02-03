@@ -22,6 +22,7 @@ function Entity.new(collider_position_x,collider_position_y,collider_width,colli
     e.collider_size=(collider_width and collider_height) and vector.new(collider_width,collider_height) or vector.new(0,0)
     e.collider_pos=vector.new(collider_position_x or 0,collider_position_y or 0)
     e.collider=collider_world:rectangle(0,0,collider_width or 20,collider_height or 20)
+    e.collider.attached_to=e
     e.max_bounces=0;
     e.bounces_left=0;
     e.parent=nil
