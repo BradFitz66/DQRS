@@ -351,7 +351,7 @@ function Player:draw()
 			offset.y
 		)
 	end
-	if(debug) then
+	if(debug_mode) then
 		self.head_collider:draw("fill")
 	end
 end

@@ -159,7 +159,7 @@ right corner.
 
     :param DrawMode mode: How to draw the shape. Either 'line' or 'fill'.
 
-Draw the shape either filled or as outline. Mostly for debug-purposes.
+Draw the shape either filled or as outline. Mostly for debug_mode-purposes.
 
 **Example**::
 

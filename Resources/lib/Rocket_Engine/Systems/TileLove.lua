@@ -56,7 +56,7 @@ local function isAllTransparent(img_data)
             end
         end
     end
-    --print("debug: no visible pixels")
+    --print("debug_mode: no visible pixels")
     return true
 end
 
@@ -114,7 +114,7 @@ function tilelove:draw_map(map_index,offset_x,offset_y)
         end
     end
 
-    if(debug) then
+    if(debug_mode==true) then
         love.graphics.setColor(255,0,0)
         for _, v in pairs(self.colliders) do
             v:draw('line')
@@ -183,7 +183,8 @@ function tilelove:bake()
 end
 
 
---[[Add a layer to a map. 
+--[[
+Add a layer to a map. 
 Bewarned that if the tileset has already been baked and this contains tiles not in the tileset, you will probably get errors
 
 This won't be a problem if you're using is_collision_layer, because that is just used to define areas where Hardon Collider
@@ -234,7 +235,8 @@ function tilelove:add_layer_to_map(map_id,layer_data,is_collision_layer,metadata
                 for _, vertex in pairs(tile_collider._polygon.vertices) do
                     clipper_poly:add(vertex.x,vertex.y)
                 end
-                --[[If there's currently no clipper_polygon_buffer, we add the new empty clipper poly to it. 
+                --[[
+                    If there's currently no clipper_polygon_buffer, we add the new empty clipper poly to it. 
                     Otherwise, we add the polygon buffer as the clip subject and add the new clipper polygon as the clipper and then union them
                 ]]
                 if(clipped_polygon_buffer~=nil) then
@@ -256,6 +258,7 @@ function tilelove:add_layer_to_map(map_id,layer_data,is_collision_layer,metadata
 		end
 		result=collider_world:polygon(unpack(clipper_to_hc_polygon))
 		result.flags={bouncy=false,trigger=false,canCollide=true}
+        table.insert(self.colliders,1,result)
         clipped_polygon_buffer=nil
         collectgarbage("collect")
     end

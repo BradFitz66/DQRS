@@ -61,7 +61,7 @@ function math.Clamp(val, lower, upper)
 end
 
 function Entity:draw()
-    if(debug) then
+    if(debug_mode) then
         love.graphics.setColor(0,255,0)
         self.collider:draw("line")
         love.graphics.setColor(255,255,255)

@@ -2,7 +2,7 @@ floor,ceil,pi,sqrt,sin,cos=math.floor,math.ceil,math.pi,math.sqrt,math.sin,math.
 local lib_path = love.filesystem.getSaveDirectory() .. "/libraries"
 local extension = jit.os == "Windows" and "dll" or jit.os == "Linux" and "so" or jit.os == "OSX" and "dylib"
 package.cpath = string.format("%s;%s/?.%s", package.cpath, lib_path, extension)
-
+debug_mode=true
 --#region variables and modules
 Input=require("Resources.lib.Input")
 HC=require("Resources.lib.HC-master")
@@ -104,15 +104,19 @@ function love.load(args)
 	trigger_function=function(this_trigger,entity) 
 		if(entity.type=="ammo" and entity.going_into_cannon==false) then
 			--Center of collider
-			local height=2
+			local height=2 --height of the bounce into the center
+			--magic number bullshit
 			local targ_x,targ_y=this_trigger._polygon.centroid.x+10,this_trigger._polygon.centroid.y-10
+
+			--hacks to deal with my barely working faux bounce physics
 			entity.going_into_cannon=true
 			entity.in_air=false
+			--not sure whats going on here but it sort of works
 			local x_vel=(targ_x - entity.parent.position.x) / (math.sqrt(-3*height/-9.81));
 			local z_vel=(targ_y - entity.parent.position.y) / (math.sqrt(-3*height/-9.81));
 			entity:add_force_xyz(vector3(x_vel,height,z_vel))
-			entity.bounces_left=1
 			
+			entity.bounces_left=1			
 		end
 	end}
 	--[[Bouncy colliders are colliders that can't be walked through but can be jumped over. 
@@ -136,10 +140,7 @@ function love.update(dt)
 			for _, actor in pairs(actors) do
 				actor:draw()
 			end
-			if(result~=nil) then
-				love.graphics.setColor(1,1,0,1)
-				result:draw()
-				love.graphics.setColor(1,1,1,1)
+			if(debug_mode) then
 				love.graphics.setColor(0,1,0,1)
 				test_trigger:draw()
 				test_bouncy:draw()
@@ -149,7 +150,7 @@ function love.update(dt)
 	end)
 	canvasDebug:renderTo(function()
 		love.graphics.clear()
-		if(debug) then
+		if(debug_mode) then
 			--Debug/performance stats
 			local stats = love.graphics.getStats()
 			love.graphics.setColor(255,0,0)
@@ -179,7 +180,7 @@ function love.update(dt)
 			actor:update(dt)
 		end
 	end
-	if(debug)then
+	if(debug_mode)then
 		debugKeys:update(dt)
 		if(debugKeys:pressed'timestep')then
 			timestep=true
