@@ -1,7 +1,8 @@
 floor,ceil,pi,sqrt,sin,cos=math.floor,math.ceil,math.pi,math.sqrt,math.sin,math.cos
-local lib_path = love.filesystem.getSaveDirectory() .. "/libraries"
-local extension = jit.os == "Windows" and "dll" or jit.os == "Linux" and "so" or jit.os == "OSX" and "dylib"
-package.cpath = string.format("%s;%s/?.%s", package.cpath, lib_path, extension)
+
+
+local lib_path = love.filesystem.getWorkingDirectory().."/Resources/lib"
+love.filesystem.setCRequirePath(lib_path)
 debug_mode=true
 --#region variables and modules
 Input=require("Resources.lib.Input")
@@ -22,7 +23,7 @@ input_provider=require("Resources.lib.Rocket_Engine.Systems.Input.InputProvider"
 input_provider:add_state(require("Resources.lib.Rocket_Engine.Systems.Input.PlayerInput"))
 imgui = require "Resources.lib.cimgui" -- cimgui is the folder containing the Lua module (the "src" folder in the github repository)
 --
---	.flags={bouncy=false,trigger=false,canCollide=true}
+--	.flags={bouncy=false,trigger=false,canCollide=true}x
 --global variables
 currentMap=nil;
 collider_world=nil;
