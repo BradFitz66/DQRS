@@ -100,7 +100,7 @@ function love.load(args)
 
 	
 	--Test for a trigger collider. Trigger colliders can be walked through and run a function when something enters it.
-	test_trigger=collider_world:rectangle(340,230,75,40)
+	test_trigger=collider_world:rectangle(340,230,65,40)
 	test_trigger.flags={bouncy=false,trigger=true,canCollide=true,
 	trigger_function=function(this_trigger,entity) 
 		if(entity.type=="ammo" and entity.going_into_cannon==false) then
@@ -123,7 +123,7 @@ function love.load(args)
 	--[[Bouncy colliders are colliders that can't be walked through but can be jumped over. 
 	The player cannot land on them and will instead bounce on them until they exit the collider]]
 	
-	test_bouncy=collider_world:rectangle(220,200,50,50)
+	test_bouncy=collider_world:rectangle(250,150,50,50)
 	test_bouncy.flags={bouncy=true,trigger=false,canCollide=true}
 end
 
@@ -219,26 +219,26 @@ function love.resize(w, h)
 end
 
 --#region imgui stuff
-love.mousemoved = function(x, y, ...)
-    imgui.MouseMoved(x, y)
-    if not imgui.GetWantCaptureMouse() then
-        -- your code here
-    end
-end
+-- love.mousemoved = function(x, y, ...)
+--     imgui.MouseMoved(x, y)
+--     if not imgui.GetWantCaptureMouse() then
+--         -- your code here
+--     end
+-- end
 
-love.mousepressed = function(x, y, button, ...)
-    imgui.MousePressed(button)
-    if not imgui.GetWantCaptureMouse() then
-        -- your code here 
-    end
-end
+-- love.mousepressed = function(x, y, button, ...)
+--     imgui.MousePressed(button)
+--     if not imgui.GetWantCaptureMouse() then
+--         -- your code here 
+--     end
+-- end
 
-love.mousereleased = function(x, y, button, ...)
-    imgui.MouseReleased(button)
-    if not imgui.GetWantCaptureMouse() then
-        -- your code here 
-    end
-end
+-- love.mousereleased = function(x, y, button, ...)
+--     imgui.MouseReleased(button)
+--     if not imgui.GetWantCaptureMouse() then
+--         -- your code here 
+--     end
+-- end
 
 love.quit = function()
     return imgui.Shutdown()
