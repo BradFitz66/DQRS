@@ -20,15 +20,14 @@ tilelove.__index=tilelove
 ---@param tile_size_x number
 ---@param tile_size_y number
 ---@param tilemap_image userdata
----@param chunk_size_x number
----@param chunk_size_y number
+---@param chunk_subdivisions number
 ---@return table
-function tilelove.new_tilemap(tile_size_x,tile_size_y,tilemap_image,chunk_size_x,chunk_size_y)
+function tilelove.new_tilemap(tile_size_x,tile_size_y,tilemap_image,chunk_subdivisions)
     local tilemap = setmetatable(tilelove,{})
-    if(not chunk_size_x and not chunk_size_y) then
-        chunk_size_x=tile_size_x*4
-        chunk_size_y=tile_size_y*4
+    if(chunk_subdivisions) then
+        chunk_subdivisions=2
     end
+    tilemap.chunk_subdivisions=chunk_subdivisions
     tilemap.atlas=RTA.newFixedSize(tile_size_x,tile_size_y,0)
     tilemap.tile_width=tile_size_x
     tilemap.tile_height=tile_size_y
@@ -39,6 +38,7 @@ function tilelove.new_tilemap(tile_size_x,tile_size_y,tilemap_image,chunk_size_x
             tilemap.atlas.images[id].data=tile.data
         end
     end
+
     tilemap.colliders={}
     tilemap.maps={}
     tilemap.is_baked=false
@@ -147,6 +147,7 @@ function tilelove:add_map(map_id,map_data_baked,bounds)
     self.maps[map_id]["bounds"]=bounds
     self.maps[map_id]["layers"]={}
     self.maps[map_id]["layers"][1]={data=map_data_baked, visible=(is_visible~=nil and is_visible or true), metadata={}, bounds=bounds}
+
 end
 
 ---Bake a map from it's tiles to the indexes of the tile in the tileset

@@ -99,7 +99,7 @@ function love.load(args)
 
 	
 	--Test for a trigger collider. Trigger colliders can be walked through and run a function when something enters it.
-	test_trigger=collider_world:rectangle(340,230,75,40)
+	test_trigger=collider_world:rectangle(330,230,75,40)
 	test_trigger.flags={bouncy=false,trigger=true,canCollide=true,
 	trigger_function=function(this_trigger,entity) 
 		if(entity.type=="ammo" and entity.going_into_cannon==false) then
