@@ -148,7 +148,7 @@ function Platypunk.new()
 	punkData.statemachine:change_state("Idle")
 	punkData.speed=32;
 	punkData.scale=vector.new(1,1)
-	punkData.position=vector.new(400,400)
+	punkData.position=vector.new(300,300)
 	punkData.image=love.graphics.newImage("Resources/graphics/Platypunk/Idle/1.png")
     punkData.walkDest=vector.new(0,0)
 	punkData.sprite.position=vector.new(400,400)

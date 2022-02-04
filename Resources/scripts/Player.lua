@@ -390,6 +390,9 @@ function Player:update(dt)
 	end
 	self.sprite:update(dt,function()
 		for shape, delta in pairs(collider_world:collisions(self.sprite.collider)) do
+			if(delta==nil or delta.x==nil or delta.y==nil) then
+				return
+			end
 			local absoluteDelta=vector.new(math.abs(delta.x),math.abs(delta.y))
 			local m_vector=self.move_vector
 			local fixedDelta=vector.new(delta.x,delta.y)-(m_vector*self.speed):normalized()

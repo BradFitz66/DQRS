@@ -1,7 +1,8 @@
 floor,ceil,pi,sqrt,sin,cos=math.floor,math.ceil,math.pi,math.sqrt,math.sin,math.cos
-local lib_path = love.filesystem.getSaveDirectory() .. "/libraries"
-local extension = jit.os == "Windows" and "dll" or jit.os == "Linux" and "so" or jit.os == "OSX" and "dylib"
-package.cpath = string.format("%s;%s/?.%s", package.cpath, lib_path, extension)
+
+
+local lib_path = love.filesystem.getWorkingDirectory().."/Resources/lib"
+love.filesystem.setCRequirePath(lib_path)
 debug_mode=true
 --#region variables and modules
 Input=require("Resources.lib.Input")
@@ -22,7 +23,7 @@ input_provider=require("Resources.lib.Rocket_Engine.Systems.Input.InputProvider"
 input_provider:add_state(require("Resources.lib.Rocket_Engine.Systems.Input.PlayerInput"))
 imgui = require "Resources.lib.cimgui" -- cimgui is the folder containing the Lua module (the "src" folder in the github repository)
 --
---	.flags={bouncy=false,trigger=false,canCollide=true}
+--	.flags={bouncy=false,trigger=false,canCollide=true}x
 --global variables
 currentMap=nil;
 collider_world=nil;
@@ -100,6 +101,7 @@ function love.load(args)
 	
 	--Test for a trigger collider. Trigger colliders can be walked through and run a function when something enters it.
 	test_trigger=collider_world:rectangle(330,230,75,40)
+	test_trigger=collider_world:rectangle(340,230,65,40)
 	test_trigger.flags={bouncy=false,trigger=true,canCollide=true,
 	trigger_function=function(this_trigger,entity) 
 		if(entity.type=="ammo" and entity.going_into_cannon==false) then
@@ -122,7 +124,7 @@ function love.load(args)
 	--[[Bouncy colliders are colliders that can't be walked through but can be jumped over. 
 	The player cannot land on them and will instead bounce on them until they exit the collider]]
 	
-	test_bouncy=collider_world:rectangle(220,200,50,50)
+	test_bouncy=collider_world:rectangle(250,150,50,50)
 	test_bouncy.flags={bouncy=true,trigger=false,canCollide=true}
 end
 
@@ -218,26 +220,26 @@ function love.resize(w, h)
 end
 
 --#region imgui stuff
-love.mousemoved = function(x, y, ...)
-    imgui.MouseMoved(x, y)
-    if not imgui.GetWantCaptureMouse() then
-        -- your code here
-    end
-end
+-- love.mousemoved = function(x, y, ...)
+--     imgui.MouseMoved(x, y)
+--     if not imgui.GetWantCaptureMouse() then
+--         -- your code here
+--     end
+-- end
 
-love.mousepressed = function(x, y, button, ...)
-    imgui.MousePressed(button)
-    if not imgui.GetWantCaptureMouse() then
-        -- your code here 
-    end
-end
+-- love.mousepressed = function(x, y, button, ...)
+--     imgui.MousePressed(button)
+--     if not imgui.GetWantCaptureMouse() then
+--         -- your code here 
+--     end
+-- end
 
-love.mousereleased = function(x, y, button, ...)
-    imgui.MouseReleased(button)
-    if not imgui.GetWantCaptureMouse() then
-        -- your code here 
-    end
-end
+-- love.mousereleased = function(x, y, button, ...)
+--     imgui.MouseReleased(button)
+--     if not imgui.GetWantCaptureMouse() then
+--         -- your code here 
+--     end
+-- end
 
 love.quit = function()
     return imgui.Shutdown()
