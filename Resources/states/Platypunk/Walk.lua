@@ -1,11 +1,14 @@
 local State = require("Resources.lib.Rocket_Engine.State Machine.State").new("Walk")
+local Grid = require ("Resources.lib.Rocket_Engine.Systems.jumper.grid")
+local Pathfinder = require ("Resources.lib.Rocket_Engine.Systems.jumper.pathfinder") -- The pathfinder class 
 State.Enter=function(owner)
 	owner:load_tree("walk",false,false)
+	
 end
 
 State.Update=function(owner,dt)
 	if(owner.position.dist(owner.position,owner.walkDest)<1) then
-		if(love.math.random(1,5)==5) then
+		if(love.math.random(1,40)==32) then
 			owner:change_state("Stretch")
 		else
 			owner:change_state("Idle")

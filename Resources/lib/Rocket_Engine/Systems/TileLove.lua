@@ -218,6 +218,16 @@ function tilelove:add_layer_to_map(map_id,layer_data,is_collision_layer,metadata
     end
     local layer_table = {data=layer_data, visible=is_visible, metadata= (metadata~=nil and metadata or {}), bounds=layer_tile_data[2]}
     self.maps[map_id].layers[#self.maps["Cannon room"].layers+1]=layer_table
+    --[[
+
+        If collision layer, create a polygon collider using the clipper library by creating
+        square colliders for each tile in the layer and then unioning them into one polygon
+        collider.
+
+        I probably need to make something more robust than this so I can have better angles for
+        collisions rather than just right angles.
+
+    ]]
     if(is_collision_layer) then
         local clipped_polygon_buffer;
         local clipper_instance = clipper.new()

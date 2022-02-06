@@ -7,6 +7,7 @@ local math_utils=require("Resources.lib.Rocket_Engine.Utils.MathUtils")
 local charge_timer=0;
 local curScale=startScale
 local fully_charged=false
+local last_vector
 State.Enter=function(owner)
     owner:load_tree("stretch",false)
     owner.scale=startScale
@@ -14,6 +15,7 @@ State.Enter=function(owner)
     local normalTar = (target - owner.position):normalized();
     angle = math.atan2(normalTar.y, normalTar.x) + math.rad(90) --! 1/(math.pi * 2 / 360);
     owner.rotation=angle
+    last_vector=owner.move_vector
 end
 
 State.Update=function(owner,dt)
@@ -27,8 +29,10 @@ State.Update=function(owner,dt)
         owner:load_tree("stretch")
     end
     if (owner.move_vector ~= vector.new(0,0)) then
-        owner.current_tree:set_vector(owner.move_vector)
-
+        if(last_vector~=owner.move_vector) then
+            owner.scale.y=owner.scale.y-.25
+            charge_timer=0
+        end
         scaleProper=vector.new(owner.scale.x,(owner.scale.y+.5)*32)
         distance=owner.scale.dist(owner.scale,endScale);
         newSpeed = 1.5;
@@ -48,7 +52,7 @@ State.Update=function(owner,dt)
     
         obstruction=false
 
-        for _, v in pairs(collider_world:hash():inSameCells(owner.head_position.x,owner.head_position.y,owner.head_position.x,owner.head_position.y)) do
+        for _, v in pairs(collider_world:neighbors(owner.head_collider)) do
             if(v.attached_to ~= nil or (v.flags and v.flags.trigger)) then
                 break
             end
@@ -58,11 +62,12 @@ State.Update=function(owner,dt)
         end
 
         if(not obstruction) then
+            owner.current_tree:set_vector(owner.move_vector)
             owner.scale = vector.Lerp(owner.scale, endScale, dt/finalSpeed);
             -- rotate to angle
             owner.rotation = angle;
         end
-
+        last_vector=owner.move_vector
     else
         --Shrink player sprite
         local distance = owner.scale.dist(owner.scale,startScale);
@@ -115,8 +120,6 @@ State.Exit=function(owner)
     end
     charge_timer=0
     owner.head_collider:moveTo(-1000000,-10000000)
-
-    --State.collider:moveTo(-1000000,-10000000)
 end
 
 
