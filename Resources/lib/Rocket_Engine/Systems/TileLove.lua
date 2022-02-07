@@ -26,6 +26,7 @@ function tilelove.new_tilemap(tile_size_x,tile_size_y,tilemap_image)
     local tilemap = setmetatable(tilelove,{})
     tilemap.atlas=RTA.newFixedSize(tile_size_x,tile_size_y,0)
     tilemap.tile_width=tile_size_x
+    tilemap.obstruction_map={}
     tilemap.tile_height=tile_size_y
     local tiles=tilemap:split_image(tilemap_image,true)
     for id, tile in pairs(tiles) do
