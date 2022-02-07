@@ -6,7 +6,7 @@ local distance=0;
 local distanceTravelled=0;
 State.Enter=function(owner)
     if(owner.full_charge_elastoblast) then
-        owner:load_tree("blasting",true)
+        owner:load_tree("fullblast",true)
     else
         owner:load_tree("blasting",true)
     end

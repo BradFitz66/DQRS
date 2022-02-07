@@ -39,6 +39,7 @@ function Player.load()
 		['wallhit']=image_utils.load_images_from_directory("Resources/graphics/Rocket/WallHitFrames",true,image_utils.compare,1,32),
 		['float']=image_utils.load_images_from_directory("Resources/graphics/Rocket/FloatFrames",true,image_utils.compare,1,15),
 		['charge']=image_utils.load_images_from_directory("Resources/graphics/Rocket/ChargeFrames",true,image_utils.compare,1,15),
+		['fullcharge']=image_utils.load_images_from_directory("Resources/graphics/Rocket/ChargedBlastFrames",true,image_utils.compare,1,54),
 	}
 	local prefixes={
 		"idle",
@@ -49,7 +50,8 @@ function Player.load()
 		"stretch",
 		"wallhit",
 		"float",
-		"charge"
+		"charge",
+		"fullcharge"
 	}
 	pData.sprites:setBakeAsPow2(false)
 	for _, prefix in pairs(prefixes) do
@@ -262,6 +264,25 @@ function Player.load()
 				{anim8.newAnimation(table.reverse(get_sprite_quads("charge",1,3,pData.sprites)),0,nil,pData.sprites.image),vector.new(-.5,.5),vector.new(.5,.9)}, --downleft
 				{anim8.newAnimation(table.reverse(get_sprite_quads("charge",1,3,pData.sprites)),0,nil,pData.sprites.image),vector.new(-1,0),vector.new(0.3,.9)}, --left
 				{anim8.newAnimation(table.reverse(get_sprite_quads("charge",1,3,pData.sprites)),0,nil,pData.sprites.image),vector.new(-.5,-.5),vector.new(.5,.9)}, --upleft
+			},
+			vector.new(0,0),
+			"elastoblast",
+			pData,
+			nil,
+			function() end,
+			true
+		),
+		['fullblast']=
+		blendtree.new(
+			{
+				{anim8.newAnimation(table.reverse(get_sprite_quads("fullcharge",46,54,pData.sprites)),0.016,nil,pData.sprites.image),vector.new(0,-1),vector.new(.5,.9)}, --up
+				{anim8.newAnimation(table.reverse(get_sprite_quads("fullcharge",19,27,pData.sprites)),0.016,nil,pData.sprites.image),vector.new(.5,-.5),vector.new(.5,.9)}, --upright
+				{anim8.newAnimation(table.reverse(get_sprite_quads("fullcharge",37,45,pData.sprites)),0.016,nil,pData.sprites.image,true),vector.new(1,0),vector.new(.7,.9)}, --right
+				{anim8.newAnimation(table.reverse(get_sprite_quads("fullcharge",10,18,pData.sprites)),0.016,nil,pData.sprites.image),vector.new(.5,.5),vector.new(.5,.9)}, --downright
+				{anim8.newAnimation(table.reverse(get_sprite_quads("fullcharge",28,36,pData.sprites)),0.016,nil,pData.sprites.image),vector.new(0,1),vector.new(.5,.9)}, --down
+				{anim8.newAnimation(table.reverse(get_sprite_quads("fullcharge",10,18,pData.sprites)),0.016,nil,pData.sprites.image,true),vector.new(-.5,.5),vector.new(.5,.9)}, --downleft
+				{anim8.newAnimation(table.reverse(get_sprite_quads("fullcharge",37,45,pData.sprites)),0.016,nil,pData.sprites.image),vector.new(-1,0),vector.new(0.3,.9)}, --left
+				{anim8.newAnimation(table.reverse(get_sprite_quads("fullcharge",19,27,pData.sprites)),0.016,nil,pData.sprites.image,true),vector.new(-.5,-.5),vector.new(.5,.9)}, --upleft
 			},
 			vector.new(0,0),
 			"elastoblast",

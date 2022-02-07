@@ -50,7 +50,7 @@ local debug_atlas_image = love.graphics.newImage(debug_atlas)
 function love.load(args)
 	imgui.Init()
 	tick.rate=.016
-	love.graphics.setPointSize(2)
+	love.graphics.setDefaultFilter("nearest")
 	tick.sleep=0.001
 	control_scheme=Input.new {
 		controls = {
@@ -74,6 +74,7 @@ function love.load(args)
 	canvasBottom= love.graphics.newCanvas(256, 192)
 	--Load modules
 	gameCam=require("Resources.lib.gamera").new(0,0,8000,8000)
+	gameCam:setScale(1)
 	--
 	table.insert(windows,1,sub_window.new(canvasBottom,vector.new(0,0),vector.new(256,192+20),{title="Game"},vector.new(-8,-8)))
 	table.insert(windows,1,sub_window.new(canvasDebug,vector.new(0,0),vector.new(256,192+20),{title="Debug info"},vector.new(-8,-8)))

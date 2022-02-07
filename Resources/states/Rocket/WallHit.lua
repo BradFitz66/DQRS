@@ -7,6 +7,7 @@ end
 State.Update=function(owner,dt)
     if(owner.current_tree.current_animation:getFrame()==4)then
         timer.after(.1,function()
+            owner.full_charge_elastoblast=false
             if(debounce==true) then
                 return
             end
