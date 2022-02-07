@@ -15,3 +15,22 @@ Contains ripped assets from the game. None of the graphics were drawn by me and 
 To run, you can drag the root folder onto Love.exe.
 If you are unable to run, you may need to download this https://github.com/lzubiaur/clipper-lua and move clipper.dll to your love installation folder.
 If you still get errors, make an issue with a screenshot of the error.
+
+# Info about the project
+
+### Sprites atlases
+Sprites are loaded individually and then made into a texture atlas via the Runtime Texture Atlas library for Love2D. The individually loaded are discarded after this. It may be better to write a parser for the metadata created by Shoebox (the program I use to extract sprites from sprite sheets)
+
+### Tile maps
+Currently, I've ripped most of one tileset from the game which is the player tank's cannon room. It's ripped straight from the ROM and there's still plenty of issues with some tiles having wrong colors (it's a pain in the ass to get the correct palette. I just get close enough and manually color the wrong parts). If anyone wants to help with that, that'd be great.
+
+### Code naming convention
+I'm trying to keep code to this_style_of_naming mostly due to personal preference. External libraries made by other people will obvious follow their own naming convention and I won't spend time changing that since it's pretty pointless.
+
+### End goal
+The end goal this project is to have a (maybe) indistinguishable copy of Dragon Quest Heroes: Rocket Slime in terms of an engine. Ideally, I would want to make a demo of the tank battle system from the game to show of the capabilities of the engine but that's pretty far off.
+
+### Main to-dos
+
+* Pathfinding
+* Better NPC AI (ability to pick up and throw ammo, attack player, etc.)
