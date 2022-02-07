@@ -1,6 +1,6 @@
 local State = require("Resources.lib.Rocket_Engine.State Machine.State").new("Idle")
 State.Enter=function(owner)
-    owner:load_tree("idle",true)
+    owner:load_tree("idle",false)
     timer.after(5,function() 
         if(owner.statemachine.current_state.Name=="Idle") then
             owner.walkDest=vector.new(200,200)+vector.randomInsideUnitCircle(50)

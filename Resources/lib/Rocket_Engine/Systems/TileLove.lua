@@ -22,12 +22,8 @@ tilelove.__index=tilelove
 ---@param tilemap_image userdata
 ---@param chunk_subdivisions number
 ---@return table
-function tilelove.new_tilemap(tile_size_x,tile_size_y,tilemap_image,chunk_subdivisions)
+function tilelove.new_tilemap(tile_size_x,tile_size_y,tilemap_image)
     local tilemap = setmetatable(tilelove,{})
-    if(chunk_subdivisions) then
-        chunk_subdivisions=2
-    end
-    tilemap.chunk_subdivisions=chunk_subdivisions
     tilemap.atlas=RTA.newFixedSize(tile_size_x,tile_size_y,0)
     tilemap.tile_width=tile_size_x
     tilemap.tile_height=tile_size_y
@@ -147,7 +143,6 @@ function tilelove:add_map(map_id,map_data_baked,bounds)
     self.maps[map_id]["bounds"]=bounds
     self.maps[map_id]["layers"]={}
     self.maps[map_id]["layers"][1]={data=map_data_baked, visible=(is_visible~=nil and is_visible or true), metadata={}, bounds=bounds}
-
 end
 
 ---Bake a map from it's tiles to the indexes of the tile in the tileset
@@ -168,11 +163,6 @@ function tilelove:bake_map(map_data)
         ::continue::
     end
     --! TODO: CHUNKING
-    -- for x=1,self.chunk_size_x do
-    --     for y = 1, self.chunk_size_y do
-
-    --     end
-    -- end
     return tile_indexes
 end
 

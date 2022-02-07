@@ -29,8 +29,9 @@ State.Update=function(owner,dt)
         owner:load_tree("stretch")
     end
     if (owner.move_vector ~= vector.new(0,0)) then
-        if(last_vector~=owner.move_vector) then
-            owner.scale.y=owner.scale.y-.25
+        if(last_vector~=owner.move_vector and not obstruction)  then
+
+            owner.scale=startScale
             charge_timer=0
         end
         scaleProper=vector.new(owner.scale.x,(owner.scale.y+.5)*32)

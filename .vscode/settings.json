@@ -4,5 +4,7 @@
         "trailing-space",
         "undefined-field",
         "undefined-global"
-    ]
+    ],
+    "Lua.hint.enable": true,
+    "Lua.runtime.version": "LuaJIT"
 }

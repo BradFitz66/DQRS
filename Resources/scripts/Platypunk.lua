@@ -55,7 +55,7 @@ function Platypunk.new()
 	local idleFrames = table.reverse(get_sprite_quads("idle",1,9,punkData.sprites))
 	local walkFrames = table.reverse(get_sprite_quads("walk",1,36,punkData.sprites))
 	local stretchFrames = table.reverse(get_sprite_quads("stretch",1,36,punkData.sprites))
-	--Platypunk animations are bit more complex than the players so we have some hardcoded delay tables for some of the animations to improve how they look.
+	--hardcoded delay tables for some of the animations to improve how they look.
 	local walkDelays={0.03,0.03,0.07,0.13,0.03,0.03,0.03,0.03,0.07,0.13,0.03,0.03}
 	local stretchDelays={0.16,0.16,0.16,0.16,0.16,0.16,0.16,0.04,0.04,0.04,0.04,0.16}
 	local idleDelays={0.27,0.13,0.13,0.03}
@@ -63,9 +63,9 @@ function Platypunk.new()
 		['idle']=
 		blendtree.new({
 			{anim8.newAnimation({idleFrames[1],idleFrames[2],idleFrames[3],idleFrames[2]},idleDelays,nil,punkData.sprites.image),vector.new(0,-1),vector.new(.5,.8)}, --up
-			{anim8.newAnimation({idleFrames[7],idleFrames[8],idleFrames[9],idleFrames[8]},idleDelays,nil,punkData.sprites.image),vector.new(1,0),vector.new(.5,.8)}, --right
-			{anim8.newAnimation({idleFrames[4],idleFrames[5],idleFrames[6],idleFrames[5]},idleDelays,nil,punkData.sprites.image),vector.new(0,1),vector.new(.5,.8)}, -- down
-			{anim8.newAnimation({idleFrames[7],idleFrames[8],idleFrames[9],idleFrames[8]},idleDelays,nil,punkData.sprites.image,true),vector.new(-1,0),vector.new(.5,.8)}, --left
+			{anim8.newAnimation({idleFrames[4],idleFrames[5],idleFrames[6],idleFrames[5]},idleDelays,nil,punkData.sprites.image),vector.new(1,0),vector.new(.5,.8)}, --right
+			{anim8.newAnimation({idleFrames[7],idleFrames[8],idleFrames[9],idleFrames[8]},idleDelays,nil,punkData.sprites.image),vector.new(0,1),vector.new(.5,.8)}, -- down
+			{anim8.newAnimation({idleFrames[4],idleFrames[5],idleFrames[6],idleFrames[5]},idleDelays,nil,punkData.sprites.image,true),vector.new(-1,0),vector.new(.5,.8)}, --left
 			},
 			vector.new(0,0),
 			"idle",
