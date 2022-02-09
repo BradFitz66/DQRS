@@ -112,16 +112,6 @@ function tilelove:draw_map(map_index,offset_x,offset_y)
     end
 
     if(debug_mode==true) then
-        for i, v in ipairs(self.maps[map_index]["navmesh"]) do
-            love.graphics.setColor(
-                255,255,255
-            )
-            love.graphics.polygon("line",v)
-
-            love.graphics.setColor(0,0,255)
-            local tri_center=get_center_of_triangle(v)
-            love.graphics.print(tostring(i),tri_center.x,tri_center.y,0,1,1)
-        end
         love.graphics.setColor(255,0,0)
         self.maps[map_index]["collider"]:draw('line')
     end
@@ -179,63 +169,6 @@ function tilelove:bake_map(map_data)
     end
     --! TODO: CHUNKING
     return tile_indexes
-end
-
-
-
-
----Generate a navmesh for pathfinding for a certain map. Will return a graph of polygons than can be then used with Pathfinder.lua
----@param extend number 
----@param map_id string
-function tilelove:generate_navmesh(extend,map_id)
-    --extend 'extends' the bounds of the navmesh outwards from the bounds of the map (default 32)
-    extend=extend or 32
-    local map_bounds =self.maps[map_id]["bounds"]
-    local navmesh_base=collider_world:rectangle(0-extend,0-extend,map_bounds.x+(extend*2),(map_bounds.y+extend*2))
-    
-    local map_collider=self.maps[map_id]["collider"]
-    local clipper_poly_base = clipper.polygon(0)
-    local clipper_poly_map = clipper.polygon(0)
-    local clipper_instance_navmesh=clipper.new()
-    local navmesh_result={}
-    for _, vertex in pairs(navmesh_base._polygon.vertices) do
-        clipper_poly_base:add(vertex.x,vertex.y)
-    end
-    for _, vertex in pairs(map_collider._polygon.vertices) do
-        clipper_poly_map:add(vertex.x,vertex.y)
-    end
-
-    clipper_instance_navmesh:add_subject(clipper_poly_base)
-    clipper_instance_navmesh:add_clip(clipper_poly_map)
-    local clipper_result=clipper_instance_navmesh:execute('difference',"positive","positive",false)
-    clipper_result=clipper_result:clean()
-    clipper_result=clipper_result:simplify()
-    for i = 1, clipper_result:size() do
-        for j = 1, clipper_result:get(i):size() do
-            local point = clipper_result:get(i):get(j)
-            table.insert(navmesh_result,1,tonumber(point.y))
-            table.insert(navmesh_result,1,tonumber(point.x))
-        end
-    end
-    collider_world:hash():remove(navmesh_base)
-    --Construct graph
-    local navmesh_triangles=love.math.triangulate(navmesh_result)
-    local graph = require('Resources.lib.luagraphs.data.graph').create(#navmesh_triangles)
-    
-    for i=1, #navmesh_triangles-1 do
-        local triangle = navmesh_triangles[i]
-        for j=i+1, #navmesh_triangles do
-            local comparison = navmesh_triangles[j]
-            if(mathutils.share_edge(triangle,comparison)) then
-                local dist = (get_center_of_triangle(triangle)-get_center_of_triangle(comparison)):len()
-                graph:addEdge(i, j, weight)
-                graph:addEdge(j, i, weight)
-            end
-        end
-    end
-
-    self.maps[map_id]["navmesh"]=navmesh_triangles
-    self.maps[map_id]["navmesh_graph"]=graph
 end
 
 ---Bake the tileset
