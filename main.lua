@@ -13,8 +13,8 @@ math=require("Resources.lib.mathx")
 string=require("Resources.lib.stringx")
 table=require("Resources.lib.tablex")
 vector3=require("Resources.lib.brinevector3D")
-
-
+mlib=require("Resources.lib.Rocket_Engine.Utils.mlib")
+poly2tri = assert(package.loadlib("C:/Program Files/LOVE/poly2tri-x64.dll", 'luaopen_poly2tri'))()
 gameCam=nil;
 rect = nil;
 world=require("Resources.lib.bump").newWorld(24);
@@ -23,7 +23,7 @@ control_scheme=nil;
 input_provider=require("Resources.lib.Rocket_Engine.Systems.Input.InputProvider")
 input_provider:add_state(require("Resources.lib.Rocket_Engine.Systems.Input.PlayerInput"))
 imgui = require "Resources.lib.cimgui" -- cimgui is the folder containing the Lua module (the "src" folder in the github repository)
-baked_pathfinding_map=nil
+path=nil
 
 --	.flags={bouncy=false,trigger=false,canCollide=true}x
 --global variables
@@ -127,9 +127,6 @@ function love.load(args)
 			entity.bounces_left=1			
 		end
 	end}
-
-
-	baked_pathfinding_map=require("Resources.lib.Rocket_Engine.Systems.PathfindingGrid"):bake(2400,2400,4)
 end
 
 

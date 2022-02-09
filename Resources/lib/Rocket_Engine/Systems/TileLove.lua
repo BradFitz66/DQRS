@@ -13,6 +13,7 @@
 
 local tilelove={}
 local vector = require("Resources.lib.HUMP.vector")
+local mathutils = require("Resources.lib.Rocket_Engine.Utils.MathUtils")
 local RTA=require("Resources.lib.RTA")
 tilelove.__index=tilelove
 
@@ -26,7 +27,6 @@ function tilelove.new_tilemap(tile_size_x,tile_size_y,tilemap_image)
     local tilemap = setmetatable(tilelove,{})
     tilemap.atlas=RTA.newFixedSize(tile_size_x,tile_size_y,0)
     tilemap.tile_width=tile_size_x
-    tilemap.obstruction_map={}
     tilemap.tile_height=tile_size_y
     local tiles=tilemap:split_image(tilemap_image,true)
     for id, tile in pairs(tiles) do
@@ -112,10 +112,18 @@ function tilelove:draw_map(map_index,offset_x,offset_y)
     end
 
     if(debug_mode==true) then
-        love.graphics.setColor(255,0,0)
-        for _, v in pairs(self.colliders) do
-            v:draw('line')
+        for i, v in ipairs(self.maps[map_index]["navmesh"]) do
+            love.graphics.setColor(
+                255,255,255
+            )
+            love.graphics.polygon("line",v)
+
+            love.graphics.setColor(0,0,255)
+            local tri_center=get_center_of_triangle(v)
+            love.graphics.print(tostring(i),tri_center.x,tri_center.y,0,1,1)
         end
+        love.graphics.setColor(255,0,0)
+        self.maps[map_index]["collider"]:draw('line')
     end
     love.graphics.setColor(1,1,1)
 end
@@ -129,6 +137,12 @@ function tilelove:load_map_from_image(image_data)
         map_tiles,
         vector.new(image_data:getWidth(),image_data:getHeight())
     }
+end
+
+function get_center_of_triangle(triangle) 
+    local x_center=(triangle[1]+triangle[3]+triangle[5])/3
+    local y_center=(triangle[2]+triangle[4]+triangle[6])/3
+    return vector.new(x_center,y_center)
 end
 
 ---Add a *BAKED* map to the map dictionary
@@ -151,7 +165,7 @@ end
 ---@return table
 function tilelove:bake_map(map_data)
     local tile_indexes={}
-    for _, map_tile in pairs(map_data) do
+    for _, map_tile in pairs(map_data[1]) do
         for _, set_tile in pairs(self.atlas.images) do
             if(set_tile.data~=nil) then
                 if(map_tile.data:getString()==set_tile.data:getString()) then
@@ -165,6 +179,63 @@ function tilelove:bake_map(map_data)
     end
     --! TODO: CHUNKING
     return tile_indexes
+end
+
+
+
+
+---Generate a navmesh for pathfinding for a certain map. Will return a graph of polygons than can be then used with Pathfinder.lua
+---@param extend number 
+---@param map_id string
+function tilelove:generate_navmesh(extend,map_id)
+    --extend 'extends' the bounds of the navmesh outwards from the bounds of the map (default 32)
+    extend=extend or 32
+    local map_bounds =self.maps[map_id]["bounds"]
+    local navmesh_base=collider_world:rectangle(0-extend,0-extend,map_bounds.x+(extend*2),(map_bounds.y+extend*2))
+    
+    local map_collider=self.maps[map_id]["collider"]
+    local clipper_poly_base = clipper.polygon(0)
+    local clipper_poly_map = clipper.polygon(0)
+    local clipper_instance_navmesh=clipper.new()
+    local navmesh_result={}
+    for _, vertex in pairs(navmesh_base._polygon.vertices) do
+        clipper_poly_base:add(vertex.x,vertex.y)
+    end
+    for _, vertex in pairs(map_collider._polygon.vertices) do
+        clipper_poly_map:add(vertex.x,vertex.y)
+    end
+
+    clipper_instance_navmesh:add_subject(clipper_poly_base)
+    clipper_instance_navmesh:add_clip(clipper_poly_map)
+    local clipper_result=clipper_instance_navmesh:execute('difference',"positive","positive",false)
+    clipper_result=clipper_result:clean()
+    clipper_result=clipper_result:simplify()
+    for i = 1, clipper_result:size() do
+        for j = 1, clipper_result:get(i):size() do
+            local point = clipper_result:get(i):get(j)
+            table.insert(navmesh_result,1,tonumber(point.y))
+            table.insert(navmesh_result,1,tonumber(point.x))
+        end
+    end
+    collider_world:hash():remove(navmesh_base)
+    --Construct graph
+    local navmesh_triangles=love.math.triangulate(navmesh_result)
+    local graph = require('Resources.lib.luagraphs.data.graph').create(#navmesh_triangles)
+    
+    for i=1, #navmesh_triangles-1 do
+        local triangle = navmesh_triangles[i]
+        for j=i+1, #navmesh_triangles do
+            local comparison = navmesh_triangles[j]
+            if(mathutils.share_edge(triangle,comparison)) then
+                local dist = (get_center_of_triangle(triangle)-get_center_of_triangle(comparison)):len()
+                graph:addEdge(i, j, weight)
+                graph:addEdge(j, i, weight)
+            end
+        end
+    end
+
+    self.maps[map_id]["navmesh"]=navmesh_triangles
+    self.maps[map_id]["navmesh_graph"]=graph
 end
 
 ---Bake the tileset
@@ -196,19 +267,19 @@ These offsets are in tiles, not pixels (i.e. and offset_y of 1 will move the lay
 function tilelove:add_layer_to_map(map_id,layer_data,is_collision_layer,metadata,offset_x,offset_y,is_visible)
     local map = self.maps[map_id]
     local layer_tile_data=self:load_map_from_image(layer_data)
-    local layer_data = self:bake_map(layer_tile_data[1])
+    local layer_data = self:bake_map(layer_tile_data)
     --Apply offset
     if(offset_x~=nil or offset_y~=nil) then
         offset_x=offset_x~=nil and offset_x or 0
         offset_y=offset_y~=nil and offset_y or 0
 
         for _, tile in pairs(layer_data) do
-            tile.x=tile.x + (offset_x * self.tile_width)
-            tile.y=tile.y + (offset_y * self.tile_height)
+            tile.x=math.ceil(math.round((tile.x + (offset_x * self.tile_width))*self.tile_width)/self.tile_width)
+            tile.y=math.ceil(math.round((tile.y + (offset_y * self.tile_height))*self.tile_height)/self.tile_height)
         end
     end
-    local layer_table = {data=layer_data, visible=is_visible, metadata= (metadata~=nil and metadata or {}), bounds=layer_tile_data[2]}
-    self.maps[map_id].layers[#self.maps["Cannon room"].layers+1]=layer_table
+    local layer_table = {data=layer_data, visible=is_visible, metadata= (metadata~=nil and metadata or {}), bounds=self.maps[map_id]["bounds"]}
+    self.maps[map_id].layers[#self.maps[map_id].layers+1]=layer_table
     --[[
 
         If collision layer, create a polygon collider using the clipper library by creating
@@ -217,8 +288,8 @@ function tilelove:add_layer_to_map(map_id,layer_data,is_collision_layer,metadata
 
         I probably need to make something more robust than this so I can have better angles for
         collisions rather than just right angles.
-
     ]]
+    
     if(is_collision_layer) then
         local clipped_polygon_buffer;
         local clipper_instance = clipper.new()
@@ -237,6 +308,10 @@ function tilelove:add_layer_to_map(map_id,layer_data,is_collision_layer,metadata
                 for _, vertex in pairs(tile_collider._polygon.vertices) do
                     clipper_poly:add(vertex.x,vertex.y)
                 end
+                --Remove square collider after
+                collider_world:hash():remove(
+                    tile_collider
+                )
                 --[[
                     If there's currently no clipper_polygon_buffer, we add the new empty clipper poly to it. 
                     Otherwise, we add the polygon buffer as the clip subject and add the new clipper polygon as the clipper and then union them
@@ -251,6 +326,7 @@ function tilelove:add_layer_to_map(map_id,layer_data,is_collision_layer,metadata
             end
         end
         result=clipped_polygon_buffer
+        result:simplify()
         for i = 1, result:size() do
 			for j = 1, result:get(i):size() do
 				local point = result:get(i):get(j)
@@ -260,6 +336,7 @@ function tilelove:add_layer_to_map(map_id,layer_data,is_collision_layer,metadata
 		end
 		result=collider_world:polygon(unpack(clipper_to_hc_polygon))
 		result.flags={bouncy=false,trigger=false,canCollide=true}
+        self.maps[map_id]["collider"]=result
         table.insert(self.colliders,1,result)
         clipped_polygon_buffer=nil
         collectgarbage("collect")
