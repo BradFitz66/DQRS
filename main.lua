@@ -14,7 +14,6 @@ string=require("Resources.lib.stringx")
 table=require("Resources.lib.tablex")
 vector3=require("Resources.lib.brinevector3D")
 mlib=require("Resources.lib.Rocket_Engine.Utils.mlib")
-poly2tri = assert(package.loadlib("C:/Program Files/LOVE/poly2tri-x64.dll", 'luaopen_poly2tri'))()
 gameCam=nil;
 rect = nil;
 world=require("Resources.lib.bump").newWorld(24);

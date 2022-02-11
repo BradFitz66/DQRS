@@ -112,7 +112,7 @@ function tilelove:draw_map(map_index,offset_x,offset_y)
     end
 
     if(debug_mode==true) then
-        for i, v in ipairs(self.maps[map_index]["navmesh"]) do
+        for i, v in ipairs(self.maps[map_index]["navmesh_poly"]) do
             love.graphics.setColor(
                 255,255,255
             )
@@ -182,73 +182,6 @@ function tilelove:bake_map(map_data)
 end
 
 
-
-
----Generate a navmesh for pathfinding for a certain map. Will return a graph of polygons than can be then used with Pathfinder.lua
----@param extend number 
----@param map_id string
-function tilelove:generate_navmesh(extend,map_id)
-    --extend 'extends' the bounds of the navmesh outwards from the bounds of the map (default 32)
-    extend=extend or 32
-    local map_bounds =self.maps[map_id]["bounds"]
-    local navmesh_base=collider_world:rectangle(0,0,map_bounds.x+(extend*2),(map_bounds.y+extend*2))
-    
-    local map_collider=self.maps[map_id]["collider"]
-    local clipper_poly_base = clipper.polygon(0)
-    local clipper_poly_map = clipper.polygon(0)
-    local clipper_instance_navmesh=clipper.new()
-    local navmesh_result={}
-    for _, vertex in pairs(navmesh_base._polygon.vertices) do
-        clipper_poly_base:add(vertex.x,vertex.y)
-    end
-    for _, vertex in pairs(map_collider._polygon.vertices) do
-        clipper_poly_map:add(vertex.x,vertex.y)
-    end
-
-    clipper_instance_navmesh:add_subject(clipper_poly_base)
-    clipper_instance_navmesh:add_clip(clipper_poly_map)
-    local clipper_result=clipper_instance_navmesh:execute('union',"positive","positive")
-    clipper_instance_navmesh=clipper.new()
-    clipper_result=clipper_result:simplify()
-    clipper_poly_base={}
-    for i = 1, clipper_result:size() do
-        for j = 1, clipper_result:get(i):size() do
-            local point = clipper_result:get(i):get(j)
-            table.insert(clipper_poly_base,1,tonumber(point.y))
-            table.insert(clipper_poly_base,1,tonumber(point.x))
-        end
-    end
-    clipper_instance_navmesh:add_subject(clipper_poly_base)
-    clipper_instance_navmesh:add_clip(clipper_poly_map)
-    clipper_result=clipper_instance_navmesh:execute('difference',"positive","positive")
-    for i = 1, clipper_result:size() do
-        for j = 1, clipper_result:get(i):size() do
-            local point = clipper_result:get(i):get(j)
-            table.insert(navmesh_result,1,tonumber(point.y))
-            table.insert(navmesh_result,1,tonumber(point.x))
-        end
-    end
-    collider_world:hash():remove(navmesh_base)
-    --Construct graph
-    local navmesh_triangles=love.math.triangulate(navmesh_result)
-    local graph = require('Resources.lib.luagraphs.data.graph').create(#navmesh_triangles)
-    
-    for i=1, #navmesh_triangles-1 do
-        local triangle = navmesh_triangles[i]
-        for j=i+1, #navmesh_triangles do
-            local comparison = navmesh_triangles[j]
-            if(mathutils.share_edge(triangle,comparison)) then
-                local dist = (get_center_of_triangle(triangle)-get_center_of_triangle(comparison)):len()
-                graph:addEdge(i, j, weight)
-                graph:addEdge(j, i, weight)
-            end
-        end
-    end
-
-    self.maps[map_id]["navmesh"]=navmesh_triangles
-    self.maps[map_id]["navmesh_graph"]=graph
-end
-
 ---Bake the tileset
 function tilelove:bake()
     self.atlas:hardBake();
@@ -304,6 +237,13 @@ function tilelove:add_layer_to_map(map_id,layer_data,is_collision_layer,metadata
     if(is_collision_layer) then
         local clipped_polygon_buffer;
         local clipper_instance = clipper.new()
+        local navmesh_clipper = clipper.new()
+        local navmesh = clipper.polygon(0)
+        local navmesh_base=collider_world:rectangle(-10,-10,self.maps[map_id]["bounds"].x+20,self.maps[map_id]["bounds"].y+20)
+        for _, vertex in pairs(navmesh_base._polygon.vertices) do
+            navmesh:add(vertex.x,vertex.y)
+        end    
+        navmesh_clipper:add_subject(navmesh)
         local clipper_to_hc_polygon={}
         for tile_index = 1, #layer_data do
             local tile = layer_data[tile_index]
@@ -319,10 +259,13 @@ function tilelove:add_layer_to_map(map_id,layer_data,is_collision_layer,metadata
                 for _, vertex in pairs(tile_collider._polygon.vertices) do
                     clipper_poly:add(vertex.x,vertex.y)
                 end
+
                 --Remove square collider after
                 collider_world:hash():remove(
                     tile_collider
                 )
+                --self:negate_from_navmesh(tile_collider._polygon.vertices,map_id)
+                
                 --[[
                     If there's currently no clipper_polygon_buffer, we add the new empty clipper poly to it. 
                     Otherwise, we add the polygon buffer as the clip subject and add the new clipper polygon as the clipper and then union them
@@ -345,6 +288,22 @@ function tilelove:add_layer_to_map(map_id,layer_data,is_collision_layer,metadata
 				table.insert(clipper_to_hc_polygon,1,tonumber(point.x))
 			end
 		end
+        navmesh_clipper:add_clip(result)
+        navmesh=navmesh_clipper:execute("difference","positive","negative",true)
+
+        self.maps[map_id]["navmesh_poly"]={}
+        self.maps[map_id]["navmesh"]=navmesh
+        for i = 1, self.maps[map_id]["navmesh"]:size() do
+            for j = 1, self.maps[map_id]["navmesh"]:get(i):size() do
+                local point = self.maps[map_id]["navmesh"]:get(i):get(j)
+                print(point.x,point.y)
+                table.insert(self.maps[map_id]["navmesh_poly"],1,tonumber(point.y))
+                table.insert(self.maps[map_id]["navmesh_poly"],1,tonumber(point.x))
+            end
+        end
+        self.maps[map_id]["navmesh_poly"]=love.math.triangulate(self.maps[map_id]["navmesh_poly"])
+
+
 		result=collider_world:polygon(unpack(clipper_to_hc_polygon))
 		result.flags={bouncy=false,trigger=false,canCollide=true}
         self.maps[map_id]["collider"]=result
