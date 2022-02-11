@@ -13,6 +13,7 @@ function TankInterior.Load()
     tank_tileset:add_map("Cannon room",baked_map,map_data_tiles[2])
     local layer_1 = tank_tileset:add_layer_to_map("Cannon room",love.image.newImageData("Resources/graphics/Tilemaps/CannonRoom/CollisionLayer.png"),true,{},0,1.3,false)
     tank_tileset:bake()    
+    tank_tileset:generate_navmesh(16,"Cannon room")
     map_tiles=nil
     baked_map=nil
     collectgarbage("collect")

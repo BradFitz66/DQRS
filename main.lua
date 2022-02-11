@@ -66,9 +66,7 @@ function love.load(args)
 		},
 		joystick = love.joystick.getJoysticks()[1],
 	}
-	
-	local width, height, flags = love.window.getMode()
-	love.graphics.setDefaultFilter("nearest","nearest",0)
+		love.graphics.setDefaultFilter("nearest","nearest",0)
 
 	canvasDebug= love.graphics.newCanvas(256, 192)
 	canvasBottom= love.graphics.newCanvas(256, 192)
