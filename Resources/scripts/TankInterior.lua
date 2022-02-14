@@ -11,8 +11,9 @@ function TankInterior.Load()
     local map_data_tiles = tank_tileset:load_map_from_image(love.image.newImageData("Resources/graphics/Tilemaps/CannonRoom/Map.png"))
     local baked_map = tank_tileset:bake_map(map_data_tiles)
     tank_tileset:add_map("Cannon room",baked_map,map_data_tiles[2])
-    local layer_1 = tank_tileset:add_layer_to_map("Cannon room",love.image.newImageData("Resources/graphics/Tilemaps/CannonRoom/CollisionLayer.png"),true,{},0,1.3,false)
-    tank_tileset:bake()    
+    local layer_1 = tank_tileset:add_layer_to_map("Cannon room",love.image.newImageData("Resources/graphics/Tilemaps/CannonRoom/CollisionLayer.png"),true,{},-.2,1.3,false)
+    tank_tileset:bake() 
+    tank_tileset:bake_pathfinding("Cannon room")   
     map_tiles=nil
     baked_map=nil
     collectgarbage("collect")

@@ -16,6 +16,7 @@ local vector = require("Resources.lib.HUMP.vector")
 local mathutils = require("Resources.lib.Rocket_Engine.Utils.MathUtils")
 local RTA=require("Resources.lib.RTA")
 tilelove.__index=tilelove
+local testing_path={}
 
 ---Create a new tilemap
 ---@param tile_size_x number
@@ -35,7 +36,7 @@ function tilelove.new_tilemap(tile_size_x,tile_size_y,tilemap_image)
             tilemap.atlas.images[id].data=tile.data
         end
     end
-
+    
     tilemap.colliders={}
     tilemap.maps={}
     tilemap.is_baked=false
@@ -112,16 +113,19 @@ function tilelove:draw_map(map_index,offset_x,offset_y)
     end
 
     if(debug_mode==true) then
-        for i, v in ipairs(self.maps[map_index]["navmesh_poly"]) do
-            love.graphics.setColor(
-                255,255,255
-            )
-            love.graphics.polygon("fill",v)
-
-            love.graphics.setColor(255,255,0)
-            -- local tri_center=get_center_of_triangle(v)
-            -- love.graphics.print(tostring(i),tri_center.x,tri_center.y,0,1,1)
+        for i_x, x in pairs(self.maps[map_index]["pathfinding_grid"]) do
+            for i_y, y in pairs(x) do
+                if(i_x==20 and i_y==20) then
+                    love.graphics.setColor(255,0,0)
+                else
+                    love.graphics.setColor(255,255,255)
+                end
+                if(y==1) then
+                    love.graphics.points(i_x*8,i_y*8)
+                end
+            end
         end
+
         love.graphics.setColor(255,0,0)
         self.maps[map_index]["collider"]:draw('line')
     end
@@ -181,6 +185,40 @@ function tilelove:bake_map(map_data)
     return tile_indexes
 end
 
+function tilelove:bake_pathfinding(map_id,extend)
+    local bounds=self.maps[map_id]["bounds"]
+    local grid={}
+    for x = 0, bounds.x,8 do
+        grid[x/8]={}
+        for y = 0, bounds.y,8 do
+            local circle = collider_world:circle(x,y,4)
+            if(circle:collidesWith(self.maps[map_id]["collider"])) then
+                grid[x/8][y/8]=0
+            else
+                grid[x/8][y/8]=1
+            end
+            collider_world:hash():remove(circle)
+        end
+    end
+    self.maps[map_id]["pathfinding_grid"]=grid
+
+    local Grid = require "Resources.lib.jumper.grid" -- The grid class
+    local Pathfinder = require "Resources.lib.jumper.pathfinder" -- The pathfinder class
+    local astar_grid = Grid(grid) 
+    local start_x = 20
+    local start_y = 20
+    local end_x = 25
+    local end_y= 40
+    local myFinder = Pathfinder(astar_grid, 'JPS', 1) 
+    local path = myFinder:getPath(start_x, start_y, end_x, end_y)
+    if path then
+        print(('Path found! Length: %.2f'):format(path:getLength()))
+        testing_path=path
+        for node, count in path:nodes() do
+            print(node.x,node.y)
+        end
+    end
+end
 
 ---Bake the tileset
 function tilelove:bake()
@@ -237,13 +275,6 @@ function tilelove:add_layer_to_map(map_id,layer_data,is_collision_layer,metadata
     if(is_collision_layer) then
         local clipped_polygon_buffer;
         local clipper_instance = clipper.new()
-        local navmesh_clipper = clipper.new()
-        local navmesh = clipper.polygon(0)
-        local navmesh_base=collider_world:rectangle(-10,-10,self.maps[map_id]["bounds"].x+20,self.maps[map_id]["bounds"].y+20)
-        for _, vertex in pairs(navmesh_base._polygon.vertices) do
-            navmesh:add(vertex.x,vertex.y)
-        end    
-        navmesh_clipper:add_subject(navmesh)
         local clipper_to_hc_polygon={}
         for tile_index = 1, #layer_data do
             local tile = layer_data[tile_index]
@@ -288,21 +319,6 @@ function tilelove:add_layer_to_map(map_id,layer_data,is_collision_layer,metadata
 				table.insert(clipper_to_hc_polygon,1,tonumber(point.x))
 			end
 		end
-        navmesh_clipper:add_clip(result)
-        navmesh=navmesh_clipper:execute("difference","positive","negative",true)
-
-        self.maps[map_id]["navmesh_poly"]={}
-        self.maps[map_id]["navmesh"]=navmesh
-        for i = 1, self.maps[map_id]["navmesh"]:size() do
-            for j = 1, self.maps[map_id]["navmesh"]:get(i):size() do
-                local point = self.maps[map_id]["navmesh"]:get(i):get(j)
-                print(point.x,point.y)
-                table.insert(self.maps[map_id]["navmesh_poly"],1,tonumber(point.y))
-                table.insert(self.maps[map_id]["navmesh_poly"],1,tonumber(point.x))
-            end
-        end
-        self.maps[map_id]["navmesh_poly"]=love.math.triangulate(self.maps[map_id]["navmesh_poly"])
-
 
 		result=collider_world:polygon(unpack(clipper_to_hc_polygon))
 		result.flags={bouncy=false,trigger=false,canCollide=true}

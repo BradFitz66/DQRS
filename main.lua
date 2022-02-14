@@ -124,6 +124,7 @@ function love.load(args)
 			entity.bounces_left=1			
 		end
 	end}
+	love.graphics.setPointSize(2)
 end
 
 
