@@ -44,6 +44,12 @@ function Registry:emit(s, ...)
 	end
 end
 
+function Registry:emit_with_return(s, ...)
+	for f in pairs(self[s]) do
+		return f(...)
+	end
+end
+
 function Registry:remove(s, ...)
 	local f = {...}
 	for i = 1,select('#', ...) do

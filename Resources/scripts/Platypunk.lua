@@ -150,7 +150,8 @@ function Platypunk.new()
 	punkData.scale=vector.new(1,1)
 	punkData.position=vector.new(300,300)
 	punkData.image=love.graphics.newImage("Resources/graphics/Platypunk/Idle/1.png")
-    punkData.walkDest=vector.new(0,0)
+	punkData.current_path={}
+    punkData.walkDest=0 -- refers to index in current_path
 	punkData.sprite.position=vector.new(400,400)
 	punkData.rotation=0
 	return punkData
@@ -192,6 +193,19 @@ function Platypunk:draw()
 			offset.x,
 			offset.y
 		)
+	end
+	if(debug_mode) then
+		if(self.current_path~=nil and #self.current_path>0) then
+			for i = 1, #self.current_path do
+				love.graphics.setColor(0,0,0)
+				love.graphics.print(i,self.current_path[i].x,self.current_path[i].y)
+			end
+			for i = 1, #self.current_path-1 do
+				love.graphics.setColor(0,255,0)
+				love.graphics.line(self.current_path[i].x,self.current_path[i].y,self.current_path[i+1].x,self.current_path[i+1].y)
+			end
+			love.graphics.setColor(255,255,255)
+		end
 	end
 end
 

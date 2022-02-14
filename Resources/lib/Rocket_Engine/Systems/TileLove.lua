@@ -113,15 +113,10 @@ function tilelove:draw_map(map_index,offset_x,offset_y)
     end
 
     if(debug_mode==true) then
-        for i_x, x in pairs(self.maps[map_index]["pathfinding_grid"]) do
+        for i_x, x in pairs(self.maps[map_index]["occlusion_map"]) do
             for i_y, y in pairs(x) do
-                if(i_x==20 and i_y==20) then
-                    love.graphics.setColor(255,0,0)
-                else
-                    love.graphics.setColor(255,255,255)
-                end
                 if(y==1) then
-                    love.graphics.points(i_x*8,i_y*8)
+                    love.graphics.points(i_y*8,i_x*8)
                 end
             end
         end
@@ -185,39 +180,59 @@ function tilelove:bake_map(map_data)
     return tile_indexes
 end
 
+
+
 function tilelove:bake_pathfinding(map_id,extend)
     local bounds=self.maps[map_id]["bounds"]
-    local grid={}
-    for x = 0, bounds.x,8 do
-        grid[x/8]={}
-        for y = 0, bounds.y,8 do
-            local circle = collider_world:circle(x,y,4)
+    local occlusion_grid={}        
+    for y = 0, bounds.y,self.tile_height do
+        occlusion_grid[y/self.tile_height]={}
+        for x = 0, bounds.x,self.tile_width do
+        --Divide by tile_width/tile_height to convert to 'grid space' (tile space?)
+            --create new HC collider and check if it collides with the maps collider. if it does, the tile is occluded
+            local circle = collider_world:circle(x,y,8)
             if(circle:collidesWith(self.maps[map_id]["collider"])) then
-                grid[x/8][y/8]=0
+                occlusion_grid[y/self.tile_height][x/self.tile_width]=0 --occluded
             else
-                grid[x/8][y/8]=1
+                occlusion_grid[y/self.tile_height][x/self.tile_width]=1 --not occluded (yes i realize these should ideally be the other way around)
             end
-            collider_world:hash():remove(circle)
-        end
+            collider_world:hash():remove(circle)   
+        end    
     end
-    self.maps[map_id]["pathfinding_grid"]=grid
-
-    local Grid = require "Resources.lib.jumper.grid" -- The grid class
-    local Pathfinder = require "Resources.lib.jumper.pathfinder" -- The pathfinder class
-    local astar_grid = Grid(grid) 
-    local start_x = 20
-    local start_y = 20
-    local end_x = 25
-    local end_y= 40
-    local myFinder = Pathfinder(astar_grid, 'JPS', 1) 
-    local path = myFinder:getPath(start_x, start_y, end_x, end_y)
-    if path then
-        print(('Path found! Length: %.2f'):format(path:getLength()))
-        testing_path=path
-        for node, count in path:nodes() do
-            print(node.x,node.y)
+    self.maps[map_id]["occlusion_map"]=occlusion_grid   
+    local jumper_Grid=require "Resources.lib.Rocket_Engine.Systems.jumper.grid"
+    self.maps[map_id]["pathfinding_grid"]=require "Resources.lib.Rocket_Engine.Systems.jumper.pathfinder"(jumper_Grid(occlusion_grid), 'JPS', 1)
+    --Create a new signal that AI can use to request a path
+    signal:register("Request_Path",function(map_id,start_pos,end_pos) 
+        --Convert to tile/grid coordinates and round down.
+        start_pos=vector.new(
+            math.round(start_pos.x/self.tile_width),
+            math.round(start_pos.y/self.tile_height)
+        )
+        end_pos=vector.new(
+            math.round(end_pos.x/self.tile_width),
+            math.round(end_pos.y/self.tile_height)
+        )
+        --Pathfinder instance
+        local path_grid=self.maps[map_id]["pathfinding_grid"]
+        if(path_grid) then
+            local generated_path = path_grid:getPath(
+                start_pos.x,
+                start_pos.y,
+                end_pos.x,
+                end_pos.y
+            )
+            if(generated_path) then
+                local path_points={}
+                for node,count in generated_path:nodes() do
+                    table.insert(path_points,#path_points+1,vector.new(node.x*self.tile_height,node.y*self.tile_width))
+                end
+                print("path points:",#path_points)
+                return path_points           
+            end
         end
-    end
+        return nil
+    end)
 end
 
 ---Bake the tileset

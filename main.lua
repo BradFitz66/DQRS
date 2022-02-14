@@ -14,6 +14,7 @@ string=require("Resources.lib.stringx")
 table=require("Resources.lib.tablex")
 vector3=require("Resources.lib.brinevector3D")
 mlib=require("Resources.lib.Rocket_Engine.Utils.mlib")
+signal=require("Resources.lib.HUMP.signal").new()
 gameCam=nil;
 rect = nil;
 world=require("Resources.lib.bump").newWorld(24);
