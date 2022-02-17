@@ -82,7 +82,6 @@ function love.load(args)
 	player=require("Resources.scripts.Player").load()
 	player:load_tree("idle")
 	platy=require("Resources.scripts.Platypunk").new()
-	
 	platy:load_tree("idle")
 	
 	--love.graphics.setBackgroundColor(72/255,72/255,72/255)

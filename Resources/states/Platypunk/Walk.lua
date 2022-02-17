@@ -10,13 +10,13 @@ end
 State.Update=function(owner,dt)
 	--Are we at the end of the path?
 	if(owner.walkDest>#owner.current_path) then
-		owner.move_vector=vector.zero
 		--Random chance to stretch. Ugly way to do it. Need to revise
 		if(love.math.random(1,40)==32) then
 			owner:change_state("Stretch")
 		else
 			owner:change_state("Idle")
 		end
+		--owner.move_vector=vector.zero
 	end
 	if(owner.current_path[owner.walkDest]~=nil and owner.position.dist(owner.position,owner.current_path[owner.walkDest])<1) then
 		print("Length of path:",#owner.current_path,"At point",owner.walkDest)
