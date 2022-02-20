@@ -84,7 +84,6 @@ function love.load(args)
 	platy=require("Resources.scripts.Platypunk").new()
 	platy:load_tree("idle")
 	
-	--love.graphics.setBackgroundColor(72/255,72/255,72/255)
 	--love.graphics.setLineWidth(1)
 	debugKeys=Input.new{
 		controls={
@@ -104,26 +103,26 @@ function love.load(args)
 
 	
 	--Test for a trigger collider. Trigger colliders can be walked through and run a function when something enters it.
-	test_trigger=collider_world:rectangle(335,230,65,40)
-	test_trigger.flags={bouncy=false,trigger=true,canCollide=true,
-	trigger_function=function(this_trigger,entity) 
-		if(entity.type=="ammo" and entity.going_into_cannon==false) then
-			--Center of collider
-			local height=2 --height of the bounce into the center
-			--magic number bullshit
-			local targ_x,targ_y=this_trigger._polygon.centroid.x+10,this_trigger._polygon.centroid.y-10
+	-- test_trigger=collider_world:rectangle(335,230,65,40)
+	-- test_trigger.flags={bouncy=false,trigger=true,canCollide=true,
+	-- trigger_function=function(this_trigger,entity) 
+	-- 	if(entity.type=="ammo" and entity.going_into_cannon==false) then
+	-- 		--Center of collider
+	-- 		local height=2 --height of the bounce into the center
+	-- 		--magic number bullshit
+	-- 		local targ_x,targ_y=this_trigger._polygon.centroid.x+10,this_trigger._polygon.centroid.y-10
 
-			--hacks to deal with my barely working faux bounce physics
-			entity.going_into_cannon=true
-			entity.in_air=false
-			--not sure whats going on here but it sort of works
-			local x_vel=(targ_x - entity.parent.position.x) / (math.sqrt(-3*height/-9.81));
-			local z_vel=(targ_y - entity.parent.position.y) / (math.sqrt(-3*height/-9.81));
-			entity:add_force_xyz(vector3(x_vel,height,z_vel))
+	-- 		--hacks to deal with my barely working faux bounce physics
+	-- 		entity.going_into_cannon=true
+	-- 		entity.in_air=false
+	-- 		--not sure whats going on here but it sort of works
+	-- 		local x_vel=(targ_x - entity.parent.position.x) / (math.sqrt(-3*height/-9.81));
+	-- 		local z_vel=(targ_y - entity.parent.position.y) / (math.sqrt(-3*height/-9.81));
+	-- 		entity:add_force_xyz(vector3(x_vel,height,z_vel))
 			
-			entity.bounces_left=1			
-		end
-	end}
+	-- 		entity.bounces_left=1			
+	-- 	end
+	-- end}
 	love.graphics.setPointSize(2)
 end
 
@@ -143,9 +142,12 @@ function love.update(dt)
 			end
 			if(debug_mode) then
 				love.graphics.setColor(1,1,0,1)
-				test_trigger:draw()
-			end		
+				--test_trigger:draw()
+			end
+			love.graphics.setColor(255,255,0)
+			love.graphics.setColor(255,255,255)
 		end)
+		love.graphics.setBackgroundColor(74/255,74/255,74/255)
 	end)
 	canvasDebug:renderTo(function()
 		love.graphics.clear()
@@ -178,6 +180,7 @@ function love.update(dt)
 		for _, actor in pairs(actors) do
 			actor:update(dt)
 		end
+		
 	end
 	if(debug_mode)then
 		debugKeys:update(dt)
@@ -195,7 +198,7 @@ end
 
 function love.draw()
 	local width,height,flags=love.window.getMode()
-	--Put all major draw functions into separate function so I can easily disable them for debugging purposes
+	--Put all main draw functions into separate function so I can easily disable them for debugging purposes
 	draw_fn()
 end
 

@@ -76,6 +76,15 @@ function tablex.index_of(t, a)
 	return nil
 end
 
+
+--"Inspect" a table/dictionary/userdata. Will print it's keys and values 
+--(in the case of a normal table, it will print the values and their index)
+function tablex.inspect(t)
+	for i, v in pairs(t) do
+		print(i,":",v)
+	end
+end
+
 --find the key in a keyed table that a resides at
 --or nil if nothing was found
 function tablex.key_of(t, a)

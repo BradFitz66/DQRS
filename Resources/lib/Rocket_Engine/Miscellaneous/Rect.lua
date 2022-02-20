@@ -63,4 +63,6 @@ Rect.intersects_rect = function(a, b)
 	       dy + b.height > 0 and dy < a.height
 end
 
+
+
 return Rect
