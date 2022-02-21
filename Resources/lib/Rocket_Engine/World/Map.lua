@@ -11,7 +11,7 @@ function Map.new(map_location,graphics)
     m.actors=m:create_actors()
     m.size=vector.new(m.graphics.width*m.graphics.tilewidth,m.graphics.height*m.graphics.tileheight)
     m.colliders=m:generate_colliders()
-    m.pathfinding_grid= {}--m:generate_pathfinding_grid()
+    m.pathfinding_grid= m:generate_pathfinding_grid()
     return m
 end
 
@@ -27,12 +27,14 @@ function Map:create_actors()
                 ["Player"]=function() return require("Resources.scripts.Player").new() end
             }
             local spawn_type=object.properties["Spawn_Type"]
-            local spawn_amount=object.properties["Spawn_Amount"] or 1
-            for i = 1, spawn_amount do
-                local spawned_entity=types[spawn_type]()
-                spawned_entity.position=vector.new(object.x,object.y)
-                spawned_entity.map=self
-                table.insert(actors,spawned_entity)
+            if(spawn_type) then
+                local spawn_amount=object.properties["Spawn_Amount"] or 1
+                for i = 1, spawn_amount do
+                    local spawned_entity=types[spawn_type]()
+                    spawned_entity.position=vector.new(object.x,object.y)
+                    spawned_entity.map=self
+                    table.insert(actors,spawned_entity)
+                end
             end
         end
     end
@@ -69,6 +71,8 @@ end
 function Map:generate_pathfinding_grid()
     local bounds=Rect.new(self.graphics.x,self.graphics.y,self.graphics.width*self.graphics.tilewidth,self.graphics.height*self.graphics.tileheight)
     local grid={}
+    local elapsed=0
+    local now = os.clock()
     for x = 0, bounds.width,self.graphics.tilewidth do
         grid[x/self.graphics.tilewidth]={}
         for y = 0, bounds.height,self.graphics.tileheight do
@@ -88,6 +92,8 @@ function Map:generate_pathfinding_grid()
             collider_world:hash():remove(circle)
         end
     end
+    elapsed = elapsed + (os.clock() - now)
+    print("Pathfinding grid generated in:",elapsed,"seconds")
     return grid
 end
 
@@ -105,11 +111,7 @@ function Map:draw(offset_x,offset_y,scale_x,scale_y)
 
         for i_x, x in pairs(self.pathfinding_grid) do
             for i_y, y in pairs(x) do
-                if(i_x==20 and i_y==20) then
-                    love.graphics.setColor(255,0,0)
-                else
-                    love.graphics.setColor(0,255,255)
-                end
+                love.graphics.setColor(255/255,0/255,255/255)
                 if(y==1) then
                     love.graphics.points(i_x*8,i_y*8)
                 end
