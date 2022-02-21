@@ -144,11 +144,10 @@ function Platypunk.new()
 		["Held"]={punkData.statemachine:add_state(require("Resources.states.Held")),{}},
 		["Hurt"]={punkData.statemachine:add_state(require("Resources.states.Hurt")),{}}
 	}
-	
+	punkData.map=nil
 	punkData.statemachine:change_state("Idle")
 	punkData.speed=32;
 	punkData.scale=vector.new(1,1)
-	punkData.position=vector.new(300,300)
 	punkData.image=love.graphics.newImage("Resources/graphics/Platypunk/Idle/1.png")
 	punkData.current_path={}
     punkData.walkDest=0 -- refers to index in current_path

@@ -27,13 +27,12 @@ path=nil
 
 --	.flags={bouncy=false,trigger=false,canCollide=true}x
 --global variables
-currentMap=nil;
+currentArea=nil;
 collider_world=nil;
 actors={}
 elapsed_time=0;
 clipper_to_hc_polygon={}
-local player=nil;
-local platy=nil;
+player=nil;
 local debugKeys=nil;
 local playing=true;
 local tick=require 'Resources.lib.tick'
@@ -77,13 +76,7 @@ function love.load(args)
 	table.insert(windows,1,sub_window.new(canvasBottom,vector.new(0,0),vector.new(256,192+20),{title="Game"},vector.new(-8,-8)))
 	table.insert(windows,1,sub_window.new(canvasDebug,vector.new(0,0),vector.new(256,192+20),{title="Debug info"},vector.new(-8,-8)))
 	collider_world=HC.new(12)
-	currentMap=require("Resources.scripts.TankInterior").Load();
-
-	player=require("Resources.scripts.Player").load()
-	player:load_tree("idle")
-	platy=require("Resources.scripts.Platypunk").new()
-	platy:load_tree("idle")
-	
+	currentArea=require("Resources.scripts.TankInterior").Load();	
 	--love.graphics.setLineWidth(1)
 	debugKeys=Input.new{
 		controls={
@@ -98,8 +91,6 @@ function love.load(args)
 		shell.position=shell.position
 		table.insert(actors,shell)
 	end
-	table.insert(actors,player)
-	table.insert(actors,platy)
 
 	
 	--Test for a trigger collider. Trigger colliders can be walked through and run a function when something enters it.
@@ -133,11 +124,11 @@ function love.update(dt)
 	canvasBottom:renderTo(function()
 		love.graphics.clear()
 		gameCam:draw(function(l,t,w,h) 
-			currentMap.map:draw((-gameCam.x),(-gameCam.y),gameCam.sx,gameCam.sy)
-			table.sort(actors,function(a,b)
+			currentArea.map:draw((-gameCam.x),(-gameCam.y),gameCam.sx,gameCam.sy)
+			table.sort(currentArea.map.actors,function(a,b)
 				return a.sprite.z_value<b.sprite.z_value
 			end)
-			for _, actor in pairs(actors) do
+			for _, actor in pairs(currentArea.map.actors) do
 				actor:draw()
 			end
 			if(debug_mode) then
@@ -157,12 +148,14 @@ function love.update(dt)
 			love.graphics.setColor(255,0,0)
 			love.graphics.setColor(255,255,255)
 			love.graphics.print("FPS: "..tostring(love.timer.getFPS()),10,0)
-			love.graphics.print("Player position: "..tostring(floor(player.position.x))..", "..tostring(floor(player.position.y)),70,0)
-			love.graphics.print("Player state: "..player.statemachine.current_state.Name,10,15)
-			love.graphics.print("Player blendtree: "..player.current_tree.name,10,30)
-			love.graphics.print("Player blendtree animation frame: "..player.current_tree.current_animation:getFrame(),10,45)
-			love.graphics.print("Player blendtree vector: "..tostring(player.current_tree.vector).."\nPlayer move vector: "..tostring(player.move_vector),10,75)
-			love.graphics.print("Player in air: "..tostring(player.sprite.in_air),10,60)
+			if(player) then
+				love.graphics.print("Player position: "..tostring(floor(player.position.x))..", "..tostring(floor(player.position.y)),70,0)
+				love.graphics.print("Player state: "..player.statemachine.current_state.Name,10,15)
+				love.graphics.print("Player blendtree: "..player.current_tree.name,10,30)
+				love.graphics.print("Player blendtree animation frame: "..player.current_tree.current_animation:getFrame(),10,45)
+				love.graphics.print("Player blendtree vector: "..tostring(player.current_tree.vector).."\nPlayer move vector: "..tostring(player.move_vector),10,75)
+				love.graphics.print("Player in air: "..tostring(player.sprite.in_air),10,60)
+			end
 			love.graphics.print("Draw calls: "..tostring(stats.drawcalls),10,105)
 			love.graphics.print("Images loaded: "..tostring(stats.images),10,120)
 			love.graphics.print("Texture memory: "..tostring(math.floor(stats.texturememory/1000000)).."MB",10,135)
@@ -174,13 +167,13 @@ function love.update(dt)
 	if playing or timestep then	
 		timestep=false
 		elapsed_time=elapsed_time + 1
-
-		gameCam:setPosition(math.floor(player.position.x+384),math.floor(player.position.y+256))
+		if(player) then
+			gameCam:setPosition(math.floor(player.position.x+384),math.floor(player.position.y+256))
+		end
 		timer.update(dt)
-		for _, actor in pairs(actors) do
+		for _, actor in pairs(currentArea.map.actors) do
 			actor:update(dt)
 		end
-		
 	end
 	if(debug_mode)then
 		debugKeys:update(dt)

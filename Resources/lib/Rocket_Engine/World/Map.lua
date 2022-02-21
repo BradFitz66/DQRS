@@ -4,22 +4,46 @@ Map.__index=Map
 local sti = require "Resources.lib.Rocket_Engine.Systems.sti"
 function Map.new(map_location,graphics)
     local m = setmetatable({},Map)
-    m.actors={}
+    m.graphics=sti("Resources/maps/Cannon_Room/Cannon_Room.lua")
     m.origin=map_location
     m.draw_offscreen_actors=false
     m.update_offscreen_actors=false
-    m.graphics=sti("Resources/maps/Cannon_Room/Cannon_Room.lua")
+    m.actors=m:create_actors()
     m.size=vector.new(m.graphics.width*m.graphics.tilewidth,m.graphics.height*m.graphics.tileheight)
     m.colliders=m:generate_colliders()
-    m.pathfinding_grid=m:generate_pathfinding_grid()
+    m.pathfinding_grid= {}--m:generate_pathfinding_grid()
     return m
+end
+
+--Maps may contain spawns for actors 
+function Map:create_actors()
+    local objects=self.graphics.objects
+    local actors={}
+    for _, object in pairs(objects) do
+        --Check name to see if it's a spawn 
+        if(string.find(object.name,"(Spawn)")~=nil) then
+            local types={
+                ["Platypunk"]=function() return require("Resources.scripts.Platypunk").new() end,
+                ["Player"]=function() return require("Resources.scripts.Player").new() end
+            }
+            local spawn_type=object.properties["Spawn_Type"]
+            local spawn_amount=object.properties["Spawn_Amount"] or 1
+            for i = 1, spawn_amount do
+                local spawned_entity=types[spawn_type]()
+                spawned_entity.position=vector.new(object.x,object.y)
+                spawned_entity.map=self
+                table.insert(actors,spawned_entity)
+            end
+        end
+    end
+    return actors
 end
 
 function Map:generate_colliders(o_x,o_y)
     local objects=self.graphics.objects
     local colliders={}
     for _, object in pairs(objects) do
-        if(object.polygon) then
+        if(object.polygon and string.find(object.name,"(Collider)")~=nil) then
             local collider={}
             local flags={
                 bouncy=false,
@@ -33,7 +57,6 @@ function Map:generate_colliders(o_x,o_y)
             end
             flags.bouncy=string.find(object.name,"(Bouncy)")~=nil
             flags.trigger=string.find(object.name,"(Trigger)")~=nil
-            print(string.find(object.name,"(Bouncy)"),object.name,flags.bouncy)
             local hc_poly=collider_world:polygon(unpack(collider))
             hc_poly.flags=flags
             hc_poly:move(-object.x,-object.y)

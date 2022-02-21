@@ -20,8 +20,9 @@ local function get_sprite_quads(spriteprefix,index_start, index_end,atlas)
 	return quads
 end
 
-function Player.load()
+function Player.new()
 	local pData=setmetatable({},Player)
+	player=pData
 	pData.sprite=entity.new(0,1,12,12)
 	pData.sprite.name="Player"
 	pData.sprite.parent=pData;
@@ -313,11 +314,11 @@ function Player.load()
 	pData.speed=96;
 	pData.holding={}
 	pData.scale=vector.new(1,1)
-	pData.position=vector.new(200,200)
 	pData.wall_hit_normal=vector.new(0,0)
 	pData.blast_velocity=vector.new(0,0)
 	pData.can_throw=true;
 	pData.can_float=true;
+	pData.map=nil
 	pData.super_throw=false;
 	pData.inside_bouncy=false;
 	pData.hit_wall=false;
@@ -417,35 +418,37 @@ function Player:update(dt)
 			local absoluteDelta=vector.new(math.abs(delta.x),math.abs(delta.y))
 			local m_vector=self.move_vector
 			local fixedDelta=vector.new(delta.x,delta.y)-(m_vector*self.speed):normalized()
-			for _, actor in pairs(actors) do
-				if(actor.sprite.collider==shape and not actor.sprite.picked_up) then
-					--Handle collision with actor while in the blasting state.
-					if(self.statemachine.current_state.Name=="Blasting")then
-						local normalizedBlast=self.blast_velocity:normalized()
-						local initialVel = (vector3(self.blast_velocity.x,self.blast_velocity.y,0))
-						initialVel.z=initialVel.y;
-						initialVel.y=0;
-						initialVel=initialVel+vector3(0,3,0)
-						actor.sprite:add_force_xyz(initialVel)
-					else
-						if(actor.sprite.in_air and actor.sprite.can_pickup and #self.holding<3)then
-							local heightDifference=actor.sprite.local_position.y - self.sprite.local_position.y
-							if(heightDifference < 20) then
-								actor.sprite.in_air=false
-								--Picking up
-								actor.sprite.picked_up=true;
-								
-								actor.sprite.z_value=10000*(#self.holding+1)
-								table.insert(self.holding,{actor,vector3(0,0,0)})
-								startPos=actor.sprite.local_position
-								if(actor.sprite.name=="NPC") then
-									actor:change_state("Held")
+			if(self.map~=nil) then
+				for _, actor in pairs(self.map.actors) do
+					if(actor.sprite.collider==shape and not actor.sprite.picked_up) then
+						--Handle collision with actor while in the blasting state.
+						if(self.statemachine.current_state.Name=="Blasting")then
+							local normalizedBlast=self.blast_velocity:normalized()
+							local initialVel = (vector3(self.blast_velocity.x,self.blast_velocity.y,0))
+							initialVel.z=initialVel.y;
+							initialVel.y=0;
+							initialVel=initialVel+vector3(0,3,0)
+							actor.sprite:add_force_xyz(initialVel)
+						else
+							if(actor.sprite.in_air and actor.sprite.can_pickup and #self.holding<3)then
+								local heightDifference=actor.sprite.local_position.y - self.sprite.local_position.y
+								if(heightDifference < 20) then
+									actor.sprite.in_air=false
+									--Picking up
+									actor.sprite.picked_up=true;
+									
+									actor.sprite.z_value=10000*(#self.holding+1)
+									table.insert(self.holding,{actor,vector3(0,0,0)})
+									startPos=actor.sprite.local_position
+									if(actor.sprite.name=="NPC") then
+										actor:change_state("Held")
+									end
+									timer.script(function(wait)
+										self:change_state("Squish")
+										wait(.2)
+										self:change_state("Idle")
+									end)
 								end
-								timer.script(function(wait)
-									self:change_state("Squish")
-									wait(.2)
-									self:change_state("Idle")
-								end)
 							end
 						end
 					end
