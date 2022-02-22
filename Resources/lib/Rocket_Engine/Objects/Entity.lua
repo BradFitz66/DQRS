@@ -81,36 +81,23 @@ function Entity:update(dt,collision_override)
         --self.collider:setRotation((self.parent.rotation))
     end
     --Update the faux physics
-
-    if(self.in_air and (self.bounces_left > 0 and self.velocity.y ~= 0)) then
-        self.velocity = self.velocity + vector3(0, -9.81, 0) * dt;
-        local bounce_delta = vector.new(0,1) * self.velocity.y * dt;
-        local x_delta = ((vector3(1,0,0) * self.velocity.x) + (vector3(0,1,0) * self.velocity.z));
-        if ((self.local_position + bounce_delta).y <= 0) then
-            
-            --we hit the ground
-            self.velocity.y = self.velocity.y * -1
-            self.velocity.y = self.velocity.y*self.bounciness;
-            self.velocity.x = self.velocity.x - (self.starting_velocity.x / self.max_bounces);
-            self.velocity.z = self.velocity.z - (self.starting_velocity.z / self.max_bounces);
-
-            self.bounces_left = self.bounces_left - 1;
+    if(self.in_air and not self.picked_up) then
+        if(self.velocity.y~=0 and self.local_position.y~=0) then
+            self.velocity.y=(self.velocity.y - 9.81*dt)
+            if(self.local_position.y<0) then
+                if(math.abs(-self.velocity.y*self.bounciness)<0.25) then
+                    self.in_air=false
+                    self.local_position.y=0
+                    return       
+                end
+                self.velocity.y=-self.velocity.y*self.bounciness
+            end
         end
-        local spritePos = self.local_position + bounce_delta * dt;
-        spritePos.y = math.Clamp(spritePos.y, 0, math.huge);
-        local mainPos = self.parent.position + vector.new(x_delta.x,x_delta.y)*dt;
-        
-        self.local_position = spritePos;
-        self.parent.position = mainPos;
     else
-        if(self.going_into_cannon) then
-            table.remove_value(actors,self.parent)
-            return
-        end
-        self.in_air=false
-        self.velocity=vector3(0,0,0)
-        self.local_position=vector.new(0,0)
+        self.velocity=vector.zero
+        self.local_position.y=0
     end
+
     if(self.picked_up) then
         return
     end
