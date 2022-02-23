@@ -8,10 +8,10 @@ function Map.new(map_location,graphics)
     m.origin=map_location
     m.draw_offscreen_actors=false
     m.update_offscreen_actors=false
+    m.actors=m:create_actors()
     m.size=vector.new(m.graphics.width*m.graphics.tilewidth,m.graphics.height*m.graphics.tileheight)
     m.colliders=m:generate_colliders()
     m.pathfinding_grid= m:generate_pathfinding_grid()
-    m.actors=m:create_actors() -- always create actors last
     return m
 end
 
@@ -93,7 +93,7 @@ function Map:generate_pathfinding_grid()
         end
     end
     elapsed = elapsed + (os.clock() - now)
-    print("Pathfinding grid (size: "..bounds.width..","..bounds.height..") generated in:",elapsed,"seconds")
+    print("Pathfinding grid generated in:",elapsed,"seconds")
     return grid
 end
 

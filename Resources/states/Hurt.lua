@@ -7,7 +7,6 @@ State.Enter=function(owner)
     end
     owner:load_tree("hurt",true)
     owner.current_tree.vector=vector.new(owner.sprite.velocity.x,owner.sprite.velocity.z):normalized()
-    owner.sprite.bounciness=0.7
     db=false
 end
 
