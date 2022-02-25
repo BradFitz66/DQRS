@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.8" tiledversion="1.8.2" orientation="orthogonal" renderorder="left-down" width="108" height="80" tilewidth="8" tileheight="8" infinite="0" nextlayerid="9" nextobjectid="42">
+<map version="1.8" tiledversion="1.8.2" orientation="orthogonal" renderorder="left-down" width="108" height="80" tilewidth="8" tileheight="8" infinite="0" nextlayerid="10" nextobjectid="42">
  <editorsettings>
-  <export target="Cannon_Room.lua" format="lua"/>
+  <export format="lua"/>
  </editorsettings>
  <tileset firstgid="1" name="Tank_Schleiman" tilewidth="8" tileheight="8" tilecount="2112" columns="48">
   <image source="../../graphics/Tilemaps/CannonRoom/Tilemap_V1.png" width="384" height="352"/>
@@ -127,7 +127,7 @@
    <properties>
     <property name="Collision" type="file" value=""/>
    </properties>
-   <polygon points="-64,32 -32,32 24,-24 424,-24 424,-168 408,-168 408,-224 64,-224 64,-88 56,-80 16,-80 -32,-24 -72,-24 -80,-32 -80,-64 -248,-64 -248,0 -256,8 -264,8 -264,63.5 -264,72 -256,88 -256,240 288,240 288,224 296,208 472,208 472,296 -392,296 -392,-344 472,-344 472,112 -64,112 -72,104 -72,48"/>
+   <polygon points="-64,32 -32,32 24,-24 424,-24 424,-168 408,-168 408,-224 64,-224 64,-88 56,-80 16,-80 -32,-24 -72,-24 -80,-32 -80,-64 -248,-64 -248,0 -256,8 -376,8 -376,72 -264,72 -256,88 -256,240 288,240 288,224 296,208 472,208 472,296 -392,296 -392,-344 472,-344 472,112 -64,112 -72,104 -72,48"/>
   </object>
   <object id="7" name="Cannon_Collider_Bouncy" x="843" y="213.5">
    <properties>
