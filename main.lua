@@ -15,6 +15,7 @@ table=require("Resources.lib.tablex")
 flux=require("Resources.lib.Rocket_Engine.Utils.flux")
 vector3=require("Resources.lib.brinevector3D")
 mlib=require("Resources.lib.Rocket_Engine.Utils.mlib")
+debug_draw=nil
 signal=require("Resources.lib.HUMP.signal").new()
 gameCam=nil;
 rect = nil;
@@ -89,7 +90,7 @@ function love.load(args)
 	}
 
 
-	
+	debug_draw=require("Resources.lib.Rocket_Engine.Utils.debug_draw"):initialize()
 	--Test for a trigger collider. Trigger colliders can be walked through and run a function when something enters it.
 	test_trigger=collider_world:rectangle(600,150,65,40)
 	test_trigger.flags={bouncy=false,trigger=true,canCollide=true,
