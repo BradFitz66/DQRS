@@ -12,20 +12,21 @@ State.Enter=function(owner)
     end
     owner.scale=vector.new(1,1)
     owner.rotation=0
-    endPos=owner.position+owner.blast_velocity
-    distance = owner.position.dist(owner.position,endPos)
-    endPosDiff = -(owner.position - endPos):normalized();
+    endPos=owner.planar_position+owner.blast_velocity
+    distance = owner.planar_position.dist(owner.planar_position,endPos)
+    endPosDiff = -(owner.planar_position - endPos):normalized();
     distanceTravelled=0;
-    lastPos=owner.position
+    lastPos=owner.planar_position
     owner.current_tree:set_vector(endPosDiff);
 end
 
 State.Update=function(owner,dt)
     if-(distanceTravelled-distance)>.04 then
         local speed = 256 * (owner.full_charge_elastoblast==true and 1.53 or 1);
-        owner.position=owner.position+endPosDiff*(speed)*dt
-        distanceTravelled=distanceTravelled+owner.position.dist(owner.position,lastPos)
-        lastPos=owner.position
+        owner:set_position_planar(vector.new(owner.position.x + (endPosDiff.x*speed*dt), owner.position.z + (endPosDiff.y*speed*dt)))
+        
+        distanceTravelled=distanceTravelled + vector.new(owner.position.x,owner.position.z).dist(vector.new(owner.position.x,owner.position.z),lastPos)
+        lastPos=vector.new(owner.position.x,owner.position.z)
         owner.blast_velocity=owner.blast_velocity*(1-((distanceTravelled/distance)*.25))
     else
         owner.blast_velocity=vector.new(0,0)

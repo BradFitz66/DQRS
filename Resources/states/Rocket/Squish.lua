@@ -1,7 +1,7 @@
 local State = require("Resources.lib.Rocket_Engine.State Machine.State").new("Squish")
 State.Enter=function(owner)
-	owner.sprite.in_air=false;
-    owner.sprite.local_position=vector.new(0,0)
+	owner.physics_data.in_air=false;
+    owner.position.y=0
 	owner:load_tree("squish",true)
 end
 

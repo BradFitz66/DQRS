@@ -11,8 +11,8 @@ local last_vector
 State.Enter=function(owner)
     owner:load_tree("stretch",false)
     owner.scale=startScale
-    local target= owner.position+owner.move_vector;
-    local normalTar = (target - owner.position):normalized();
+    local target= owner.planar_position+owner.move_vector;
+    local normalTar = (target - owner.planar_position):normalized();
     angle = math.atan2(normalTar.y, normalTar.x) + math.rad(90) --! 1/(math.pi * 2 / 360);
     owner.rotation=angle
     last_vector=owner.move_vector
@@ -38,14 +38,14 @@ State.Update=function(owner,dt)
         distance=owner.scale.dist(owner.scale,endScale);
         newSpeed = 1.5;
         finalSpeed = (distance / newSpeed);
-        target= owner.position+owner.move_vector;
+        target= owner.planar_position+owner.move_vector;
         -- get the angle
-        normalTar = (target - owner.position):normalized();
+        normalTar = (target - owner.planar_position):normalized();
         angle = math.atan2(normalTar.y, normalTar.x) + math.rad(90) --* 1/(math.pi * 2 / 360);
-        rX,rY=math_utils.rotate_point(owner.position.x,owner.position.y,40*owner.scale.y,(angle-math.rad(90)))
+        rX,rY=math_utils.rotate_point(owner.planar_position.x,owner.planar_position.y,40*owner.scale.y,(angle-math.rad(90)))
     
 
-        owner.head_position=vector.new(owner.position.x,(owner.position.y + 40*owner.scale.y))
+        owner.head_position=vector.new(owner.planar_position.x,(owner.planar_position.y + 40*owner.scale.y))
         --rotate the head_collider and check for obstruction before rotating the actual player. This avoids the player being able to rotate into walls
         owner.head_position.x=rX
         owner.head_position.y=rY
@@ -54,10 +54,11 @@ State.Update=function(owner,dt)
         obstruction=false
 
         for _, v in pairs(collider_world:neighbors(owner.head_collider)) do
-            if(v.attached_to ~= nil or (v.flags and v.flags.trigger)) then
+            if((not v.flags or v.flags.trigger or v.flags.canCollide)) then
                 break
             end
             if(owner.head_collider:collidesWith(v))then
+                print(v.flags)
                 obstruction=true;
             end
         end
@@ -76,16 +77,16 @@ State.Update=function(owner,dt)
         local finalSpeed = (distance / newSpeed);
         
         angle = math.atan2(normalTar.y, normalTar.x) + math.rad(90) --* 1/(math.pi * 2 / 360);
-        rX,rY=math_utils.rotate_point(owner.position.x,owner.position.y,40*owner.scale.y,(angle-math.rad(90)))
+        rX,rY=math_utils.rotate_point(owner.planar_position.x,owner.planar_position.y,40*owner.scale.y,(angle-math.rad(90)))
 
-        owner.head_position=vector.new(owner.position.x,(owner.position.y + 40*owner.scale.y))
+        owner.head_position=vector.new(owner.planar_position.x,(owner.planar_position.y + 40*owner.scale.y))
         --rotate the head_collider and check for obstruction before rotating the actual player. This avoids the player being able to rotate into walls
         owner.head_position.x=rX
         owner.head_position.y=rY
         owner.head_collider:moveTo(owner.head_position.x,owner.head_position.y)
         
         owner.scale = vector.Lerp(owner.scale, startScale, dt / finalSpeed);
-        head_position=owner.position-scaleProper:rotated(owner.rotation);
+        head_position=owner.planar_position-scaleProper:rotated(owner.rotation);
         --State.collider:moveTo(head_position.x,head_position.y)
 
         if (owner.scale.dist(owner.scale,startScale)<=0.005) then

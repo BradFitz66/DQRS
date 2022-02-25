@@ -6,7 +6,7 @@ State.Enter=function(owner)
 end
 
 State.Update=function(owner,dt)
-    if(owner.sprite.in_air)then
+    if(owner.physics_data.in_air)then
         owner:change_state("Hurt")
     end
     if(owner.move_vector~=vector.new(0,0)) then

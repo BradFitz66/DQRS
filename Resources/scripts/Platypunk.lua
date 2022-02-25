@@ -225,7 +225,7 @@ function Platypunk:update(dt)
 	self.statemachine:update(dt)
 	self.current_tree:update(dt)
 	self.sprite:update(dt,nil)
-	if(self.sprite.in_air==true and self.statemachine.current_state.Name~="Hurt") then
+	if(self.sprite.physics_data.in_air==true and self.statemachine.current_state.Name~="Hurt") then
 		self:change_state("Hurt")
 	end
 end

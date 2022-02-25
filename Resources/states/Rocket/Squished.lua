@@ -1,7 +1,8 @@
 local State = require("Resources.lib.Rocket_Engine.State Machine.State").new("Squished")
 State.Enter=function(owner)
-	owner.sprite.in_air=false;
-    owner.sprite.local_position=vector.new(0,0)
+    local org_pos=owner.position
+	owner.physics_data.in_air=false;
+    owner.position.y=0    
     owner:load_tree("squished",true)
     local t = true
     timer.script(function(wait)
@@ -12,11 +13,11 @@ State.Enter=function(owner)
             t=not t
             wait(.025)
             local treeVec =owner.current_tree.vector
-            owner.sprite.local_position.x = t and 2*treeVec.x or -2*treeVec.x
-            owner.sprite.local_position.y = t and 2*treeVec.y or -2*treeVec.y
+            owner.position.x = t and org_pos.x + 2*treeVec.x or org_pos.x + -2*treeVec.x
+            owner.position.z = t and org_pos.z + 2*treeVec.y or org_pos.z + -2*treeVec.y
         end
-        owner.sprite.local_position.x = 0
-        owner.sprite.local_position.y  = 0
+        owner.position.x = org_pos.x
+        owner.position.z  = org_pos.z
     end)
     --owner.current_tree.current_animation:setPaused(true)
 end

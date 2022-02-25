@@ -1,23 +1,24 @@
 local tankshell={}
 tankshell.__index=tankshell
 local entity=require("Resources.lib.Rocket_Engine.Objects.Entity")
-function tankshell.new()
-    local ts=setmetatable({}, tankshell)
-    ts.sprite=entity.new(10,5,10,10)
-    ts.sprite.hold_offset=vector.new(-10,-10)
-    ts.sprite.type="ammo"
-    ts.sprite.name="tankshell"
-    ts.sprite.going_into_cannon=false
-    ts.sprite.max_bounces=2
-    ts.sprite_image=love.graphics.newImage("Resources/graphics/TankShell.png")
-    ts.sprite.parent=ts
-    ts.position=vector.new(256,300)
-    ts.rotation=0
-    ts.scale=vector.new(1,1)
-    ts.color={math.random(1,255)/255,math.random(1,255)/255,math.random(1,255)/255}
-    ts.wall_hit_debounce=false
-    ts.hitObjects={}
-    return ts
+local tank_shell=class("Tank_Shell",entity)
+
+function tank_shell:initialize(start_pos,collider_pos,collider_size)
+    entity.initialize(self,start_pos,collider_pos,collider_size)
+    self.hold_offset=vector.new(-10,-10)
+    self.type="ammo"
+    self.can_pickup=true
+    self.picked_up=false
+    self.name="tankshell"
+    self.going_into_cannon=false
+    self.max_bounces=2
+    self.sprite_image=love.graphics.newImage("Resources/graphics/TankShell.png")
+    self.rotation=0
+    self.scale=vector.new(1,1)
+    self.color={math.random(1,255)/255,math.random(1,255)/255,math.random(1,255)/255}
+    self.wall_hit_debounce=false
+    self.hitObjects={}
+    return self
 end
 
 local validDiffs ={
@@ -29,64 +30,69 @@ local halfRotations={
 	135
 }
 
-function tankshell:update(dt)
-    self.sprite:update(dt,nil--[[function()
-        for shape, delta in pairs(collider_world:collisions(self.sprite.collider)) do
-            local absoluteDelta=vector.new(math.abs(delta.x),math.abs(delta.y))
-            for _, actor in pairs(actors) do
-                if(actor.sprite.collider==shape and actor.type=="ammo") then
-                    local heightDiff = self.sprite.local_position.y - actor.sprite.local_position.y 
-                    local speed=vector3.getLength(self.sprite.velocity)/16
-                    if(actor.sprite.in_air==false and not table.index_of(self.hitObjects,actor) and not actor.sprite.picked_up and heightDiff <= 35 and speed>4) then
-                        table.insert(self.hitObjects,actor)
-                        table.insert(actor.hitObjects,self)
-                        local initialVel = (vector3(self.sprite.velocity.x/2,self.sprite.velocity.z,0))
-                        initialVel.z=initialVel.y;
-                        initialVel.y=0;
-                        initialVel=initialVel+vector3(0,3,0)
-                        actor.sprite:add_force_xyz(initialVel)
-                        timer.after(1,function()
-                            table.clear(self.hitObjects)
-                            table.clear(actor.hitObjects)
-                        end)
-                    end
-                end
-            end
-            if(table.index_of(currentMap.map.collider_shapes,shape)~=nil and not self.wall_hit_debounce and not (delta.x==0 and delta.y==0)) then
-                self.position=self.position+vector.new(delta.x,delta.y)
-                local cA=math.abs((math.round((math.deg(math.atan2(absoluteDelta.y,absoluteDelta.x))))))
-                local hA=math.abs(math.round((math.deg(math.atan2(math.abs(self.sprite.velocity.z),math.abs(self.sprite.velocity.x))))))
-                local rounded=round(cA)
-                --Very ugly. This is the 'bounce rules' that determine whether the player cna bounce or not
-                local can_bounce = (rounded==90 and hA<=90) or (rounded==45 and hA== 45) or (rounded==0 and hA<=45)
+function tank_shell:update(dt)
+    entity.update(self,dt)
+    -- self.sprite:update(dt,nil--[[function()
+    --     for shape, delta in pairs(collider_world:collisions(self.sprite.collider)) do
+    --         local absoluteDelta=vector.new(math.abs(delta.x),math.abs(delta.y))
+    --         for _, actor in pairs(actors) do
+    --             if(actor.sprite.collider==shape and actor.type=="ammo") then
+    --                 local heightDiff = self.sprite.local_position.y - actor.sprite.local_position.y 
+    --                 local speed=vector3.getLength(self.sprite.velocity)/16
+    --                 if(actor.sprite.physics_data.in_air==false and not table.index_of(self.hitObjects,actor) and not actor.sprite.picked_up and heightDiff <= 35 and speed>4) then
+    --                     table.insert(self.hitObjects,actor)
+    --                     table.insert(actor.hitObjects,self)
+    --                     local initialVel = (vector3(self.sprite.velocity.x/2,self.sprite.velocity.z,0))
+    --                     initialVel.z=initialVel.y;
+    --                     initialVel.y=0;
+    --                     initialVel=initialVel+vector3(0,3,0)
+    --                     actor.sprite:add_force_xyz(initialVel)
+    --                     timer.after(1,function()
+    --                         table.clear(self.hitObjects)
+    --                         table.clear(actor.hitObjects)
+    --                     end)
+    --                 end
+    --             end
+    --         end
+    --         if(table.index_of(currentMap.map.collider_shapes,shape)~=nil and not self.wall_hit_debounce and not (delta.x==0 and delta.y==0)) then
+    --             self.position=self.position+vector.new(delta.x,delta.y)
+    --             local cA=math.abs((math.round((math.deg(math.atan2(absoluteDelta.y,absoluteDelta.x))))))
+    --             local hA=math.abs(math.round((math.deg(math.atan2(math.abs(self.sprite.velocity.z),math.abs(self.sprite.velocity.x))))))
+    --             local rounded=round(cA)
+    --             --Very ugly. This is the 'bounce rules' that determine whether the player cna bounce or not
+    --             local can_bounce = (rounded==90 and hA<=90) or (rounded==45 and hA== 45) or (rounded==0 and hA<=45)
                 
-                cA= cA==45 and -cA or cA
-                --Here we check if there's a separation delta and if the angle of collision is divisible by 180 with no remainder or is within 10 degrees of it or 90 degrees (some flat wall aren't perfectly flat due to float precision)
-                if(not can_bounce) then
-                    return
-                end
-                self.wall_hit_debounce=true;
-                local newDelta = vector.new(math.cos(math.rad(cA)),math.sin(math.rad(cA)))
-                local y = -self.sprite.velocity.y;
-                local startingSpeed = -self.sprite.velocity
-                startingSpeed.y=y
-                self.sprite.in_air=false
-                local wallHitNormal=vector.new(round_to_Nth_decimal(newDelta.y,1),round_to_Nth_decimal(newDelta.x,1)):normalized()
-                local reflectionVector = startingSpeed:mirrorOn(vector3(wallHitNormal.y,0,wallHitNormal.x))
-                self.sprite:add_force_xyz(reflectionVector)
-                timer.after(.05,function()
-                    self.wall_hit_debounce=false;
-                end)
-            end
-        end    
-    end--]])
+    --             cA= cA==45 and -cA or cA
+    --             --Here we check if there's a separation delta and if the angle of collision is divisible by 180 with no remainder or is within 10 degrees of it or 90 degrees (some flat wall aren't perfectly flat due to float precision)
+    --             if(not can_bounce) then
+    --                 return
+    --             end
+    --             self.wall_hit_debounce=true;
+    --             local newDelta = vector.new(math.cos(math.rad(cA)),math.sin(math.rad(cA)))
+    --             local y = -self.sprite.velocity.y;
+    --             local startingSpeed = -self.sprite.velocity
+    --             startingSpeed.y=y
+    --             self.sprite.physics_data.in_air=false
+    --             local wallHitNormal=vector.new(round_to_Nth_decimal(newDelta.y,1),round_to_Nth_decimal(newDelta.x,1)):normalized()
+    --             local reflectionVector = startingSpeed:mirrorOn(vector3(wallHitNormal.y,0,wallHitNormal.x))
+    --             self.sprite:add_force_xyz(reflectionVector)
+    --             timer.after(.05,function()
+    --                 self.wall_hit_debounce=false;
+    --             end)
+    --         end
+    --     end    
+    -- end--]])
 end
 
-function tankshell:draw()
+function tank_shell:draw()
+    if(debug_mode) then
+		love.graphics.setColor(0,1,0,.5)
+		self.physics_data.collider:draw("fill")
+	end
+
     love.graphics.setColor(self.color)
-    love.graphics.draw(self.sprite_image,math.floor(self.sprite.position.x),math.floor(self.sprite.position.y),self.rotation,self.scale.x,self.scale.y,0,math.floor(self.sprite_image:getHeight()/2))
-    self.sprite:draw()
+    love.graphics.draw(self.sprite_image,math.floor(self.position.x),math.floor(self.position.z-self.position.y),self.rotation,self.scale.x,self.scale.y,0,math.floor(self.sprite_image:getHeight()/2))
     love.graphics.setColor(255,255,255)
 end
 
-return tankshell
+return tank_shell

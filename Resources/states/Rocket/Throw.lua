@@ -10,14 +10,14 @@ State.Enter=function(owner)
     end
     owner.can_throw=false
     local thrown = table.shift(owner.holding)[1]
-    thrown.sprite.can_pickup=false
-    thrown.sprite.picked_up=false
-    --thrown.sprite.in_air=true;
-    thrown.position=owner.position-vector.new(10)
-    thrown.sprite.local_position.y=thrown.sprite.local_position.y+owner.sprite.local_position.y
-    timer.after(.2,function() thrown.sprite.can_pickup=true end)
-    local start_pos = thrown.sprite.position
-    thrown.sprite:add_force_xyz(
+    thrown.can_pickup=false
+    thrown.picked_up=false
+    --thrown.sprite.physics_data.in_air=true;
+    thrown.position=owner.position-vector3(10,0,0)
+    thrown.position.y=thrown.position.y+owner.position.y
+    timer.after(.2,function() thrown.can_pickup=true end)
+    local start_pos = thrown.planar_position
+    thrown:add_force(
         vector3(
         (owner.current_tree.vector).x*(100*math.clamp(owner.blast_velocity:len()/15,1,3)),
         3,
@@ -28,7 +28,6 @@ end
 
 State.Update=function(owner,dt)
     if(owner.current_tree.current_animation:getFrame()==8)then
-        print("!!")
         owner:change_state("Idle")
     end
 end

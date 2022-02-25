@@ -12,6 +12,7 @@ vector=require("Resources.lib.HUMP.vector")
 math=require("Resources.lib.mathx")
 string=require("Resources.lib.stringx")
 table=require("Resources.lib.tablex")
+flux=require("Resources.lib.Rocket_Engine.Utils.flux")
 vector3=require("Resources.lib.brinevector3D")
 mlib=require("Resources.lib.Rocket_Engine.Utils.mlib")
 signal=require("Resources.lib.HUMP.signal").new()
@@ -24,7 +25,7 @@ input_provider=require("Resources.lib.Rocket_Engine.Systems.Input.InputProvider"
 input_provider:add_state(require("Resources.lib.Rocket_Engine.Systems.Input.PlayerInput"))
 imgui = require "Resources.lib.cimgui" -- cimgui is the folder containing the Lua module (the "src" folder in the github repository)
 path=nil
-
+saved_dt=0
 --	.flags={bouncy=false,trigger=false,canCollide=true}x
 --global variables
 currentArea=nil;
@@ -86,54 +87,43 @@ function love.load(args)
 		pairs={},
 		joystick = love.joystick.getJoysticks()[1],
 	}
-	for i = 1, 10 do 
-		local shell = require("Resources.scripts.TankShell").new()
-		shell.position=shell.position
-		table.insert(actors,shell)
-	end
+
 
 	
 	--Test for a trigger collider. Trigger colliders can be walked through and run a function when something enters it.
-	-- test_trigger=collider_world:rectangle(335,230,65,40)
-	-- test_trigger.flags={bouncy=false,trigger=true,canCollide=true,
-	-- trigger_function=function(this_trigger,entity) 
-	-- 	if(entity.type=="ammo" and entity.going_into_cannon==false) then
-	-- 		--Center of collider
-	-- 		local height=2 --height of the bounce into the center
-	-- 		--magic number bullshit
-	-- 		local targ_x,targ_y=this_trigger._polygon.centroid.x+10,this_trigger._polygon.centroid.y-10
-
-	-- 		--hacks to deal with my barely working faux bounce physics
-	-- 		entity.going_into_cannon=true
-	-- 		entity.in_air=false
-	-- 		--not sure whats going on here but it sort of works
-	-- 		local x_vel=(targ_x - entity.parent.position.x) / (math.sqrt(-3*height/-9.81));
-	-- 		local z_vel=(targ_y - entity.parent.position.y) / (math.sqrt(-3*height/-9.81));
-	-- 		entity:add_force_xyz(vector3(x_vel,height,z_vel))
-			
-	-- 		entity.bounces_left=1			
-	-- 	end
-	-- end}
+	test_trigger=collider_world:rectangle(600,150,65,40)
+	test_trigger.flags={bouncy=false,trigger=true,canCollide=true,
+	trigger_function=function(this_trigger,entity) 
+		if(entity.type=="ammo" and entity.going_into_cannon==false) then
+			entity.going_into_cannon=true
+			entity.physics_data.in_air=false
+			entity.local_position=vector.new(0,0)
+			entity.velocity=vector3(0,0,0)
+			flux.to(entity.parent.position,1,{x=this_trigger._polygon.centroid.x,y=this_trigger._polygon.centroid.y})
+			flux.to(entity.position,1,{x=0,y=0}):oncomplete(function() end)
+		end
+	end}
 	love.graphics.setPointSize(2)
 end
 
 
 function love.update(dt)
-	control_scheme:update(dt)
+	control_scheme:update()
+	flux.update(dt)
 	--#region canvas drawing
 	canvasBottom:renderTo(function()
 		love.graphics.clear()
 		gameCam:draw(function(l,t,w,h) 
 			currentArea.map:draw((-gameCam.x),(-gameCam.y),gameCam.sx,gameCam.sy)
 			table.sort(currentArea.map.actors,function(a,b)
-				return a.sprite.z_value<b.sprite.z_value
+				return a.z_value<b.z_value
 			end)
 			for _, actor in pairs(currentArea.map.actors) do
 				actor:draw()
 			end
 			if(debug_mode) then
 				love.graphics.setColor(1,1,0,1)
-				--test_trigger:draw()
+				test_trigger:draw()
 			end
 			love.graphics.setColor(255,255,0)
 			love.graphics.setColor(255,255,255)
@@ -149,12 +139,12 @@ function love.update(dt)
 			love.graphics.setColor(255,255,255)
 			love.graphics.print("FPS: "..tostring(love.timer.getFPS()),10,0)
 			if(player) then
-				love.graphics.print("Player position: "..tostring(floor(player.position.x))..", "..tostring(floor(player.position.y)),70,0)
+				love.graphics.print("Player position: "..tostring(floor(player.position.x))..", "..tostring(floor(player.position.z)),70,0)
 				love.graphics.print("Player state: "..player.statemachine.current_state.Name,10,15)
 				love.graphics.print("Player blendtree: "..player.current_tree.name,10,30)
 				love.graphics.print("Player blendtree animation frame: "..player.current_tree.current_animation:getFrame(),10,45)
 				love.graphics.print("Player blendtree vector: "..tostring(player.current_tree.vector).."\nPlayer move vector: "..tostring(player.move_vector),10,75)
-				love.graphics.print("Player in air: "..tostring(player.sprite.in_air),10,60)
+				love.graphics.print("Player in air: "..tostring(player.physics_data.in_air),10,60)
 			end
 			love.graphics.print("Draw calls: "..tostring(stats.drawcalls),10,105)
 			love.graphics.print("Images loaded: "..tostring(stats.images),10,120)
@@ -168,7 +158,7 @@ function love.update(dt)
 		timestep=false
 		elapsed_time=elapsed_time + 1
 		if(player) then
-			gameCam:setPosition(math.floor(player.position.x+384),math.floor(player.position.y+256))
+			gameCam:setPosition(math.floor(player.planar_position.x+384),math.floor(player.planar_position.y+256))
 		end
 		timer.update(dt)
 		for _, actor in pairs(currentArea.map.actors) do

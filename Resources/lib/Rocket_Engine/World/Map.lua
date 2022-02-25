@@ -11,7 +11,7 @@ function Map.new(map_location,graphics)
     m.actors=m:create_actors()
     m.size=vector.new(m.graphics.width*m.graphics.tilewidth,m.graphics.height*m.graphics.tileheight)
     m.colliders=m:generate_colliders()
-    m.pathfinding_grid= m:generate_pathfinding_grid()
+    m.pathfinding_grid= {}--m:generate_pathfinding_grid()
     return m
 end
 
@@ -23,15 +23,25 @@ function Map:create_actors()
         --Check name to see if it's a spawn 
         if(string.find(object.name,"(Spawn)")~=nil) then
             local types={
-                ["Platypunk"]=function() return require("Resources.scripts.Platypunk").new() end,
-                ["Player"]=function() return require("Resources.scripts.Player").new() end
+                --["Platypunk"]=function() return require("Resources.scripts.Platypunk").new() end,
+                ["Player"]=function(spawn_pos) 
+                    local p = require("Resources.scripts.Player") 
+
+                    p:initialize(vector.new(spawn_pos.x,spawn_pos.y),vector.new(-1,1),vector.new(12,12))  
+                    return p.static
+                end,
+                ["TankShell"]=function(spawn_pos) 
+                    local shell = require("Resources.scripts.TankShell") 
+
+                    shell:initialize(vector.new(spawn_pos.x,spawn_pos.y),vector.new(10,5),vector.new(12,12))  
+                    return shell.static
+                end,
             }
             local spawn_type=object.properties["Spawn_Type"]
-            if(spawn_type) then
+            if(spawn_type and types[spawn_type]~=nil) then
                 local spawn_amount=object.properties["Spawn_Amount"] or 1
                 for i = 1, spawn_amount do
-                    local spawned_entity=types[spawn_type]()
-                    spawned_entity.position=vector.new(object.x,object.y)
+                    local spawned_entity=types[spawn_type](vector.new(object.x,object.y))
                     spawned_entity.map=self
                     table.insert(actors,spawned_entity)
                 end
@@ -62,6 +72,7 @@ function Map:generate_colliders(o_x,o_y)
             local hc_poly=collider_world:polygon(unpack(collider))
             hc_poly.flags=flags
             hc_poly:move(-object.x,-object.y)
+            hc_poly.name=object.name
             table.insert(colliders,1,hc_poly)
         end
     end
