@@ -23,16 +23,18 @@ function Map:create_actors()
         --Check name to see if it's a spawn 
         if(string.find(object.name,"(Spawn)")~=nil) then
             local types={
-                --["Platypunk"]=function() return require("Resources.scripts.Platypunk").new() end,
+                ["Platypunk"]=function(spawn_pos) 
+                    local platy = require("Resources.scripts.Platypunk") 
+                    platy:initialize(vector.new(spawn_pos.x,spawn_pos.y),vector.new(0,0),vector.new(16,16))  
+                    return platy.static
+                end,
                 ["Player"]=function(spawn_pos) 
-                    local p = require("Resources.scripts.Player") 
-
-                    p:initialize(vector.new(spawn_pos.x,spawn_pos.y),vector.new(-1,1),vector.new(12,12))  
-                    return p.static
+                    local plr = require("Resources.scripts.Player") 
+                    plr:initialize(vector.new(spawn_pos.x,spawn_pos.y),vector.new(-1,1),vector.new(12,12))  
+                    return plr.static
                 end,
                 ["TankShell"]=function(spawn_pos) 
                     local shell = require("Resources.scripts.TankShell") 
-
                     shell:initialize(vector.new(spawn_pos.x,spawn_pos.y),vector.new(10,5),vector.new(12,12))  
                     return shell.static
                 end,

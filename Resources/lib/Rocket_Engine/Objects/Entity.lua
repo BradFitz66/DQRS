@@ -17,7 +17,10 @@ function entity:initialize(start_pos,collider_pos,collider_size)
     end
     --"Traditional" 2D coordinates for the player
     self.planar_position=vector.new(0,0) 
+    self.hold_offset=vector.new(0,-10)
     self.picked_up=false
+    self.can_pickup=false
+    self.name="Entity"
     self.physics_data={
         bounciness=0.9,
         velocity=vector3(0,0,0),
@@ -34,7 +37,6 @@ function entity:initialize(start_pos,collider_pos,collider_size)
         trigger=false;
         
     }
-    print()
     self.z_value=0
 end
 

@@ -24,8 +24,11 @@ State.Update=function(owner,dt)
 	end
 	local going_to_pos=owner.current_path[owner.walkDest]
 	if(going_to_pos~=nil) then
-		owner.move_vector=(going_to_pos-owner.position):normalized()*owner.speed
-		owner.position=owner.position + owner.move_vector * dt
+		owner.move_vector=(going_to_pos-owner.planar_position):normalized()*owner.speed
+		owner:set_position_planar(vector.new(
+			owner.position.x+((owner.move_vector.x*owner.speed)*dt),
+			owner.position.z+((owner.move_vector.y*owner.speed)*dt))
+		);
 
 		if(owner.move_vector~=vector.new(0,0))then
 			--update animation tree vector so the correct directional animation is played
@@ -33,6 +36,7 @@ State.Update=function(owner,dt)
 		end
 	end	
 end
+
 
 State.Exit=function(owner)
 end
