@@ -5,7 +5,7 @@ local tank_shell=class("Tank_Shell",entity)
 
 function tank_shell:initialize(start_pos,collider_pos,collider_size)
     entity.initialize(self,start_pos,collider_pos,collider_size)
-    self.hold_offset=vector.new(-10,-10)
+    self.hold_offset=vector.new(-10,-5)
     self.type="ammo"
     self.can_pickup=true
     self.picked_up=false
@@ -29,6 +29,24 @@ local halfRotations={
 	225,
 	135
 }
+
+function tank_shell:handle_collision(dt)
+    entity.handle_collision(self,dt)
+    if(self.physics_data.collider:collidesWith(player.physics_data.collider)) then
+		if(player.statemachine.current_state.Name=="Blasting" and not self.hit_debounce) then
+			print("!!")
+			local normalizedBlast=player.blast_velocity:normalized()
+			self.can_pickup=false
+			local initialVel = (vector3(player.blast_velocity.x,player.blast_velocity.y,0))
+			initialVel.z=initialVel.y;
+			initialVel.y=0;
+			initialVel=initialVel+vector3(0,3,0)
+			self:add_force(initialVel)
+			hit_debounce=true
+			timer.after(1,function() hit_debounce=false self.can_pickup=true end)
+		end
+	end
+end
 
 function tank_shell:update(dt)
     entity.update(self,dt)

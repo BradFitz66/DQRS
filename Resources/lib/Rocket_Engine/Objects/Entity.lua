@@ -17,7 +17,10 @@ function entity:initialize(start_pos,collider_pos,collider_size)
     end
     --"Traditional" 2D coordinates for the player
     self.planar_position=vector.new(0,0) 
+    self.hold_offset=vector.new(0,-10)
     self.picked_up=false
+    self.can_pickup=false
+    self.name="Entity"
     self.physics_data={
         bounciness=0.9,
         velocity=vector3(0,0,0),
@@ -34,7 +37,6 @@ function entity:initialize(start_pos,collider_pos,collider_size)
         trigger=false;
         
     }
-    print()
     self.z_value=0
 end
 
@@ -83,7 +85,9 @@ function entity:update(dt)
         self.planar_position.x+self.physics_data.collider_offset.x,
         self.planar_position.y+self.physics_data.collider_offset.y
     )
-    self.z_value=self.position.z+self.position.y
+    if(not self.picked_up) then
+        self.z_value=self.position.z+self.position.y
+    end
     --#region Bounce physics
     if(self.physics_data.in_air and (self.physics_data.bounces_left > 0 and self.physics_data.velocity.y ~= 0)) then
         self.physics_data.velocity = self.physics_data.velocity + vector3(0, -9.81, 0) * dt;

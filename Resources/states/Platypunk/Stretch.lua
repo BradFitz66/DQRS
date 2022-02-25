@@ -11,7 +11,7 @@ State.Update=function(owner,dt)
 	if(owner.current_tree.current_animation.currentFrame==7) then
 		if(db)then return end
 		db=true
-		
+		local org_pos = owner.position
 		timer.script(function(wait)
 			for i=1,10 do
 				if(owner.current_tree.name~="stretch")then
@@ -19,14 +19,14 @@ State.Update=function(owner,dt)
 				end
 				owner.current_tree.current_animation.paused=true
 				t=not t
-				owner.sprite.local_position.x = t and 0.5 or -0.5
+				owner.position.x = t and owner.position.x + 0.5 or owner.position.y + -0.5
 				wait(.025)
 			end
 			owner:load_tree("stretch",true,false)
 			owner:change_state("Idle")
 			owner.current_tree.current_animation.paused=false
-			owner.sprite.local_position.x = 0
-			owner.sprite.local_position.y  = 0
+			owner.position.x = org_pos.x
+			owner.position.z = org_pos.z
 		end)
 	end
 end

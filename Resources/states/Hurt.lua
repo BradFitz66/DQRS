@@ -6,7 +6,7 @@ State.Enter=function(owner)
         return
     end
     owner:load_tree("hurt",true)
-    owner.current_tree.vector=vector.new(owner.sprite.velocity.x,owner.sprite.velocity.z):normalized()
+    owner.current_tree:set_vector(vector.new(owner.physics_data.velocity.x,owner.physics_data.velocity.z):normalized())
     db=false
 end
 

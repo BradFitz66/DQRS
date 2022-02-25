@@ -1,12 +1,10 @@
-local Platypunk={}
-
 local anim8=require("Resources.lib.anim8")
 local RTA=require("Resources.lib.RTA")
 local blendtree=require("Resources.lib.Rocket_Engine.Animation.blendtree")
 local image_utils = require("Resources.lib.Rocket_Engine.Utils.ImageUtils")
 local entity=require("Resources.lib.Rocket_Engine.Objects.Entity")
+local Platypunk=class("Platypunk",entity)
 
-Platypunk.__index=Platypunk
 
 local function get_sprite_quads(spriteprefix,index_start, index_end,atlas)
 	local quads={}
@@ -20,13 +18,10 @@ local function get_sprite_quads(spriteprefix,index_start, index_end,atlas)
 	return quads
 end
 
-function Platypunk.new()
-	local punkData=setmetatable({},Platypunk)
-	punkData.sprite=entity.new(0,0,15,15)
-	punkData.sprite.parent=punkData;
-	punkData.sprite.name="NPC"
-	punkData.sprites=RTA.newDynamicSize(0,0,0)
-	punkData.sprites:setFilter("nearest")
+function Platypunk:initialize(start_pos,collider_pos,collider_size)
+	entity.initialize(self,start_pos,collider_pos,collider_size)
+	self.sprites=RTA.newDynamicSize(0,0,0)
+	self.sprites:setFilter("nearest")
 	local sprites={
 		['idle']=image_utils.load_images_from_directory("Resources/graphics/Platypunk/Idle",true,image_utils.compare,1,9),
 		['walk']=image_utils.load_images_from_directory("Resources/graphics/Platypunk/Walk",true,image_utils.compare,1,55),
@@ -39,65 +34,65 @@ function Platypunk.new()
 		"stretch",
 		"hurt"
 	}
-	punkData.sprites:setBakeAsPow2(true)
+	self.sprites:setBakeAsPow2(true)
 	for _, prefix in pairs(prefixes) do
 		for i, sprite in ipairs(sprites[prefix]) do
-			punkData.sprites:add(sprite,prefix..tostring(i),true,"area")
+			self.sprites:add(sprite,prefix..tostring(i),true,"area")
 		end
 	end
-	punkData.sprites:hardBake()
+	self.sprites:hardBake()
 
 	prefixes=nil
 	sprites=nil;
 	collectgarbage("collect")
 
-	punkData.sprite.max_bounces=2;
-	local idleFrames = table.reverse(get_sprite_quads("idle",1,9,punkData.sprites))
-	local walkFrames = table.reverse(get_sprite_quads("walk",1,36,punkData.sprites))
-	local stretchFrames = table.reverse(get_sprite_quads("stretch",1,36,punkData.sprites))
+	self.physics_data.max_bounces=2;
+	local idleFrames = table.reverse(get_sprite_quads("idle",1,9,self.sprites))
+	local walkFrames = table.reverse(get_sprite_quads("walk",1,36,self.sprites))
+	local stretchFrames = table.reverse(get_sprite_quads("stretch",1,36,self.sprites))
 	--hardcoded delay tables for some of the animations to improve how they look.
 	local walkDelays={0.03,0.03,0.07,0.13,0.03,0.03,0.03,0.03,0.07,0.13,0.03,0.03}
 	local stretchDelays={0.16,0.16,0.16,0.16,0.16,0.16,0.16,0.04,0.04,0.04,0.04,0.16}
 	local idleDelays={0.27,0.13,0.13,0.03}
-	punkData.animations={
+	self.animations={
 		['idle']=
 		blendtree.new({
-			{anim8.newAnimation({idleFrames[1],idleFrames[2],idleFrames[3],idleFrames[2]},idleDelays,nil,punkData.sprites.image),vector.new(0,-1),vector.new(.5,.8)}, --up
-			{anim8.newAnimation({idleFrames[4],idleFrames[5],idleFrames[6],idleFrames[5]},idleDelays,nil,punkData.sprites.image),vector.new(1,0),vector.new(.5,.8)}, --right
-			{anim8.newAnimation({idleFrames[7],idleFrames[8],idleFrames[9],idleFrames[8]},idleDelays,nil,punkData.sprites.image),vector.new(0,1),vector.new(.5,.8)}, -- down
-			{anim8.newAnimation({idleFrames[4],idleFrames[5],idleFrames[6],idleFrames[5]},idleDelays,nil,punkData.sprites.image,true),vector.new(-1,0),vector.new(.5,.8)}, --left
+			{anim8.newAnimation({idleFrames[1],idleFrames[2],idleFrames[3],idleFrames[2]},idleDelays,nil,self.sprites.image),vector.new(0,-1),vector.new(.5,.8)}, --up
+			{anim8.newAnimation({idleFrames[4],idleFrames[5],idleFrames[6],idleFrames[5]},idleDelays,nil,self.sprites.image),vector.new(1,0),vector.new(.5,.8)}, --right
+			{anim8.newAnimation({idleFrames[7],idleFrames[8],idleFrames[9],idleFrames[8]},idleDelays,nil,self.sprites.image),vector.new(0,1),vector.new(.5,.8)}, -- down
+			{anim8.newAnimation({idleFrames[4],idleFrames[5],idleFrames[6],idleFrames[5]},idleDelays,nil,self.sprites.image,true),vector.new(-1,0),vector.new(.5,.8)}, --left
 			},
 			vector.new(0,0),
 			"idle",
-			punkData,
+			self,
 			nil,
 			nil,
 			true
 		),
 		['walk']=
 		blendtree.new({
-			{anim8.newAnimation(table.range(walkFrames,1,12),walkDelays,nil,punkData.sprites.image),vector.new(0,-1),vector.new(.5,.8)}, --up
-			{anim8.newAnimation(table.range(walkFrames,13,24),walkDelays,nil,punkData.sprites.image),vector.new(1,0),vector.new(.5,.8)}, --right
-			{anim8.newAnimation(table.range(walkFrames,25,36),walkDelays,nil,punkData.sprites.image),vector.new(0,1),vector.new(.5,.8)}, -- down
-			{anim8.newAnimation(table.range(walkFrames,13,24),walkDelays,nil,punkData.sprites.image,true),vector.new(-1,0),vector.new(.5,.8)}, --left
+			{anim8.newAnimation(table.range(walkFrames,1,12),walkDelays,nil,self.sprites.image),vector.new(0,-1),vector.new(.5,.8)}, --up
+			{anim8.newAnimation(table.range(walkFrames,13,24),walkDelays,nil,self.sprites.image),vector.new(1,0),vector.new(.5,.8)}, --right
+			{anim8.newAnimation(table.range(walkFrames,25,36),walkDelays,nil,self.sprites.image),vector.new(0,1),vector.new(.5,.8)}, -- down
+			{anim8.newAnimation(table.range(walkFrames,13,24),walkDelays,nil,self.sprites.image,true),vector.new(-1,0),vector.new(.5,.8)}, --left
 			},
 			vector.new(0,0),
 			"walk",
-			punkData,
+			self,
 			function() end,
 			nil,
 			true
 		),
 		['stretch']=
 		blendtree.new({
-			{anim8.newAnimation(table.range(stretchFrames,12,1),stretchDelays,nil,punkData.sprites.image),vector.new(0,-1),vector.new(.5,.8)}, --up
-			{anim8.newAnimation(table.range(stretchFrames,24,13),stretchDelays,nil,punkData.sprites.image),vector.new(1,0),vector.new(.5,.8)}, --right
-			{anim8.newAnimation(table.range(stretchFrames,36,25),stretchDelays,nil,punkData.sprites.image),vector.new(0,1),vector.new(.5,.8)}, -- down
-			{anim8.newAnimation(table.range(stretchFrames,24,13),stretchDelays,nil,punkData.sprites.image,true),vector.new(-1,0),vector.new(.5,.8)}, --left
+			{anim8.newAnimation(table.range(stretchFrames,12,1),stretchDelays,nil,self.sprites.image),vector.new(0,-1),vector.new(.5,.8)}, --up
+			{anim8.newAnimation(table.range(stretchFrames,24,13),stretchDelays,nil,self.sprites.image),vector.new(1,0),vector.new(.5,.8)}, --right
+			{anim8.newAnimation(table.range(stretchFrames,36,25),stretchDelays,nil,self.sprites.image),vector.new(0,1),vector.new(.5,.8)}, -- down
+			{anim8.newAnimation(table.range(stretchFrames,24,13),stretchDelays,nil,self.sprites.image,true),vector.new(-1,0),vector.new(.5,.8)}, --left
 			},
 			vector.new(0,0),
 			"stretch",
-			punkData,
+			self,
 			function() end,
 			nil,
 			false
@@ -112,7 +107,7 @@ function Platypunk.new()
 			},
 			vector.new(0,0),
 			"held",
-			punkData,
+			self,
 			function() end,
 			nil,
 			true
@@ -126,34 +121,38 @@ function Platypunk.new()
 			},
 			vector.new(0,0),
 			"hurt",
-			punkData,
+			self,
 			function() end,
 			nil,
 			true
 		),
 	}
 	
-	punkData.move_vector=vector.new(0,0)
-	punkData.current_tree=current_tree
-	punkData.statemachine=require("Resources.lib.Rocket_Engine.State Machine.StateMachine").new(punkData)
+	self.move_vector=vector.new(0,0)
+	self.current_tree=current_tree
+	self.statemachine=require("Resources.lib.Rocket_Engine.State Machine.StateMachine").new(self)
 	--This contains the Platypunks states. It stores the actual state module + a table of the states that can't transition to it
-	punkData.states={
-		["Idle"]={punkData.statemachine:add_state(require("Resources.states.Platypunk.Idle")),{}},
-		["Walk"]={punkData.statemachine:add_state(require("Resources.states.Platypunk.Walk")),{}},
-		["Stretch"]={punkData.statemachine:add_state(require("Resources.states.Platypunk.Stretch")),{}},
-		["Held"]={punkData.statemachine:add_state(require("Resources.states.Held")),{}},
-		["Hurt"]={punkData.statemachine:add_state(require("Resources.states.Hurt")),{}}
+	self.states={
+		["Idle"]={self.statemachine:add_state(require("Resources.states.Platypunk.Idle")),{}},
+		["Walk"]={self.statemachine:add_state(require("Resources.states.Platypunk.Walk")),{}},
+		["Stretch"]={self.statemachine:add_state(require("Resources.states.Platypunk.Stretch")),{}},
+		["Held"]={self.statemachine:add_state(require("Resources.states.Held")),{}},
+		["Hurt"]={self.statemachine:add_state(require("Resources.states.Hurt")),{}}
 	}
-	punkData.map=nil
-	punkData.statemachine:change_state("Idle")
-	punkData.speed=32;
-	punkData.scale=vector.new(1,1)
-	punkData.image=love.graphics.newImage("Resources/graphics/Platypunk/Idle/1.png")
-	punkData.current_path={}
-    punkData.walkDest=0 -- refers to index in current_path
-	punkData.sprite.position=vector.new(400,400)
-	punkData.rotation=0
-	return punkData
+	self.map=nil
+	self.name="NPC"
+	self.statemachine:change_state("Idle")
+	self.speed=32;
+	self.z_value=1
+	self.scale=vector.new(1,1)
+	self.current_path={}
+	self.hold_offset=vector.new(0,-2)
+    self.walkDest=0 -- refers to index in current_path
+	self.rotation=0
+	self.hit_debounce=false
+	self.can_pickup=true
+	self.picked_up=false
+	return self
 end
 
 function Platypunk:load_tree(animation_name,keep_vector,frame,pause_at_start)
@@ -177,15 +176,14 @@ function Platypunk:load_tree(animation_name,keep_vector,frame,pause_at_start)
 end
 
 function Platypunk:draw()
-	self.sprite:draw()
 	if(self.current_tree.current_animation:isActive()) then
 		local offset=vector.new(
 			self.current_tree.current_animation:getWidth()*self.current_tree.frame_offset.x,
 			self.current_tree.current_animation:getHeight()*self.current_tree.frame_offset.y
 		):round()
 		self.current_tree.current_animation:draw(
-			math.round(self.sprite.position.x),
-			math.round(self.sprite.position.y),
+			math.round(self.position.x),
+			math.round(self.position.z - self.position.y),
 			self.rotation,
 			self.scale.x,
 			self.scale.y,
@@ -194,6 +192,8 @@ function Platypunk:draw()
 		)
 	end
 	if(debug_mode) then
+		love.graphics.setColor(0,1,0,.25)
+		self.physics_data.collider:draw("fill")
 		if(self.current_path~=nil and #self.current_path>0) then
 			for i = 1, #self.current_path do
 				love.graphics.setColor(0,0,0)
@@ -205,6 +205,7 @@ function Platypunk:draw()
 			end
 			love.graphics.setColor(255,255,255)
 		end
+		love.graphics.setColor(1,1,1,1)
 	end
 end
 
@@ -221,12 +222,31 @@ function Platypunk:change_state(new_state)
 	self.statemachine:change_state(new_state)
 end
 
+function Platypunk:handle_collision(dt)
+	entity.handle_collision(self,dt)
+	if(self.physics_data.collider:collidesWith(player.physics_data.collider)) then
+		if(player.statemachine.current_state.Name=="Blasting" and not self.hit_debounce) then
+			print("!!")
+			local normalizedBlast=player.blast_velocity:normalized()
+			self.can_pickup=false
+			local initialVel = (vector3(player.blast_velocity.x,player.blast_velocity.y,0))
+			initialVel.z=initialVel.y;
+			initialVel.y=0;
+			initialVel=initialVel+vector3(0,3,0)
+			self:change_state("Hurt")
+			self:add_force(initialVel)
+			hit_debounce=true
+			timer.after(1,function() hit_debounce=false self.can_pickup=true end)
+		end
+	end
+end
+
 function Platypunk:update(dt)
+	entity.update(self,dt)
 	self.statemachine:update(dt)
 	self.current_tree:update(dt)
-	self.sprite:update(dt,nil)
-	if(self.sprite.physics_data.in_air==true and self.statemachine.current_state.Name~="Hurt") then
-		self:change_state("Hurt")
+	if (self.picked_up and self.statemachine.current_state.Name~="Held") then
+		self:change_state("Held")
 	end
 end
 
