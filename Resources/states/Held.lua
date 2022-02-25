@@ -9,6 +9,7 @@ State.Update=function(owner,dt)
     if(owner.physics_data.in_air)then
         owner:change_state("Hurt")
     end
+    owner.move_vector=player.move_vector
     if(owner.move_vector~=vector.new(0,0)) then
         owner.current_tree:set_vector(owner.move_vector)
     end

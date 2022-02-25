@@ -404,37 +404,22 @@ function Player:handle_collision(dt)
 		local m_vector=self.move_vector
 		local fixedDelta=vector.new(delta.x,delta.y)-(m_vector*self.speed):normalized()
 		if(self.map~=nil) then
-			for _, actor in pairs(self.map.actors) do
-
+			for i, actor in pairs(self.map.actors) do
 				if(actor.physics_data.collider==shape and not actor.picked_up) then
-					--Handle collision with actor while in the blasting state.
-					if(self.statemachine.current_state.Name=="Blasting")then
-						local normalizedBlast=self.blast_velocity:normalized()
-						local initialVel = (vector3(self.blast_velocity.x,self.blast_velocity.y,0))
-						initialVel.z=initialVel.y;
-						initialVel.y=0;
-						initialVel=initialVel+vector3(0,3,0)
-						actor:add_force(initialVel)
-					else	
-						if(actor.physics_data.in_air and actor.can_pickup and #self.holding<3)then
-							local heightDifference=actor.position.y - self.position.y
-							if(heightDifference < 20) then
-								actor.physics_data.in_air=false
-								--Picking up
-								actor.picked_up=true;
-								
-								actor.z_value=10000*(#self.holding+1)
-								table.insert(self.holding,{actor,vector3(0,0,0)})
-								startPos=actor.planar_position
-								if(actor.name=="NPC") then
-									actor:change_state("Held")
-								end
-								timer.script(function(wait)
-									self:change_state("Squish")
-									wait(.2)
-									self:change_state("Idle")
-								end)
-							end
+					if(actor.physics_data.in_air and actor.can_pickup and #self.holding<3)then
+						local heightDifference=actor.position.y - self.position.y
+						if(heightDifference < 20) then
+							actor.physics_data.in_air=false
+							--Picking up
+							actor.picked_up=true;
+							actor.z_value=10000*(#self.holding+1)
+							table.insert(self.holding,{self.map.actors[i],vector3(0,0,0)})
+							startPos=actor.planar_position
+							timer.script(function(wait)
+								self:change_state("Squish")
+								wait(.2)
+								self:change_state("Idle")
+							end)
 						end
 					end
 				end
@@ -514,6 +499,7 @@ function Player:update(dt)
 			-- heldVelocity.z=math.lerp(held[1].position.z,(endPoint.y),.1*dt);
 			held[1].position.z=held[1].position.z+(endPoint.y-held[1].position.z)*.5/i;
 			held[1].position.x=held[1].position.x+(endPoint.x-held[1].position.x)*.5/i;
+			
 			if(held[1].name=="NPC") then
 				held[1].move_vector=self.move_vector
 			end

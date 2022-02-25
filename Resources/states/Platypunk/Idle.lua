@@ -1,6 +1,7 @@
 local State = require("Resources.lib.Rocket_Engine.State Machine.State").new("Idle")
 State.Enter=function(owner)
     owner:load_tree("idle",true)
+    owner.current_tree:set_vector(owner.move_vector)
     timer.after(5,function() 
         if(owner.statemachine.current_state.Name=="Idle") then
             owner.walkDest=1

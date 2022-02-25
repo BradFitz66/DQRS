@@ -143,11 +143,15 @@ function Platypunk:initialize(start_pos,collider_pos,collider_size)
 	self.name="NPC"
 	self.statemachine:change_state("Idle")
 	self.speed=32;
+	self.z_value=1
 	self.scale=vector.new(1,1)
 	self.current_path={}
+	self.hold_offset=vector.new(0,-2)
     self.walkDest=0 -- refers to index in current_path
 	self.rotation=0
+	self.hit_debounce=false
 	self.can_pickup=true
+	self.picked_up=false
 	return self
 end
 
@@ -218,12 +222,31 @@ function Platypunk:change_state(new_state)
 	self.statemachine:change_state(new_state)
 end
 
+function Platypunk:handle_collision(dt)
+	entity.handle_collision(self,dt)
+	if(self.physics_data.collider:collidesWith(player.physics_data.collider)) then
+		if(player.statemachine.current_state.Name=="Blasting" and not self.hit_debounce) then
+			print("!!")
+			local normalizedBlast=player.blast_velocity:normalized()
+			self.can_pickup=false
+			local initialVel = (vector3(player.blast_velocity.x,player.blast_velocity.y,0))
+			initialVel.z=initialVel.y;
+			initialVel.y=0;
+			initialVel=initialVel+vector3(0,3,0)
+			self:change_state("Hurt")
+			self:add_force(initialVel)
+			hit_debounce=true
+			timer.after(1,function() hit_debounce=false self.can_pickup=true end)
+		end
+	end
+end
+
 function Platypunk:update(dt)
 	entity.update(self,dt)
 	self.statemachine:update(dt)
 	self.current_tree:update(dt)
-	if(self.physics_data.in_air==true and self.statemachine.current_state.Name~="Hurt") then
-		self:change_state("Hurt")
+	if (self.picked_up and self.statemachine.current_state.Name~="Held") then
+		self:change_state("Held")
 	end
 end
 

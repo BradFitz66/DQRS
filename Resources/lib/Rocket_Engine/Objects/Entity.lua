@@ -85,7 +85,9 @@ function entity:update(dt)
         self.planar_position.x+self.physics_data.collider_offset.x,
         self.planar_position.y+self.physics_data.collider_offset.y
     )
-    self.z_value=self.position.z+self.position.y
+    if(not self.picked_up) then
+        self.z_value=self.position.z+self.position.y
+    end
     --#region Bounce physics
     if(self.physics_data.in_air and (self.physics_data.bounces_left > 0 and self.physics_data.velocity.y ~= 0)) then
         self.physics_data.velocity = self.physics_data.velocity + vector3(0, -9.81, 0) * dt;
