@@ -1,3 +1,7 @@
+--[[
+	Basic NPC for testing AI related stuff (pathfinding, behaviors, etc)
+]]
+
 local anim8=require("Resources.lib.anim8")
 local RTA=require("Resources.lib.RTA")
 local blendtree=require("Resources.lib.Rocket_Engine.Animation.blendtree")
@@ -130,7 +134,7 @@ function Platypunk:initialize(start_pos,collider_pos,collider_size)
 	
 	self.move_vector=vector.new(0,0)
 	self.current_tree=current_tree
-	self.statemachine=require("Resources.lib.Rocket_Engine.State Machine.StateMachine").new(self)
+	self.statemachine=require("Resources.lib.Rocket_Engine.State Machine.StateMachine").new(self.static)
 	--This contains the Platypunks states. It stores the actual state module + a table of the states that can't transition to it
 	self.states={
 		["Idle"]={self.statemachine:add_state(require("Resources.states.Platypunk.Idle")),{}},
@@ -226,7 +230,6 @@ function Platypunk:handle_collision(dt)
 	entity.handle_collision(self,dt)
 	if(self.physics_data.collider:collidesWith(player.physics_data.collider)) then
 		if(player.statemachine.current_state.Name=="Blasting" and not self.hit_debounce) then
-			print("!!")
 			local normalizedBlast=player.blast_velocity:normalized()
 			self.can_pickup=false
 			local initialVel = (vector3(player.blast_velocity.x,player.blast_velocity.y,0))
@@ -236,7 +239,7 @@ function Platypunk:handle_collision(dt)
 			self:change_state("Hurt")
 			self:add_force(initialVel)
 			hit_debounce=true
-			timer.after(1,function() hit_debounce=false self.can_pickup=true end)
+			timer.after(.75,function() hit_debounce=false self.can_pickup=true end)
 		end
 	end
 end

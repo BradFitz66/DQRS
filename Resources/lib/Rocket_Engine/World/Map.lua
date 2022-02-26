@@ -1,3 +1,7 @@
+--[[
+    Map class. Defines a map and handles some other stuff (pathfinding, spawning, collision generation, etc)
+]]
+
 local Rect = require "Resources.lib.Rocket_Engine.Miscellaneous.Rect"
 local Map={}
 Map.__index=Map
@@ -74,7 +78,6 @@ function Map:generate_colliders(o_x,o_y)
             local hc_poly=collider_world:polygon(unpack(collider))
             hc_poly.flags=flags
             hc_poly:move(-object.x,-object.y)
-            hc_poly.name=object.name
             table.insert(colliders,1,hc_poly)
         end
     end

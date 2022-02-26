@@ -1,5 +1,7 @@
+--Some extra math stuff
+
 local math_utils={}
-math_utils.__index={}
+math_utils.__index=math
 
 ---Round a number
 ---@param number number

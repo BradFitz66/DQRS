@@ -1,10 +1,14 @@
+--[[
+    Base entity class 
+
+    ToDo: create a component system so entities can have specific components (i.e. animator component, state machine component, etc)
+]]
 class = require 'Resources.lib.Rocket_Engine.Systems.middleclass'
 
 local entity=class("Entity")
 local vector3 = require("Resources.lib.brinevector3D")
 
 function entity:initialize(start_pos,collider_pos,collider_size)
-    print(collider_size)
     --Base amount of data needed for an entity
     self.position=vector3(0,0,0)
     if(start_pos and start_pos.isVector) then
@@ -12,7 +16,6 @@ function entity:initialize(start_pos,collider_pos,collider_size)
     elseif not start_pos then
         self.position=vector3(0,0,0)
     elseif not start_pos.isVector and vector.isvector(start_pos) then
-        print(start_pos)
         self.position=vector3(start_pos.x,0,start_pos.y)
     end
     --"Traditional" 2D coordinates for the player

@@ -54,11 +54,10 @@ State.Update=function(owner,dt)
         obstruction=false
 
         for _, v in pairs(collider_world:neighbors(owner.head_collider)) do
-            if((not v.flags or v.flags.trigger or v.flags.canCollide)) then
+            if((not v.flags or v.flags.trigger or not v.flags.canCollide or v.name~=nil)) then
                 break
             end
             if(owner.head_collider:collidesWith(v))then
-                print(v.flags)
                 obstruction=true;
             end
         end

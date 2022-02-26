@@ -1,3 +1,7 @@
+--[[
+    A class for switching between multiple animations based on a vector. Useful for 8-directional movement.
+]]
+
 local Blendtree={}
 Blendtree.__index=Blendtree
 

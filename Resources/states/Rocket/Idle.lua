@@ -2,6 +2,7 @@ local State = require("Resources.lib.Rocket_Engine.State Machine.State").new("Id
 State.Enter=function(owner)
     owner.can_float=true
     owner:load_tree("idle",true)
+    owner.last_hit_pos=vector.new(0,0)
 end
 
 State.Update=function(owner,dt) 

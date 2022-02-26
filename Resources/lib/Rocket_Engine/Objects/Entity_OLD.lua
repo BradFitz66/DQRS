@@ -1,3 +1,6 @@
+--Old and unused, replaced by new Entity class. Is being kept for reference and will eventually be deleted.
+
+
 --Base module for entities (players, ammo, enemies, etc)
 local Entity={}
 local vector = require("Resources.lib.HUMP.vector")

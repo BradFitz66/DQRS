@@ -12,10 +12,9 @@ State.Update=function(owner,dt)
                 return
             end
             debounce=true
-            local newVel=owner.blast_velocity*owner.wall_hit_normal;
-            --vector.Reflect(-owner.blast_velocity,owner.wall_hit_normal)
-            owner.blast_velocity=vector.Reflect(owner.blast_velocity,owner.wall_hit_normal)
-            
+            owner.blast_velocity=vector.Reflect(owner.blast_velocity*.9,owner.wall_hit_normal)
+            local pos=vector.new(owner.planar_position.x,owner.planar_position.y)
+            debug_draw:draw_ray(pos,pos+(owner.blast_velocity:normalized()*50),1)
             owner.hit_wall=true;
             owner:change_state("Blasting")
         end)

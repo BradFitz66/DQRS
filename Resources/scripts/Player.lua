@@ -292,7 +292,7 @@ function Player:initialize(start_pos,collider_pos,collider_size)
 	
 	self.move_vector=vector.new(0,0)
 	self.current_tree=current_tree
-	self.statemachine=require("Resources.lib.Rocket_Engine.State Machine.StateMachine").new(self)
+	self.statemachine=require("Resources.lib.Rocket_Engine.State Machine.StateMachine").new(self.static)
 	--This contains the players states. It stores the actual state module + a table of the states that can't transition to it
 	self.states={
 		["Idle"]={self.statemachine:add_state(require("Resources.states.Rocket.Idle")),{}},
@@ -318,6 +318,7 @@ function Player:initialize(start_pos,collider_pos,collider_size)
 	self.super_throw=false;
 	self.inside_bouncy=false;
 	self.name="Player"
+	self.physics_data.collider.name="Player_Collider"
 	self.hit_wall=false;
 	self.full_charge_elastoblast=false;
 	self.wall_hit_debounce=false --Sometimes player can get stuck in an infinite loop of collision. Adding a debounce fixes this.
@@ -330,7 +331,9 @@ function Player:initialize(start_pos,collider_pos,collider_size)
 	self.rotation=0
 	self.physics_data.max_bounces=1
 	self.physics_data.bounces_left=1
+	self.last_hit_pos=vector.new(0,0)
 	self.actor_collision_debounce=false
+	--Ugly, but it's easier than trying to figure out the maths. A hardcoded lookup table that returns the correct vector for a wallhit
 	return self
 end
 
@@ -438,19 +441,30 @@ function Player:handle_collision(dt)
 				--[[Sometimes when we hit a wall while bouncing, delta returns as 0,0 which it shouldn't. 
 					We need to wait until it gives us something we can work with]]
 				if(not self.wall_hit_debounce and not(vector.new(delta.x,delta.y)==vector.new(0,0))) then
+					if(self.last_hit_pos.dist(self.planar_position,self.last_hit_pos)<=5) then
+						print("Too close to last hit point")
+						return
+					end
 					local normal = vector.new(
-						delta.x+(self.blast_velocity.x*math.sign(delta.x)),
-						delta.y+(self.blast_velocity.y*math.sign(delta.y))
+						delta.x,
+						delta.y
 					):normalized():round()
+					self:set_position_planar(vector.new(self.position.x+normal.x,self.position.z+normal.y*2))
+					local wall_angle=math.deg(math.atan2(normal.y,normal.x))
+					local blast_angle=math.deg(math.atan2(self.blast_velocity.y,self.blast_velocity.x))
+					local absolute_difference=math.abs(math.abs(wall_angle)-math.abs(blast_angle))
+					print("Wall angle:",wall_angle,"Hit angle (angle we hit it at):",blast_angle,"Absolute difference:",absolute_difference)		
+					
+					if(absolute_difference==135) then
+						return
+					end
 
+					self.last_hit_pos=vector.new(self.planar_position.x,self.planar_position.y)
+
+					
 					self.wall_hit_debounce=true;
 					self.wall_hit_normal=normal
-					
 					self:change_state("WallHit")
-					self.hit_wall=true;
-					timer.after(10,function()
-						self.hit_wall=false;
-					end)
 					self.current_tree:set_vector(vector.Reflect(self.blast_velocity,self.wall_hit_normal))
 					timer.after(.025,function()
 						self.wall_hit_debounce=false;

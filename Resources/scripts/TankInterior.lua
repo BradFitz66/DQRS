@@ -1,3 +1,6 @@
+--[[
+    Class built ontop of Map baseclass (will convert to middleclass-based OOP at some point probably)
+]]
 local TankInterior={}
 TankInterior.__index=TankInterior
 

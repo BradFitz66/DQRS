@@ -4,7 +4,6 @@ local Pathfinder = require ("Resources.lib.Rocket_Engine.Systems.jumper.pathfind
 State.Enter=function(owner)
 	owner:load_tree("walk",true)
 	owner.walkDest=1
-	print("Length of path:",#owner.current_path,"At point",owner.walkDest)
 end
 
 State.Update=function(owner,dt)
@@ -19,7 +18,6 @@ State.Update=function(owner,dt)
 		--owner.move_vector=vector.zero
 	end
 	if(owner.current_path[owner.walkDest]~=nil and owner.position.dist(owner.position,owner.current_path[owner.walkDest])<1) then
-		print("Length of path:",#owner.current_path,"At point",owner.walkDest)
 		owner.walkDest=owner.walkDest+1
 	end
 	local going_to_pos=owner.current_path[owner.walkDest]

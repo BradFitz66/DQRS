@@ -1,3 +1,8 @@
+--[[
+    Tank shell. Basic ammo type for testing.
+
+    May create a specific base class ontop of entity for ammo pieces.
+]]
 local tankshell={}
 tankshell.__index=tankshell
 local entity=require("Resources.lib.Rocket_Engine.Objects.Entity")
@@ -31,10 +36,12 @@ local halfRotations={
 }
 
 function tank_shell:handle_collision(dt)
-    entity.handle_collision(self,dt)
+    if(not self.picked_up) then
+        entity.handle_collision(self,dt)
+    end
+    --Handle collision with player
     if(self.physics_data.collider:collidesWith(player.physics_data.collider)) then
 		if(player.statemachine.current_state.Name=="Blasting" and not self.hit_debounce) then
-			print("!!")
 			local normalizedBlast=player.blast_velocity:normalized()
 			self.can_pickup=false
 			local initialVel = (vector3(player.blast_velocity.x,player.blast_velocity.y,0))
@@ -43,13 +50,15 @@ function tank_shell:handle_collision(dt)
 			initialVel=initialVel+vector3(0,3,0)
 			self:add_force(initialVel)
 			hit_debounce=true
-			timer.after(1,function() hit_debounce=false self.can_pickup=true end)
+			timer.after(.7,function() hit_debounce=false self.can_pickup=true end)
 		end
 	end
 end
 
 function tank_shell:update(dt)
     entity.update(self,dt)
+    --Old collision code (will be reworked and reimplemented at some point)
+
     -- self.sprite:update(dt,nil--[[function()
     --     for shape, delta in pairs(collider_world:collisions(self.sprite.collider)) do
     --         local absoluteDelta=vector.new(math.abs(delta.x),math.abs(delta.y))

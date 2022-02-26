@@ -1,3 +1,6 @@
+--[[
+	Utility class for image stuff (such as loading images from a directory)
+]]
 local image_utils={}
 image_utils.__index={}
 

@@ -1,10 +1,11 @@
 floor,ceil,pi,sqrt,sin,cos=math.floor,math.ceil,math.pi,math.sqrt,math.sin,math.cos
-
+--	.flags={bouncy=false,trigger=false,canCollide=true}
+--   ^ flags for colliders, so I don't forget
 
 local lib_path = love.filesystem.getWorkingDirectory().."/Resources/lib"
 love.filesystem.setCRequirePath(lib_path)
 debug_mode=true
---#region variables and modules
+--#region Global modules
 Input=require("Resources.lib.Input")
 HC=require("Resources.lib.HC-master")
 timer = require("Resources.lib.HUMP.timer")
@@ -20,36 +21,32 @@ signal=require("Resources.lib.HUMP.signal").new()
 gameCam=nil;
 rect = nil;
 world=require("Resources.lib.bump").newWorld(24);
-clipper = require 'Resources.lib.clipper.clipper'
 control_scheme=nil;
 input_provider=require("Resources.lib.Rocket_Engine.Systems.Input.InputProvider")
-input_provider:add_state(require("Resources.lib.Rocket_Engine.Systems.Input.PlayerInput"))
 imgui = require "Resources.lib.cimgui" -- cimgui is the folder containing the Lua module (the "src" folder in the github repository)
 path=nil
 saved_dt=0
---	.flags={bouncy=false,trigger=false,canCollide=true}x
---global variables
+--#endregion
+--#region global variables
 currentArea=nil;
 collider_world=nil;
 actors={}
 elapsed_time=0;
 clipper_to_hc_polygon={}
 player=nil;
+result=nil;
+
 local debugKeys=nil;
 local playing=true;
 local tick=require 'Resources.lib.tick'
-result=nil;
 local test_trigger;
-local test_bouncy;
 local sub_window=require("Resources.lib.Rocket_Engine.Miscellaneous.Subwindow")
 local windows={}
-local debug_atlas=love.image.newImageData("Resources/graphics/Atlass/Debug_atlas.png")
-local one=love.graphics.newQuad(0,0,50,50,1,1)
-local zero=love.graphics.newQuad(50,0,50,50,1,1)
-local debug_atlas_image = love.graphics.newImage(debug_atlas)
 --#endregion
+
 function love.load(args)
 	imgui.Init()
+	input_provider:add_state(require("Resources.lib.Rocket_Engine.Systems.Input.PlayerInput"))
 	tick.rate=.016
 	love.graphics.setDefaultFilter("nearest")
 	tick.sleep=0.001
@@ -96,12 +93,6 @@ function love.load(args)
 	test_trigger.flags={bouncy=false,trigger=true,canCollide=true,
 	trigger_function=function(this_trigger,entity) 
 		if(entity.type=="ammo" and entity.going_into_cannon==false) then
-			entity.going_into_cannon=true
-			entity.physics_data.in_air=false
-			entity.local_position=vector.new(0,0)
-			entity.velocity=vector3(0,0,0)
-			flux.to(entity.parent.position,1,{x=this_trigger._polygon.centroid.x,y=this_trigger._polygon.centroid.y})
-			flux.to(entity.position,1,{x=0,y=0}):oncomplete(function() end)
 		end
 	end}
 	love.graphics.setPointSize(2)
@@ -125,6 +116,7 @@ function love.update(dt)
 			if(debug_mode) then
 				love.graphics.setColor(1,1,0,1)
 				test_trigger:draw()
+				debug_draw:draw()
 			end
 			love.graphics.setColor(255,255,0)
 			love.graphics.setColor(255,255,255)
