@@ -123,29 +123,33 @@ function love.update(dt)
 		end)
 		love.graphics.setBackgroundColor(74/255,74/255,74/255)
 	end)
-	canvasDebug:renderTo(function()
-		love.graphics.clear()
-		if(debug_mode) then
-			--Debug/performance stats
-			local stats = love.graphics.getStats()
-			love.graphics.setColor(255,0,0)
-			love.graphics.setColor(255,255,255)
-			love.graphics.print("FPS: "..tostring(love.timer.getFPS()),10,0)
-			if(player) then
-				love.graphics.print("Player position: "..tostring(floor(player.position.x))..", "..tostring(floor(player.position.z)),70,0)
-				love.graphics.print("Player state: "..player.statemachine.current_state.Name,10,15)
-				love.graphics.print("Player blendtree: "..player.current_tree.name,10,30)
-				love.graphics.print("Player blendtree animation frame: "..player.current_tree.current_animation:getFrame(),10,45)
-				love.graphics.print("Player blendtree vector: "..tostring(player.current_tree.vector).."\nPlayer move vector: "..tostring(player.move_vector),10,75)
-				love.graphics.print("Player in air: "..tostring(player.physics_data.in_air),10,60)
-			end
-			love.graphics.print("Draw calls: "..tostring(stats.drawcalls),10,105)
-			love.graphics.print("Images loaded: "..tostring(stats.images),10,120)
-			love.graphics.print("Texture memory: "..tostring(math.floor(stats.texturememory/1000000)).."MB",10,135)
-			love.graphics.print("Batched drawcalls: "..tostring(stats.drawcallsbatched),10,150)
-			love.graphics.print("Elapsed time: "..tostring(elapsed_time),10,165)
-		end	
-	end)
+	
+	if(debug_mode) then
+		canvasDebug:renderTo(function()
+			love.graphics.clear()
+			if(debug_mode) then
+				--Debug/performance stats
+				local stats = love.graphics.getStats()
+				love.graphics.setColor(255,0,0)
+				love.graphics.setColor(255,255,255)
+				love.graphics.print("FPS: "..tostring(love.timer.getFPS()),10,0)
+				if(player) then
+					love.graphics.print("Player position: "..tostring(floor(player.position.x))..", "..tostring(floor(player.position.z)),70,0)
+					love.graphics.print("Player state: "..player.statemachine.current_state.Name,10,15)
+					love.graphics.print("Player blendtree: "..player.current_tree.name,10,30)
+					love.graphics.print("Player blendtree animation frame: "..player.current_tree.current_animation:getFrame(),10,45)
+					love.graphics.print("Player blendtree vector: "..tostring(player.current_tree.vector).."\nPlayer move vector: "..tostring(player.move_vector),10,75)
+					love.graphics.print("Player in air: "..tostring(player.physics_data.in_air),10,60)
+				end
+				love.graphics.print("Draw calls: "..tostring(stats.drawcalls),10,105)
+				love.graphics.print("Images loaded: "..tostring(stats.images),10,120)
+				love.graphics.print("Texture memory: "..tostring(math.floor(stats.texturememory/1000000)).."MB",10,135)
+				love.graphics.print("Batched drawcalls: "..tostring(stats.drawcallsbatched),10,150)
+				love.graphics.print("Elapsed time: "..tostring(elapsed_time),10,165)
+			end	
+		end)
+	end
+	
 	--#endregion
 	if playing or timestep then	
 		timestep=false
@@ -227,4 +231,13 @@ love.joystickadded = function(joystick)
     imgui.JoystickAdded(joystick)
     -- your code here 
 end
+
+function love.keypressed(key,scancode,isrepeat)
+	if key == "rctrl" then --set to whatever key you want to use
+		debug.debug()
+	end
+end
+function love.textinput(text)
+end
+
 --#endregion

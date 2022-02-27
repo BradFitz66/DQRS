@@ -23,7 +23,7 @@ end
 
 function Player:initialize(start_pos,collider_pos,collider_size)
 	entity.initialize(self,start_pos,collider_pos,collider_size)
-	
+	self.physics_data.collider=collider_world:circle(collider_pos.x,collider_pos.y,collider_size:len()/2)
 	self.sprites=RTA.newDynamicSize()
 	self.sprites:setFilter("nearest")
 	local sprites={
@@ -452,16 +452,15 @@ function Player:handle_collision(dt)
 					self:set_position_planar(vector.new(self.position.x+normal.x,self.position.z+normal.y*2))
 					local wall_angle=math.deg(math.atan2(normal.y,normal.x))
 					local blast_angle=math.deg(math.atan2(self.blast_velocity.y,self.blast_velocity.x))
-					local absolute_difference=math.abs(math.abs(wall_angle)-math.abs(blast_angle))
-					print("Wall angle:",wall_angle,"Hit angle (angle we hit it at):",blast_angle,"Absolute difference:",absolute_difference)		
-					
-					if(absolute_difference==135) then
+					local difference=(math.abs(wall_angle)-math.abs(blast_angle))
+					print("Wall angle:",wall_angle,"Hit angle (angle we hit it at):",blast_angle,"Difference:",difference)		
+					--Ignore certain angle differences.
+					if(difference==135) then
 						return
 					end
 
 					self.last_hit_pos=vector.new(self.planar_position.x,self.planar_position.y)
 
-					
 					self.wall_hit_debounce=true;
 					self.wall_hit_normal=normal
 					self:change_state("WallHit")

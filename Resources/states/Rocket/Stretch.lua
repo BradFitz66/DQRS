@@ -8,6 +8,7 @@ local charge_timer=0;
 local curScale=startScale
 local fully_charged=false
 local last_vector
+local curScale
 State.Enter=function(owner)
     owner:load_tree("stretch",false)
     owner.scale=startScale
@@ -29,8 +30,8 @@ State.Update=function(owner,dt)
         owner:load_tree("stretch")
     end
     if (owner.move_vector ~= vector.new(0,0)) then
-        if(last_vector~=owner.move_vector and not obstruction)  then
-
+        if(last_vector~=owner.move_vector)  then
+            print("!")
             owner.scale=startScale
             charge_timer=0
         end
@@ -45,19 +46,21 @@ State.Update=function(owner,dt)
         rX,rY=math_utils.rotate_point(owner.planar_position.x,owner.planar_position.y,40*owner.scale.y,(angle-math.rad(90)))
     
 
-        owner.head_position=vector.new(owner.planar_position.x,(owner.planar_position.y + 40*owner.scale.y))
-        --rotate the head_collider and check for obstruction before rotating the actual player. This avoids the player being able to rotate into walls
+        owner.head_position=vector.new(owner.planar_position.x,(owner.planar_position.y *owner.scale.y))
         owner.head_position.x=rX
         owner.head_position.y=rY
         owner.head_collider:moveTo(owner.head_position.x,owner.head_position.y)
-    
+        owner.rotation = angle;
+
         obstruction=false
 
         for _, v in pairs(collider_world:neighbors(owner.head_collider)) do
             if((not v.flags or v.flags.trigger or not v.flags.canCollide or v.name~=nil)) then
                 break
             end
-            if(owner.head_collider:collidesWith(v))then
+            local collides, dx, dy = owner.head_collider:collidesWith(v)
+            if(collides)then
+                owner.head_collider:move(dx,dy)
                 obstruction=true;
             end
         end
@@ -66,7 +69,6 @@ State.Update=function(owner,dt)
             owner.current_tree:set_vector(owner.move_vector)
             owner.scale = vector.Lerp(owner.scale, endScale, dt/finalSpeed);
             -- rotate to angle
-            owner.rotation = angle;
         end
         last_vector=owner.move_vector
     else
@@ -95,7 +97,13 @@ State.Update=function(owner,dt)
         end
     end
     if (owner.input:released("jump"))then
-    
+        if (owner.scale.dist(owner.scale,startScale)<=.25) then
+            owner.rotation=0
+            owner.scale=vector.new(1,1)
+            owner:change_state("Idle")
+            return
+        end
+
         --So rocket slime's full stretch elastoblast (not a charged one) moves the player 150 pixels roughly and 230 pixels for a charged one so that's what I'm basing this off of.
 
         --Scale the full power elastoblast by how much the player stretched

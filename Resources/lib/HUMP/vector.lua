@@ -135,8 +135,9 @@ function Lerp(a, b, t)
 	);
 end
 function Reflect(inDirection, inNormal)
-	local factor = -2 * dot(inNormal, inDirection);
-	return new(factor * inNormal.x + inDirection.x, factor * inNormal.y + inDirection.y);
+	local dot =dot(inNormal, inDirection)
+	local factor = inDirection-(2 * dot * inNormal);
+	return new(factor.x,factor.y);
 end
 
 function vector.__le(a,b)
@@ -244,6 +245,13 @@ end
 function vector:round()
 	return new(math.round(self.x),math.round(self.y)) 
 end
+
+
+function vector:set_length(new_length)
+	local current_length=self:len()
+	return new(self.x * new_length / current_length,self.y * new_length / current_length)
+end
+
 
 -- the module
 return setmetatable({
