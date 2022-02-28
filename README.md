@@ -2,7 +2,7 @@
 
 This is the main repository for my reverse engineering project of Dragon Quest Heroes: Rocket Slime in Love2D. It's in very early stages but contains an almost fully complete character controller of Rocket and a basic Platypunk NPC.
 
-Alot of the code for this is ugly since this projec was started 1-2 years ago before I had a good understanding of software architecture, etc. Cleaning up will be done every now and then and probably an entire partial rewrite to adopt an actual comprehensible architecture
+Alot of the code for this is ugly since this project was started 1-2 years ago before I had a good understanding of software architecture, etc. Cleaning up will be done every now and then and probably an entire partial rewrite to adopt an actual comprehensible architecture
 
 I'd also like to state that this is mostly a 'high level' reverse engineering and what I mean by that is that I'm just programming something that looks and acts similar to the original DS game, rather than a 1:1 copy. This is mostly because I do not have the necessary knowledge to analyze the game's assembly code to get a better understanding
 
@@ -13,7 +13,7 @@ Contains ripped assets from the game. None of the graphics were drawn by me and 
 
 
 To run, you can drag the root folder onto Love.exe.
-If you are unable to run, you may need to download this https://github.com/lzubiaur/clipper-lua and move clipper.dll to your love installation folder.
+If you are unable to run, make sure the imgui dll (inside Resources) is in your Love install directory
 If you still get errors, make an issue with a screenshot of the error.
 
 # Info about the project
@@ -32,5 +32,5 @@ The end goal this project is to have a (maybe) indistinguishable copy of Dragon 
 
 ### Main to-dos
 
-* Pathfinding
+* ~~Pathfinding~~ (while not implemented currently, there's a system in place for generating points that can be used for pathfinding via jumper)
 * Better NPC AI (ability to pick up and throw ammo, attack player, etc.)
