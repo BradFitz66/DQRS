@@ -198,17 +198,6 @@ function Platypunk:draw()
 	if(debug_mode) then
 		love.graphics.setColor(0,1,0,.25)
 		self.physics_data.collider:draw("fill")
-		if(self.current_path~=nil and #self.current_path>0) then
-			for i = 1, #self.current_path do
-				love.graphics.setColor(0,0,0)
-				love.graphics.print(i,self.current_path[i].x,self.current_path[i].y)
-			end
-			for i = 1, #self.current_path-1 do
-				love.graphics.setColor(0,255,0)
-				love.graphics.line(self.current_path[i].x,self.current_path[i].y,self.current_path[i+1].x,self.current_path[i+1].y)
-			end
-			love.graphics.setColor(255,255,255)
-		end
 		love.graphics.setColor(1,1,1,1)
 	end
 end
@@ -246,7 +235,7 @@ end
 
 function Platypunk:update(dt)
 	entity.update(self,dt)
-	--self.statemachine:update(dt)
+	self.statemachine:update(dt)
 	self.current_tree:update(dt)
 	if (self.picked_up and self.statemachine.current_state.Name~="Held") then
 		self:change_state("Held")

@@ -17,12 +17,12 @@ State.Update=function(owner,dt)
 		end
 		--owner.move_vector=vector.zero
 	end
-	if(owner.current_path[owner.walkDest]~=nil and owner.position.dist(owner.position,owner.current_path[owner.walkDest])<1) then
+	if(owner.current_path[owner.walkDest]~=nil and owner.planar_position.dist(owner.planar_position,owner.current_path[owner.walkDest])<4) then
 		owner.walkDest=owner.walkDest+1
 	end
 	local going_to_pos=owner.current_path[owner.walkDest]
 	if(going_to_pos~=nil) then
-		owner.move_vector=(going_to_pos-owner.planar_position):normalized()*owner.speed
+		owner.move_vector=(going_to_pos-vector.new(owner.position.x,owner.position.z)):normalized()*owner.speed
 		owner:set_position_planar(vector.new(
 			owner.position.x+((owner.move_vector.x*owner.speed)*dt),
 			owner.position.z+((owner.move_vector.y*owner.speed)*dt))

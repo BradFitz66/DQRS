@@ -455,9 +455,9 @@ function Player:handle_collision(dt)
 					local difference=(math.abs(wall_angle)-math.abs(blast_angle))
 					print("Wall angle:",wall_angle,"Hit angle (angle we hit it at):",blast_angle,"Difference:",difference)		
 					--Ignore certain angle differences.
-					if(difference==135) then
-						return
-					end
+					-- if(difference==135) then
+					-- 	return
+					-- end
 
 					self.last_hit_pos=vector.new(self.planar_position.x,self.planar_position.y)
 

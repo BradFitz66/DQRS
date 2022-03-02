@@ -115,7 +115,7 @@ function Map:generate_pathfinding_grid()
     local Pathfinder = require ("Resources.lib.Rocket_Engine.Systems.jumper.pathfinder") -- The pathfinder class
     
     local grid = Grid(points) 
-    local myFinder = Pathfinder(grid, 'JPS', 0) 
+    local myFinder = Pathfinder(grid, 'JPS', 1) 
 
     elapsed = elapsed + (os.clock() - now)
     print("Pathfinding grid generated in:",elapsed,"seconds")

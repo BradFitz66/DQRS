@@ -21,9 +21,30 @@ function debug_draw:initialize()
             end
             table.insert(self._draws,draw_func) 
             return draw_func 
+        end,
+        ["Circle"]=function (x,y,radius) 
+            local draw_func=function()
+                love.graphics.setColor(1,0,0,.25)
+                love.graphics.circle("fill",x,y,radius)
+            end
+            table.insert(self._draws,draw_func) 
+            return draw_func 
         end
     }
     return self
+end
+
+function debug_draw:draw_circle(x,y,radius,time)
+    local to_draw=self._draw_types["Circle"](x,y,radius)
+    if(time) then
+        timer.after(time,function() 
+            for i, draw_func in ipairs(self._draws) do
+                if(draw_func==to_draw) then
+                    table.remove(self._draws,i)
+                end
+            end
+        end)
+    end
 end
 
 function debug_draw:draw_line(x1,x2,y1,y2,time)
