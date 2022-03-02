@@ -15,7 +15,9 @@ function Map.new(map_location,graphics)
     m.actors=m:create_actors()
     m.size=vector.new(m.graphics.width*m.graphics.tilewidth,m.graphics.height*m.graphics.tileheight)
     m.colliders=m:generate_colliders()
-    m.pathfinding_grid= {}--m:generate_pathfinding_grid()
+    m.pathfinding_grid={}
+    m.pathfinder={}
+    m:generate_pathfinding_grid()
     return m
 end
 
@@ -86,11 +88,11 @@ end
 
 function Map:generate_pathfinding_grid()
     local bounds=Rect.new(self.graphics.x,self.graphics.y,self.graphics.width*self.graphics.tilewidth,self.graphics.height*self.graphics.tileheight)
-    local grid={}
+    local points={}
     local elapsed=0
     local now = os.clock()
     for x = 0, bounds.width,self.graphics.tilewidth do
-        grid[x/self.graphics.tilewidth]={}
+        points[x/self.graphics.tilewidth]={}
         for y = 0, bounds.height,self.graphics.tileheight do
             local circle = collider_world:circle(x,y,4)
             local colliding_with=0
@@ -100,17 +102,26 @@ function Map:generate_pathfinding_grid()
                 end
             end
             if(colliding_with>0)then
-                grid[x/self.graphics.tilewidth][y/self.graphics.tileheight]=0
+                points[x/self.graphics.tilewidth][y/self.graphics.tileheight]=1
             else
-                grid[x/self.graphics.tilewidth][y/self.graphics.tileheight]=1
+                points[x/self.graphics.tilewidth][y/self.graphics.tileheight]=0
             end
             
             collider_world:hash():remove(circle)
         end
     end
+
+    local Grid = require ("Resources.lib.Rocket_Engine.Systems.jumper.grid") -- The grid class
+    local Pathfinder = require ("Resources.lib.Rocket_Engine.Systems.jumper.pathfinder") -- The pathfinder class
+    
+    local grid = Grid(points) 
+    local myFinder = Pathfinder(grid, 'JPS', 0) 
+
     elapsed = elapsed + (os.clock() - now)
     print("Pathfinding grid generated in:",elapsed,"seconds")
-    return grid
+
+    self.pathfinder=myFinder
+    self.pathfinding_grid=points
 end
 
 
@@ -124,12 +135,13 @@ function Map:draw(offset_x,offset_y,scale_x,scale_y)
             v:draw('line')
         end
         love.graphics.setColor(1, 1, 1,1)
-
-        for i_x, x in pairs(self.pathfinding_grid) do
-            for i_y, y in pairs(x) do
-                love.graphics.setColor(255/255,0/255,255/255)
-                if(y==1) then
-                    love.graphics.points(i_x*8,i_y*8)
+        if(self.pathfinding_grid) then
+            for i_x, x in pairs(self.pathfinding_grid) do
+                for i_y, y in pairs(x) do
+                    love.graphics.setColor(255/255,0/255,255/255)
+                    if(y==0) then
+                        love.graphics.points(i_x*8,i_y*8)
+                    end
                 end
             end
         end

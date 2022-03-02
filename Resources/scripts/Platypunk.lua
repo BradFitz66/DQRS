@@ -246,7 +246,7 @@ end
 
 function Platypunk:update(dt)
 	entity.update(self,dt)
-	self.statemachine:update(dt)
+	--self.statemachine:update(dt)
 	self.current_tree:update(dt)
 	if (self.picked_up and self.statemachine.current_state.Name~="Held") then
 		self:change_state("Held")

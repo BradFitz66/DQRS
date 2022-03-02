@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.8" tiledversion="1.8.2" orientation="orthogonal" renderorder="left-down" width="108" height="80" tilewidth="8" tileheight="8" infinite="0" nextlayerid="10" nextobjectid="42">
  <editorsettings>
-  <export format="lua"/>
+  <export target="Cannon_Room.lua" format="lua"/>
  </editorsettings>
  <tileset firstgid="1" name="Tank_Schleiman" tilewidth="8" tileheight="8" tilecount="2112" columns="48">
   <image source="../../graphics/Tilemaps/CannonRoom/Tilemap_V1.png" width="384" height="352"/>
