@@ -98,7 +98,7 @@ function entity:update(dt)
         if ((self.position).y <= 0) then
             
             --we hit the ground
-            self.physics_data.velocity.y = -self.physics_data.velocity.y * self.physics_data.bounciness;
+            self.physics_data.velocity.y = -self.physics_data.velocity.y * self.physics_data.bounciness
             self.physics_data.velocity.x = self.physics_data.velocity.x - (self.physics_data.starting_velocity.x / self.physics_data.max_bounces)
             self.physics_data.velocity.z = self.physics_data.velocity.z - (self.physics_data.starting_velocity.z / self.physics_data.max_bounces)
 

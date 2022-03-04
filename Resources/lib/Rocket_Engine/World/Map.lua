@@ -109,7 +109,7 @@ function Map:generate_pathfinding_grid()
         points[y/point_size.y]={}
         for x = 0, bounds.width,point_size.x do
             local inside_polygon=false
-            local circle=collider_world:circle(y,x,12)
+            local circle=collider_world:circle(y,x,self.graphics.tilewidth+(self.graphics.tilewidth/2))
             for _, collider in pairs(self.colliders) do
                 inside_polygon=circle:collidesWith(collider)
                 if(inside_polygon) then
@@ -124,11 +124,12 @@ function Map:generate_pathfinding_grid()
         end
     end
     print("Pathfinding grid generated in:",(os.clock() - now),"seconds")
+    
     local Grid = require ("Resources.lib.Rocket_Engine.Systems.jumper.grid") -- The grid class
     local Pathfinder = require ("Resources.lib.Rocket_Engine.Systems.jumper.pathfinder") -- The pathfinder class
     
     local grid = Grid(points) 
-    local myFinder = Pathfinder(grid, 'ASTAR', 1) 
+    local myFinder = Pathfinder(grid, 'JPS', 1) 
 
 
     self.pathfinder=myFinder

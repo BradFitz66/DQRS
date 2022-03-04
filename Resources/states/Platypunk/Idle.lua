@@ -7,10 +7,10 @@ State.Enter=function(owner)
         wander_pos=vector.new(owner.position.x,owner.position.z)
     end
     owner.current_tree:set_vector(owner.move_vector)
-    timer.after(1,function() 
+    timer.after(math.random(5,10),function() 
         if(owner.statemachine.current_state.Name=="Idle") then
             owner.walkDest=1
-            local end_pos=wander_pos+vector.randomInsideUnitCircle(30)
+            local end_pos=wander_pos+vector.randomInsideUnitCircle(math.random(50,75))
             local map=owner.map
             local map_graphics=owner.map.graphics
             local start = os.time()

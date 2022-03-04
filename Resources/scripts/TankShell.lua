@@ -16,6 +16,7 @@ function tank_shell:initialize(start_pos,collider_pos,collider_size)
     self.picked_up=false
     self.name="tankshell"
     self.going_into_cannon=false
+    self.bounciness=0.3
     self.max_bounces=2
     self.sprite_image=love.graphics.newImage("Resources/graphics/TankShell.png")
     self.rotation=0
