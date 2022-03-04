@@ -11,6 +11,28 @@ function math_utils.round(number, nearest)
 	return math.round(number / 45) * 45;
 end
 
+function math_utils.isPointInPolygon(x, y, poly)
+    local x1, y1, x2, y2
+    local len = #poly
+    x2, y2 = poly[len].x, poly[len].y
+    local wn = 0
+    for idx = 1, len do
+        x1, y1 = x2, y2
+        x2, y2 = poly[idx].x, poly[idx].y
+
+        if y1 > y then
+            if (y2 <= y) and (x1 - x) * (y2 - y) < (x2 - x) * (y1 - y) then
+                wn = wn + 1
+            end
+        else
+            if (y2 > y) and (x1 - x) * (y2 - y) > (x2 - x) * (y1 - y) then
+                wn = wn - 1
+            end
+        end
+    end
+    return wn % 2 ~= 0 -- even/odd rule
+end
+
 ---Round a number to the Nth decimal
 ---@param num number
 ---@param n number

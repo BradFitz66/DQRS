@@ -331,16 +331,11 @@ if (...) then
       print(('Invalid location [%d, %d]'):format(startX, startY))
       return nil,lastPathCost
     end
-    if(not endNode and not self.grid:isWalkableAt(endX, endY)) then
+    if(not endNode and not self.grid:isWalkableAt(endX,endY)) then
       print(('Invalid or unreachable location [%d, %d]'):format(endX, endY))
       return nil,lastPathCost
     end
-
-
-
-    assert(startNode, ('Invalid location [%d, %d]'):format(startX, startY))
-    assert(endNode and self.grid:isWalkableAt(endX, endY),
-      ('Invalid or unreachable location [%d, %d]'):format(endX, endY))
+      
     local _endNode = Finders[self.finder](self, startNode, endNode, toClear, tunnel)
     if _endNode then 
 			return traceBackPath(self, _endNode, startNode), lastPathCost

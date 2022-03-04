@@ -292,21 +292,7 @@ function Player:initialize(start_pos,collider_pos,collider_size)
 	
 	self.move_vector=vector.new(0,0)
 	self.current_tree=current_tree
-	self.statemachine=require("Resources.lib.Rocket_Engine.State Machine.StateMachine").new(self.static)
-	--This contains the players states. It stores the actual state module + a table of the states that can't transition to it
-	self.states={
-		["Idle"]={self.statemachine:add_state(require("Resources.states.Rocket.Idle")),{}},
-		["Walk"]={self.statemachine:add_state(require("Resources.states.Rocket.Walk")),{}},
-		["Jump"]={self.statemachine:add_state(require("Resources.states.Rocket.Jump")),{"Blasting","Stretch","WallHit","Elastoblast"}}, -- Blasting, Stretch and WallHit cannot transition into the jump state.
-		["Squish"]={self.statemachine:add_state(require("Resources.states.Rocket.Squish")),{"Jump","Stretch","Squished","Blasting","WallHit","Elastoblast"}},
-		["Stretch"]={self.statemachine:add_state(require("Resources.states.Rocket.Stretch")),{}},
-		["Squished"]={self.statemachine:add_state(require("Resources.states.Rocket.Squished")),{}},
-		["Blasting"]={self.statemachine:add_state(require("Resources.states.Rocket.Blasting")),{}},
-		["WallHit"]={self.statemachine:add_state(require("Resources.states.Rocket.WallHit")),{"Throw"}},
-		["Throw"]={self.statemachine:add_state(require("Resources.states.Rocket.Throw")),{"WallHit"}},
-		["Float"]={self.statemachine:add_state(require("Resources.states.Rocket.Float")),{""}},
-	}
-	self.statemachine:change_state("Idle")
+
 	self.speed=96;
 	self.holding={}
 	self.scale=vector.new(1,1)
@@ -333,7 +319,22 @@ function Player:initialize(start_pos,collider_pos,collider_size)
 	self.physics_data.bounces_left=1
 	self.last_hit_pos=vector.new(0,0)
 	self.actor_collision_debounce=false
-	--Ugly, but it's easier than trying to figure out the maths. A hardcoded lookup table that returns the correct vector for a wallhit
+
+	self.statemachine=require("Resources.lib.Rocket_Engine.State Machine.StateMachine").new(self.static)
+	--This contains the players states. It stores the actual state module + a table of the states that can't transition to it
+	self.states={
+		["Idle"]={self.statemachine:add_state(require("Resources.states.Rocket.Idle")),{}},
+		["Walk"]={self.statemachine:add_state(require("Resources.states.Rocket.Walk")),{}},
+		["Jump"]={self.statemachine:add_state(require("Resources.states.Rocket.Jump")),{"Blasting","Stretch","WallHit","Elastoblast"}}, -- Blasting, Stretch and WallHit cannot transition into the jump state.
+		["Squish"]={self.statemachine:add_state(require("Resources.states.Rocket.Squish")),{"Jump","Stretch","Squished","Blasting","WallHit","Elastoblast"}},
+		["Stretch"]={self.statemachine:add_state(require("Resources.states.Rocket.Stretch")),{}},
+		["Squished"]={self.statemachine:add_state(require("Resources.states.Rocket.Squished")),{}},
+		["Blasting"]={self.statemachine:add_state(require("Resources.states.Rocket.Blasting")),{}},
+		["WallHit"]={self.statemachine:add_state(require("Resources.states.Rocket.WallHit")),{"Throw"}},
+		["Throw"]={self.statemachine:add_state(require("Resources.states.Rocket.Throw")),{"WallHit"}},
+		["Float"]={self.statemachine:add_state(require("Resources.states.Rocket.Float")),{""}},
+	}
+	self.statemachine:change_state("Idle")
 	return self
 end
 
@@ -455,10 +456,8 @@ function Player:handle_collision(dt)
 					local difference=(math.abs(wall_angle)-math.abs(blast_angle))
 					print("Wall angle:",wall_angle,"Hit angle (angle we hit it at):",blast_angle,"Difference:",difference)		
 					--Ignore certain angle differences.
-					-- if(difference==135) then
-					-- 	return
-					-- end
 
+					
 					self.last_hit_pos=vector.new(self.planar_position.x,self.planar_position.y)
 
 					self.wall_hit_debounce=true;
