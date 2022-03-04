@@ -6,6 +6,8 @@ local Rect = require "Resources.lib.Rocket_Engine.Miscellaneous.Rect"
 local Map={}
 Map.__index=Map
 local sti = require "Resources.lib.Rocket_Engine.Systems.sti"
+local mathutils=require("Resources.lib.Rocket_Engine.Utils.MathUtils")
+
 function Map.new(map_location,graphics)
     local m = setmetatable({},Map)
     m.graphics=sti("Resources/maps/Cannon_Room/Cannon_Room.lua")
@@ -14,9 +16,11 @@ function Map.new(map_location,graphics)
     m.update_offscreen_actors=false
     m.actors=m:create_actors()
     m.size=vector.new(m.graphics.width*m.graphics.tilewidth,m.graphics.height*m.graphics.tileheight)
-    m.colliders=m:generate_colliders()
+    m.collider_polygons={}
     m.pathfinding_grid={}
     m.pathfinder={}
+    m.grid_channel=love.thread.newChannel()
+    m.colliders=m:generate_colliders()
     m:generate_pathfinding_grid()
     return m
 end
@@ -83,42 +87,43 @@ function Map:generate_colliders(o_x,o_y)
             table.insert(colliders,1,hc_poly)
         end
     end
+    for idx, collider in ipairs(colliders) do
+        self.collider_polygons[idx]={}
+        for collider_idx, vertice in ipairs(collider._polygon.vertices) do
+            table.insert(self.collider_polygons[idx],vertice)
+        end
+    end
     return colliders
 end
 
+--https://pastebin.com/mMPGMhfC
+
 function Map:generate_pathfinding_grid()
-    local bounds=Rect.new(self.graphics.x,self.graphics.y,self.graphics.width*self.graphics.tilewidth,self.graphics.height*self.graphics.tileheight)
     local points={}
     local elapsed=0
+    local bounds=Rect.new(self.graphics.x,self.graphics.y,self.graphics.width*self.graphics.tilewidth,self.graphics.height*self.graphics.tileheight)
     local now = os.clock()
-    for x = 0, bounds.width,self.graphics.tilewidth do
+    for x = 0, bounds.width-1,self.graphics.tilewidth do
         points[x/self.graphics.tilewidth]={}
-        for y = 0, bounds.height,self.graphics.tileheight do
-            local circle = collider_world:circle(x,y,4)
-            local colliding_with=0
-            for _, map_collider in pairs(self.colliders) do
-                if(circle:collidesWith(map_collider)) then
-                    colliding_with=colliding_with+1
-                end
+        for y = 0, bounds.height-1,self.graphics.tileheight do
+            local inside_polygon=false
+            for _, collider in pairs(self.collider_polygons) do
+                inside_polygon=mathutils.isPointInPolygon(x,y,collider)
             end
-            if(colliding_with>0)then
+            if(inside_polygon)then
                 points[x/self.graphics.tilewidth][y/self.graphics.tileheight]=1
             else
                 points[x/self.graphics.tilewidth][y/self.graphics.tileheight]=0
             end
-            
-            collider_world:hash():remove(circle)
         end
     end
-
+    print("Pathfinding grid generated in:",(os.clock() - now),"seconds")
     local Grid = require ("Resources.lib.Rocket_Engine.Systems.jumper.grid") -- The grid class
     local Pathfinder = require ("Resources.lib.Rocket_Engine.Systems.jumper.pathfinder") -- The pathfinder class
     
     local grid = Grid(points) 
-    local myFinder = Pathfinder(grid, 'JPS', 0) 
+    local myFinder = Pathfinder(grid, 'JPS', 1) 
 
-    elapsed = elapsed + (os.clock() - now)
-    print("Pathfinding grid generated in:",elapsed,"seconds")
 
     self.pathfinder=myFinder
     self.pathfinding_grid=points
@@ -134,7 +139,6 @@ function Map:draw(offset_x,offset_y,scale_x,scale_y)
         for _, v in pairs(self.colliders) do
             v:draw('line')
         end
-        love.graphics.setColor(1, 1, 1,1)
         if(self.pathfinding_grid) then
             for i_x, x in pairs(self.pathfinding_grid) do
                 for i_y, y in pairs(x) do
@@ -145,6 +149,7 @@ function Map:draw(offset_x,offset_y,scale_x,scale_y)
                 end
             end
         end
+        love.graphics.setColor(1, 1, 1,1)
     end
 end
 

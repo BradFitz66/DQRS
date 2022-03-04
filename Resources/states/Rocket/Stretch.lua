@@ -31,7 +31,6 @@ State.Update=function(owner,dt)
     end
     if (owner.move_vector ~= vector.new(0,0)) then
         if(last_vector~=owner.move_vector)  then
-            print("!")
             owner.scale=startScale
             charge_timer=0
         end

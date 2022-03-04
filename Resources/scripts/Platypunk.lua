@@ -134,18 +134,6 @@ function Platypunk:initialize(start_pos,collider_pos,collider_size)
 	
 	self.move_vector=vector.new(0,0)
 	self.current_tree=current_tree
-	self.statemachine=require("Resources.lib.Rocket_Engine.State Machine.StateMachine").new(self.static)
-	--This contains the Platypunks states. It stores the actual state module + a table of the states that can't transition to it
-	self.states={
-		["Idle"]={self.statemachine:add_state(require("Resources.states.Platypunk.Idle")),{}},
-		["Walk"]={self.statemachine:add_state(require("Resources.states.Platypunk.Walk")),{}},
-		["Stretch"]={self.statemachine:add_state(require("Resources.states.Platypunk.Stretch")),{}},
-		["Held"]={self.statemachine:add_state(require("Resources.states.Held")),{}},
-		["Hurt"]={self.statemachine:add_state(require("Resources.states.Hurt")),{}}
-	}
-	self.map=nil
-	self.name="NPC"
-	self.statemachine:change_state("Idle")
 	self.speed=32;
 	self.z_value=1
 	self.scale=vector.new(1,1)
@@ -156,6 +144,19 @@ function Platypunk:initialize(start_pos,collider_pos,collider_size)
 	self.hit_debounce=false
 	self.can_pickup=true
 	self.picked_up=false
+	self.map=nil
+	self.name="NPC"
+
+	self.statemachine=require("Resources.lib.Rocket_Engine.State Machine.StateMachine").new(self)
+	--This contains the Platypunks states. It stores the actual state module + a table of the states that can't transition to it
+	self.states={
+		["Idle"]={self.statemachine:add_state(require("Resources.states.Platypunk.Idle")),{}},
+		["Walk"]={self.statemachine:add_state(require("Resources.states.Platypunk.Walk")),{}},
+		["Stretch"]={self.statemachine:add_state(require("Resources.states.Platypunk.Stretch")),{}},
+		["Held"]={self.statemachine:add_state(require("Resources.states.Held")),{}},
+		["Hurt"]={self.statemachine:add_state(require("Resources.states.Hurt")),{}}
+	}
+	self.statemachine:change_state("Idle")
 	return self
 end
 
@@ -246,7 +247,7 @@ end
 
 function Platypunk:update(dt)
 	entity.update(self,dt)
-	--self.statemachine:update(dt)
+	self.statemachine:update(dt)
 	self.current_tree:update(dt)
 	if (self.picked_up and self.statemachine.current_state.Name~="Held") then
 		self:change_state("Held")
