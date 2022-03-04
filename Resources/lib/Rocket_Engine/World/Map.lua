@@ -7,6 +7,7 @@ local Map={}
 Map.__index=Map
 local sti = require "Resources.lib.Rocket_Engine.Systems.sti"
 local mathutils=require("Resources.lib.Rocket_Engine.Utils.MathUtils")
+local mlib=require("Resources.lib.Rocket_Engine.Utils.mlib")
 
 function Map.new(map_location,graphics)
     local m = setmetatable({},Map)
@@ -103,17 +104,22 @@ function Map:generate_pathfinding_grid()
     local elapsed=0
     local bounds=Rect.new(self.graphics.x,self.graphics.y,self.graphics.width*self.graphics.tilewidth,self.graphics.height*self.graphics.tileheight)
     local now = os.clock()
-    for x = 0, bounds.width-1,self.graphics.tilewidth do
-        points[x/self.graphics.tilewidth]={}
-        for y = 0, bounds.height-1,self.graphics.tileheight do
+    local point_size=vector.new(self.graphics.tilewidth,self.graphics.tileheight)
+    for y = 0, bounds.height,point_size.y do
+        points[y/point_size.y]={}
+        for x = 0, bounds.width,point_size.x do
             local inside_polygon=false
-            for _, collider in pairs(self.collider_polygons) do
-                inside_polygon=mathutils.isPointInPolygon(x,y,collider)
+            local circle=collider_world:circle(y,x,12)
+            for _, collider in pairs(self.colliders) do
+                inside_polygon=circle:collidesWith(collider)
+                if(inside_polygon) then
+                    break
+                end
             end
             if(inside_polygon)then
-                points[x/self.graphics.tilewidth][y/self.graphics.tileheight]=1
+                points[y/point_size.y][x/point_size.x]=1
             else
-                points[x/self.graphics.tilewidth][y/self.graphics.tileheight]=0
+                points[y/point_size.y][x/point_size.x]=0
             end
         end
     end
@@ -122,7 +128,7 @@ function Map:generate_pathfinding_grid()
     local Pathfinder = require ("Resources.lib.Rocket_Engine.Systems.jumper.pathfinder") -- The pathfinder class
     
     local grid = Grid(points) 
-    local myFinder = Pathfinder(grid, 'JPS', 1) 
+    local myFinder = Pathfinder(grid, 'ASTAR', 1) 
 
 
     self.pathfinder=myFinder

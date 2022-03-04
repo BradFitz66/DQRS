@@ -17,7 +17,7 @@ table=require("Resources.lib.tablex")
 flux=require("Resources.lib.Rocket_Engine.Utils.flux")
 vector3=require("Resources.lib.brinevector3D")
 mlib=require("Resources.lib.Rocket_Engine.Utils.mlib")
-debug_draw=nil
+debug_draw=true
 signal=require("Resources.lib.HUMP.signal").new()
 gameCam=nil;
 rect = nil;
@@ -115,6 +115,7 @@ function love.update(dt)
 				actor:draw()
 			end
 			if(debug_mode) then
+				
 				love.graphics.setColor(1,1,0,1)
 				test_trigger:draw()
 				debug_draw:draw()
