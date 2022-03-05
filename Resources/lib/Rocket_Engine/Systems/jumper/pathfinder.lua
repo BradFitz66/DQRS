@@ -338,7 +338,7 @@ if (...) then
       
     local _endNode = Finders[self.finder](self, startNode, endNode, toClear, tunnel)
     if _endNode then 
-			return traceBackPath(self, _endNode, startNode), lastPathCost
+			return traceBackPath(self, endNode, startNode), lastPathCost
     end
     lastPathCost = 0
     return nil, lastPathCost

@@ -23,6 +23,7 @@ local function get_sprite_quads(spriteprefix,index_start, index_end,atlas)
 end
 
 function Platypunk:initialize(start_pos,collider_pos,collider_size)
+	print(collider_pos)
 	entity.initialize(self,start_pos,collider_pos,collider_size)
 	self.sprites=RTA.newDynamicSize(0,0,0)
 	self.sprites:setFilter("nearest")
@@ -146,7 +147,6 @@ function Platypunk:initialize(start_pos,collider_pos,collider_size)
 	self.picked_up=false
 	self.map=nil
 	self.name="NPC"
-
 	self.statemachine=require("Resources.lib.Rocket_Engine.State Machine.StateMachine").new(self)
 	--This contains the Platypunks states. It stores the actual state module + a table of the states that can't transition to it
 	self.states={
@@ -157,7 +157,6 @@ function Platypunk:initialize(start_pos,collider_pos,collider_size)
 		["Hurt"]={self.statemachine:add_state(require("Resources.states.Hurt")),{}}
 	}
 	self.statemachine:change_state("Idle")
-	return self
 end
 
 function Platypunk:load_tree(animation_name,keep_vector,frame,pause_at_start)

@@ -135,7 +135,8 @@ function love.update(dt)
 				love.graphics.setColor(255,0,0)
 				love.graphics.setColor(255,255,255)
 				love.graphics.print("FPS: "..tostring(love.timer.getFPS()),10,0)
-				if(player) then
+				if(player and player) then
+
 					love.graphics.print("Player position: "..tostring(floor(player.position.x))..", "..tostring(floor(player.position.z)),70,0)
 					love.graphics.print("Player state: "..player.statemachine.current_state.Name,10,15)
 					love.graphics.print("Player blendtree: "..player.current_tree.name,10,30)
@@ -174,29 +175,18 @@ function love.update(dt)
 			playing=not playing
 		end
 	end
-	imgui.Update(dt)
-    imgui.NewFrame()
 end
 
 function love.draw()
 	local width,height,flags=love.window.getMode()
 	--Put all main draw functions into separate function so I can easily disable them for debugging purposes
-	draw_fn()
+	love.graphics.draw(canvasDebug,400,500)
+	love.graphics.draw(canvasBottom,100,500)
+	--draw_fn()
 end
 
 local game_window_pos
 local debug_window_pos
-function draw_fn()
-	imgui.WindowFlags("NoTitleBar", "NoBackground", "HorizontalScrollbar","NoResize","NoCollapse")
-	for _, window in pairs(windows) do
-		window:display_window()
-	end
-	imgui.Render()
-    imgui.RenderDrawLists()
-	for _, window in pairs(windows) do
-		window:display_canvas()
-	end
-end
 
 function love.resize(w, h)
 end

@@ -35,19 +35,16 @@ function Map:create_actors()
         if(string.find(object.name,"(Spawn)")~=nil) then
             local types={
                 ["Platypunk"]=function(spawn_pos) 
-                    local platy = require("Resources.scripts.Platypunk") 
-                    platy:initialize(vector.new(spawn_pos.x,spawn_pos.y),vector.new(0,0),vector.new(16,16))  
-                    return platy.static
+                    local platy = require("Resources.scripts.Platypunk"):new(vector.new(spawn_pos.x,spawn_pos.y),vector.new(0,0),vector.new(16,16))
+                    return platy
                 end,
                 ["Player"]=function(spawn_pos) 
-                    local plr = require("Resources.scripts.Player") 
-                    plr:initialize(vector.new(spawn_pos.x,spawn_pos.y),vector.new(-1,1),vector.new(12,12))  
-                    return plr.static
+                    local plr = require("Resources.scripts.Player"):new(vector.new(spawn_pos.x,spawn_pos.y),vector.new(-1,1),vector.new(12,12))
+                    return plr
                 end,
                 ["TankShell"]=function(spawn_pos) 
-                    local shell = require("Resources.scripts.TankShell") 
-                    shell:initialize(vector.new(spawn_pos.x,spawn_pos.y),vector.new(10,5),vector.new(12,12))  
-                    return shell.static
+                    local shell = require("Resources.scripts.TankShell"):new(vector.new(spawn_pos.x,spawn_pos.y),vector.new(10,5),vector.new(12,12)) 
+                    return shell
                 end,
             }
             local spawn_type=object.properties["Spawn_Type"]
@@ -105,11 +102,11 @@ function Map:generate_pathfinding_grid()
     local bounds=Rect.new(self.graphics.x,self.graphics.y,self.graphics.width*self.graphics.tilewidth,self.graphics.height*self.graphics.tileheight)
     local now = os.clock()
     local point_size=vector.new(self.graphics.tilewidth,self.graphics.tileheight)
-    for y = 0, bounds.height,point_size.y do
-        points[y/point_size.y]={}
-        for x = 0, bounds.width,point_size.x do
+    for x = 0, bounds.height,point_size.y do
+        points[x/point_size.x]={}
+        for y = 0, bounds.width,point_size.x do
             local inside_polygon=false
-            local circle=collider_world:circle(y,x,self.graphics.tilewidth+(self.graphics.tilewidth/2))
+            local circle=collider_world:circle(y,x,self.graphics.tilewidth/2)
             for _, collider in pairs(self.colliders) do
                 inside_polygon=circle:collidesWith(collider)
                 if(inside_polygon) then
@@ -117,9 +114,9 @@ function Map:generate_pathfinding_grid()
                 end
             end
             if(inside_polygon)then
-                points[y/point_size.y][x/point_size.x]=1
-            else
-                points[y/point_size.y][x/point_size.x]=0
+                points[x/point_size.x][y/point_size.y]=1
+            elseif(not inside_polygon) then
+                points[x/point_size.x][y/point_size.y]=0
             end
         end
     end
@@ -128,8 +125,9 @@ function Map:generate_pathfinding_grid()
     local Grid = require ("Resources.lib.Rocket_Engine.Systems.jumper.grid") -- The grid class
     local Pathfinder = require ("Resources.lib.Rocket_Engine.Systems.jumper.pathfinder") -- The pathfinder class
     
-    local grid = Grid(points) 
-    local myFinder = Pathfinder(grid, 'JPS', 1) 
+    local pathfinder_grid = Grid(points) 
+    
+    local myFinder = Pathfinder(pathfinder_grid, 'JPS', 0) 
 
 
     self.pathfinder=myFinder
@@ -147,10 +145,10 @@ function Map:draw(offset_x,offset_y,scale_x,scale_y)
             v:draw('line')
         end
         if(self.pathfinding_grid) then
-            for i_x, x in pairs(self.pathfinding_grid) do
-                for i_y, y in pairs(x) do
+            for i_y, y in pairs(self.pathfinding_grid) do
+                for i_x, x in pairs(y) do
                     love.graphics.setColor(255/255,0/255,255/255)
-                    if(y==0) then
+                    if(x==0) then
                         love.graphics.points(i_x*8,i_y*8)
                     end
                 end

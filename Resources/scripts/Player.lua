@@ -7,7 +7,6 @@ local anim8=require("Resources.lib.anim8")
 local class = require 'Resources.lib.Rocket_Engine.Systems.middleclass'
 local entity=require("Resources.lib.Rocket_Engine.Objects.Entity")
 local Player=class("Player",entity)
-player=Player
 --Helper function to return a table of quads from the sprite atlas
 local function get_sprite_quads(spriteprefix,index_start, index_end,atlas)
 	local quads={}
@@ -319,8 +318,8 @@ function Player:initialize(start_pos,collider_pos,collider_size)
 	self.physics_data.bounces_left=1
 	self.last_hit_pos=vector.new(0,0)
 	self.actor_collision_debounce=false
-
-	self.statemachine=require("Resources.lib.Rocket_Engine.State Machine.StateMachine").new(self.static)
+	
+	self.statemachine=require("Resources.lib.Rocket_Engine.State Machine.StateMachine").new(self)
 	--This contains the players states. It stores the actual state module + a table of the states that can't transition to it
 	self.states={
 		["Idle"]={self.statemachine:add_state(require("Resources.states.Rocket.Idle")),{}},
@@ -335,7 +334,7 @@ function Player:initialize(start_pos,collider_pos,collider_size)
 		["Float"]={self.statemachine:add_state(require("Resources.states.Rocket.Float")),{""}},
 	}
 	self.statemachine:change_state("Idle")
-	return self
+	player=self
 end
 
 
