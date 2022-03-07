@@ -310,7 +310,7 @@ function Player:initialize(start_pos,collider_pos,collider_size)
 	--Players input. ToDo: Major refactor of entire input system.
 	self.input=control_scheme
 	--Head collider is for making sure player can't stretch their body through colliders.
-	self.head_collider=collider_world:circle(-100,-100,5)
+	self.head_collider=collider_world:point(-100,-100)
 	self.head_position=vector.new(0,0)
 	self.input_state=nil
 	self.rotation=0
@@ -335,6 +335,7 @@ function Player:initialize(start_pos,collider_pos,collider_size)
 	}
 	self.statemachine:change_state("Idle")
 	player=self
+	return self
 end
 
 
@@ -408,16 +409,42 @@ function Player:handle_collision(dt)
 		local fixedDelta=vector.new(delta.x,delta.y)-(m_vector*self.speed):normalized()
 		if(self.map~=nil) then
 			for i, actor in pairs(self.map.actors) do
-				if(actor.physics_data.collider==shape and not actor.picked_up) then
+				if(actor.physics_data.collider==shape and actor.held_by==nil) then
 					if(actor.physics_data.in_air and actor.can_pickup and #self.holding<3)then
 						local heightDifference=actor.position.y - self.position.y
 						if(heightDifference < 20) then
 							actor.physics_data.in_air=false
 							--Picking up
-							actor.picked_up=true;
+							actor.held_by=self;
 							actor.z_value=10000*(#self.holding+1)
-							table.insert(self.holding,{self.map.actors[i],vector3(0,0,0)})
 							startPos=actor.planar_position
+							--Keep track of hold count before we picked up the new ammo piece
+							local hold_count=#self.holding
+							table.insert(self.holding,{self.map.actors[i],vector3(0,0,0)})
+							if(actor.rank~=nil and actor.rank>0 and hold_count>0) then
+								--Count all ammo and increase count variable for each ammo that's the same as this one
+								local count=0
+								for i=1,#self.holding do
+									if(self.holding[i][1].name==actor.name) then
+										count=count+1
+									end	
+								end
+								--Rank up
+								if(count==3) then
+									local rank_up_ammo=self.holding[1][1].ranks[self.holding[1][1].rank+1]()
+									if(rank_up_ammo) then
+										for idx, holding in ipairs(self.holding) do
+											holding[1]:destroy()
+										end
+										table.clear(self.holding)
+										rank_up_ammo.z_value=10000*(#self.holding+1)
+										table.insert(self.holding,{rank_up_ammo,vector3(0,0,0)})
+										table.insert(self.map.actors,1,rank_up_ammo)
+									else
+										error("Tried to rank up but ranks table returned nil for rank "..tostring(self.holding[1][1].rank+1))
+									end
+								end
+							end
 							timer.script(function(wait)
 								self:change_state("Squish")
 								wait(.2)
@@ -454,7 +481,6 @@ function Player:handle_collision(dt)
 					local blast_angle=math.deg(math.atan2(self.blast_velocity.y,self.blast_velocity.x))
 					local difference=(math.abs(wall_angle)-math.abs(blast_angle))
 					print("Wall angle:",wall_angle,"Hit angle (angle we hit it at):",blast_angle,"Difference:",difference)		
-					--Ignore certain angle differences.
 
 					
 					self.last_hit_pos=vector.new(self.planar_position.x,self.planar_position.y)
@@ -519,9 +545,9 @@ function Player:update(dt)
 	
 
 	self.inside_bouncy=false
-	-- if(self.statemachine.current_state.Name~="Stretch") then
-	-- 	self.head_position=self.planar_position
-	-- end
+	if(self.statemachine.current_state.Name~="Stretch") then
+		self.head_position=vector.new(self.position.x,self.position.z)
+	end
 	if(self.input_state.action_down) then
 		if(#self.holding>0 and self.can_throw) then
 			if(self.statemachine.current_state.Name~="Blasting" and self.statemachine.current_state.Name~="Float") then

@@ -147,6 +147,7 @@ function Platypunk:initialize(start_pos,collider_pos,collider_size)
 	self.picked_up=false
 	self.map=nil
 	self.name="NPC"
+	self.wander_pos=vector.new(self.position.x,self.position.z)
 	self.statemachine=require("Resources.lib.Rocket_Engine.State Machine.StateMachine").new(self)
 	--This contains the Platypunks states. It stores the actual state module + a table of the states that can't transition to it
 	self.states={
@@ -157,6 +158,7 @@ function Platypunk:initialize(start_pos,collider_pos,collider_size)
 		["Hurt"]={self.statemachine:add_state(require("Resources.states.Hurt")),{}}
 	}
 	self.statemachine:change_state("Idle")
+	return self
 end
 
 function Platypunk:load_tree(animation_name,keep_vector,frame,pause_at_start)
@@ -228,7 +230,7 @@ end
 function Platypunk:handle_collision(dt)
 	entity.handle_collision(self,dt)
 	if(self.physics_data.collider:collidesWith(player.physics_data.collider)) then
-		if(player.statemachine.current_state.Name=="Blasting" and not self.hit_debounce) then
+		if(player.statemachine.current_state.Name=="Blasting" and not self.hit_debounce and self.held_by==nil) then
 			local normalizedBlast=player.blast_velocity:normalized()
 			self.can_pickup=false
 			local initialVel = (vector3(player.blast_velocity.x,player.blast_velocity.y,0))

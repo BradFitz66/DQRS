@@ -43,8 +43,7 @@ function Map:create_actors()
                     return plr
                 end,
                 ["TankShell"]=function(spawn_pos) 
-                    local shell = require("Resources.scripts.TankShell"):new(vector.new(spawn_pos.x,spawn_pos.y),vector.new(10,5),vector.new(12,12)) 
-                    return shell
+                    --Ammo spawning is handled by the TankManager
                 end,
             }
             local spawn_type=object.properties["Spawn_Type"]
@@ -52,8 +51,10 @@ function Map:create_actors()
                 local spawn_amount=object.properties["Spawn_Amount"] or 1
                 for i = 1, spawn_amount do
                     local spawned_entity=types[spawn_type](vector.new(object.x,object.y))
-                    spawned_entity.map=self
-                    table.insert(actors,spawned_entity)
+                    if(spawned_entity) then
+                        spawned_entity.map=self
+                        table.insert(actors,spawned_entity)
+                    end
                 end
             end
         end
@@ -65,22 +66,30 @@ function Map:generate_colliders(o_x,o_y)
     local objects=self.graphics.objects
     local colliders={}
     for _, object in pairs(objects) do
-        if(object.polygon and string.find(object.name,"(Collider)")~=nil) then
-            local collider={}
+        if(object.polygon and object.properties["Collision"]) then
             local flags={
-                bouncy=false,
-                trigger=false,
-                canCollide=true
+                ["bouncy"]=false,
+                ["trigger"]=false,
+                ["canCollide"]=false
             }        
+            local object_flags=string.split(object.properties["Collision"],";")
+
+            for flagidx, flag in ipairs(object_flags) do
+                if(flags[flag]==false) then
+                    flags[flag]=true
+                end
+            end
+
+            local collider={}
             for _, vertice in pairs(object.polygon) do
                 local v = vector.new(vertice.x,vertice.y)
                 table.insert(collider,1,v.y+object.y)
                 table.insert(collider,1,v.x+object.x)
             end
-            flags.bouncy=string.find(object.name,"(Bouncy)")~=nil
-            flags.trigger=string.find(object.name,"(Trigger)")~=nil
             local hc_poly=collider_world:polygon(unpack(collider))
             hc_poly.flags=flags
+            hc_poly.name=object.name
+            collider_world:register(hc_poly)
             hc_poly:move(-object.x,-object.y)
             table.insert(colliders,1,hc_poly)
         end

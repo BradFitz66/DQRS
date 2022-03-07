@@ -30,6 +30,7 @@ State.Update=function(owner,dt)
         owner:load_tree("stretch")
     end
     if (owner.move_vector ~= vector.new(0,0)) then
+        obstruction=false
         if(last_vector~=owner.move_vector)  then
             owner.scale=startScale
             charge_timer=0
@@ -42,24 +43,21 @@ State.Update=function(owner,dt)
         -- get the angle
         normalTar = (target - owner.planar_position):normalized();
         angle = math.atan2(normalTar.y, normalTar.x) + math.rad(90) --* 1/(math.pi * 2 / 360);
-        rX,rY=math_utils.rotate_point(owner.planar_position.x,owner.planar_position.y,40*owner.scale.y,(angle-math.rad(90)))
+        rX,rY=math_utils.rotate_point(owner.position.x,owner.position.z,40*owner.scale.y,(angle-math.rad(90)))
     
 
-        owner.head_position=vector.new(owner.planar_position.x,(owner.planar_position.y *owner.scale.y))
+        owner.head_position=vector.new(owner.position.x,(owner.position.z *owner.scale.y))
         owner.head_position.x=rX
         owner.head_position.y=rY
-        owner.head_collider:moveTo(owner.head_position.x,owner.head_position.y)
         owner.rotation = angle;
+        owner.head_collider:moveTo(owner.head_position.x,owner.head_position.y)
 
-        obstruction=false
 
-        for _, v in pairs(collider_world:neighbors(owner.head_collider)) do
-            if((not v.flags or v.flags.trigger or not v.flags.canCollide or v.name~=nil)) then
+        for shape, delta in pairs(collider_world:collisions(owner.head_collider)) do
+            if((not shape.flags or not shape.flags.canCollide)) then
                 break
             end
-            local collides, dx, dy = owner.head_collider:collidesWith(v)
-            if(collides)then
-                owner.head_collider:move(dx,dy)
+            if(shape~=nil)then
                 obstruction=true;
             end
         end

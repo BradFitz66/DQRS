@@ -1,38 +1,55 @@
-local pool = {}
-local poolmt = {__index = pool}
+-- https://love2d.org/forums/viewtopic.php?t=82840
+-- yes it *IS* manual memory management, if you don't push unused objects back 
+-- into the pool they get garbage collected
 
-function pool.create(newObject, poolSize)
-	poolSize = poolSize or 16
-	assert(newObject, "A function that returns new objects for the pool is required.")
+-- since generic tables' metatable is nil, Pool with nil generator 
+-- produces generic tables
 
-	local freeObjects = {}
-	for _ = 1, poolSize do
-		table.insert(freeObjects, newObject())
+-- MIT license, knock yourselves out
+
+local ffiloaded, ffi = pcall ( require, "ffi" )
+
+local Pool = setmetatable ( { }, { __call = function ( class, ... ) return class.new ( ... ) end } )
+Pool.__index = Pool
+
+-- accepts custom generator function, nil, lua table, 
+-- ffi cdecl, ffi ctype for object generator
+function Pool.new ( generator )
+	local self = setmetatable ( { }, Pool )
+	if type ( generator ) == "function" then
+		self.generator = generator
+	elseif ffiloaded and ( type ( generator ) == "string" or type ( generator ) == "cdata" ) then
+		self.generator = ffi.typeof ( generator )
+	elseif generator == nil or type ( generator ) == "table" then
+		self.generator = function ( ) return setmetatable ( { }, generator ) end
 	end
-
-	return setmetatable({
-			freeObjects = freeObjects,
-			newObject = newObject
-		},
-		poolmt
-	)
+	self.pool = { } 
+	return self
 end
 
-function pool:obtain()
-	return #self.freeObjects == 0 and self.newObject() or table.remove(self.freeObjects)
+-- retreive object if available
+function Pool:pop2 ( )
+	return table.remove ( self.pool )
 end
 
-function pool:free(obj)
-	assert(obj, "An object to be freed must be passed.")
-
-	table.insert(self.freeObjects, obj)
-	if obj.reset then obj.reset() end
+-- allocate new object if none available, always returns an object
+function Pool:pop ( )
+	return table.remove ( self.pool ) or self.generator ( )
 end
 
-function pool:clear()
-	for k in pairs(self.freeObjects) do
-		self.freeObjects[k] = nil
-	end
+-- discard used object for later reuse
+function Pool:push ( obj )
+	table.insert ( self.pool, obj )
 end
 
-return pool
+-- preallocate objects
+function Pool:generate ( num )
+	for i = 1, num do table.insert ( self.pool, self.generator ( ) ) end
+end
+
+-- clear references
+function Pool:clear ( )
+	while #self.pool > 1 do table.remove ( self.pool ) end
+end
+
+return Pool

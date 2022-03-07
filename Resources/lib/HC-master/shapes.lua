@@ -95,6 +95,7 @@ end
 
 local PointShape = {}
 function PointShape:init(x,y)
+	print("!")
 	Shape.init(self, 'point')
 	self._pos = {x = x, y = y}
 end
@@ -422,7 +423,7 @@ function CircleShape:draw(mode, segments)
 end
 
 function PointShape:draw()
-	love.graphics.point(self:center())
+	love.graphics.points(self:center())
 end
 
 

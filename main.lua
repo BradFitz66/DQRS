@@ -18,6 +18,7 @@ flux=require("Resources.lib.Rocket_Engine.Utils.flux")
 vector3=require("Resources.lib.brinevector3D")
 mlib=require("Resources.lib.Rocket_Engine.Utils.mlib")
 debug_draw=true
+tank_manager_blue=nil
 signal=require("Resources.lib.HUMP.signal").new()
 gameCam=nil;
 rect = nil;
@@ -73,8 +74,6 @@ function love.load(args)
 	gameCam=require("Resources.lib.gamera").new(0,0,8000,8000)
 	gameCam:setScale(1)
 	--
-	table.insert(windows,1,sub_window.new(canvasBottom,vector.new(0,0),vector.new(256,192+20),{title="Game"},vector.new(-8,-8)))
-	table.insert(windows,1,sub_window.new(canvasDebug,vector.new(0,0),vector.new(256,192+20),{title="Debug info"},vector.new(-8,-8)))
 	collider_world=HC.new(12)
 	currentArea=require("Resources.scripts.TankInterior").Load();	
 	--love.graphics.setLineWidth(1)
@@ -97,6 +96,7 @@ function love.load(args)
 		end
 	end}
 	love.graphics.setPointSize(2)
+	tank_manager_blue=require("Resources.lib.Rocket_Engine.Systems.TankManager"):initialize(currentArea)
 end
 
 
@@ -135,7 +135,7 @@ function love.update(dt)
 				love.graphics.setColor(255,0,0)
 				love.graphics.setColor(255,255,255)
 				love.graphics.print("FPS: "..tostring(love.timer.getFPS()),10,0)
-				if(player and player) then
+				if(player) then
 
 					love.graphics.print("Player position: "..tostring(floor(player.position.x))..", "..tostring(floor(player.position.z)),70,0)
 					love.graphics.print("Player state: "..player.statemachine.current_state.Name,10,15)
@@ -164,6 +164,7 @@ function love.update(dt)
 		for _, actor in pairs(currentArea.map.actors) do
 			actor:update(dt)
 		end
+		tank_manager_blue:update(dt)
 	end
 	if(debug_mode)then
 		debugKeys:update(dt)
@@ -179,57 +180,7 @@ end
 
 function love.draw()
 	local width,height,flags=love.window.getMode()
-	--Put all main draw functions into separate function so I can easily disable them for debugging purposes
-	love.graphics.draw(canvasDebug,400,500)
-	love.graphics.draw(canvasBottom,100,500)
-	--draw_fn()
+	love.graphics.draw(canvasDebug,400,100)
+	love.graphics.draw(canvasBottom,100,100)
 end
-
-local game_window_pos
-local debug_window_pos
-
-function love.resize(w, h)
-end
-
---#region imgui stuff
-love.mousemoved = function(x, y, ...)
-    imgui.MouseMoved(x, y)
-    if not imgui.GetWantCaptureMouse() then
-        -- your code here
-    end
-end
-
-love.mousepressed = function(x, y, button, ...)
-    imgui.MousePressed(button)
-    if not imgui.GetWantCaptureMouse() then
-        -- your code here 
-    end
-end
-
-love.mousereleased = function(x, y, button, ...)
-    imgui.MouseReleased(button)
-    if not imgui.GetWantCaptureMouse() then
-        -- your code here 
-    end
-end
-
-love.quit = function()
-    return imgui.Shutdown()
-end
-
--- for gamepad support also add the following:
-
-love.joystickadded = function(joystick)
-    imgui.JoystickAdded(joystick)
-    -- your code here 
-end
-
-function love.keypressed(key,scancode,isrepeat)
-	if key == "rctrl" then --set to whatever key you want to use
-		debug.debug()
-	end
-end
-function love.textinput(text)
-end
-
 --#endregion

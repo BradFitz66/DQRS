@@ -14,22 +14,18 @@ function tank_shell:initialize(start_pos,collider_pos,collider_size)
     self.type="ammo"
     self.can_pickup=true
     self.picked_up=false
-    self.name="tankshell"
+    self.name="shuriken"
     self.going_into_cannon=false
     self.bounciness=0.3
     self.max_bounces=2
-    self.sprite_image=love.graphics.newImage("Resources/graphics/TankShell.png")
+    self.sprite_image=love.graphics.newImage("Resources/graphics/Shuriken.png")
     self.rotation=0
     self.scale=vector.new(1,1)
     self.color={math.random(1,255)/255,math.random(1,255)/255,math.random(1,255)/255}
     self.wall_hit_debounce=false
     self.hitObjects={}
-    self.damage=10
-    self.rank=1
-    self.ranks={
-        [1]=self,
-        [2]=function() return require("Resources.scripts.Shuriken"):new(self.position,vector.new(6,6),vector.new(12,12)) end
-    }
+    self.damage=16
+    self.rank=2
     return self
 end
 
