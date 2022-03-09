@@ -5,7 +5,8 @@ local lastPos
 local distance=0;
 local distanceTravelled=0;
 State.Enter=function(owner)
-    if(owner.current_tree.name~="blasting" and owner.current_tree.name~="float") then
+    if(owner.current_tree.name~="blasting" and owner.current_tree.name ~= "elastoblast" and owner.current_tree.name~="float") then
+        print(owner.current_tree.name)
         owner:load_tree("throw",true)
     end
     owner.can_throw=false

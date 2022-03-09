@@ -3,12 +3,10 @@
 
     May create a specific base class ontop of entity for ammo pieces.
 ]]
-local tankshell={}
-tankshell.__index=tankshell
 local ammo=require("Resources.lib.Rocket_Engine.Objects.Ammo")
-local tank_shell=class("Tank_Shell",ammo)
+local shuriken_ammo=class("Tank_Shell",ammo)
 
-function tank_shell:initialize(start_pos,collider_pos,collider_size)
+function shuriken_ammo:initialize(start_pos,collider_pos,collider_size)
     ammo.initialize(self,start_pos,collider_pos,collider_size)
     self.hold_offset=vector.new(-10,-5)
     self.type="ammo"
@@ -29,7 +27,7 @@ function tank_shell:initialize(start_pos,collider_pos,collider_size)
     return self
 end
 
-function tank_shell:handle_collision(dt)
+function shuriken_ammo:handle_collision(dt)
     if(not self.picked_up) then
         ammo.handle_collision(self,dt)
     end
@@ -49,7 +47,7 @@ function tank_shell:handle_collision(dt)
 	end
 end
 
-function tank_shell:update(dt)
+function shuriken_ammo:update(dt)
     ammo.update(self,dt)
     --Old collision code (will be reworked and reimplemented at some point)
 
@@ -105,7 +103,7 @@ function tank_shell:update(dt)
     -- end--]])
 end
 
-function tank_shell:draw()
+function shuriken_ammo:draw()
     if(debug_mode) then
 		love.graphics.setColor(0,1,0,.5)
 		self.physics_data.collider:draw("fill")
@@ -116,4 +114,4 @@ function tank_shell:draw()
     love.graphics.setColor(255,255,255)
 end
 
-return tank_shell
+return shuriken_ammo

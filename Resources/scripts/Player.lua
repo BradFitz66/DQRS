@@ -330,7 +330,7 @@ function Player:initialize(start_pos,collider_pos,collider_size)
 		["Squished"]={self.statemachine:add_state(require("Resources.states.Rocket.Squished")),{}},
 		["Blasting"]={self.statemachine:add_state(require("Resources.states.Rocket.Blasting")),{}},
 		["WallHit"]={self.statemachine:add_state(require("Resources.states.Rocket.WallHit")),{"Throw"}},
-		["Throw"]={self.statemachine:add_state(require("Resources.states.Rocket.Throw")),{"WallHit"}},
+		["Throw"]={self.statemachine:add_state(require("Resources.states.Rocket.Throw")),{"WallHit","Stretch"}},
 		["Float"]={self.statemachine:add_state(require("Resources.states.Rocket.Float")),{""}},
 	}
 	self.statemachine:change_state("Idle")
@@ -438,6 +438,7 @@ function Player:handle_collision(dt)
 										end
 										table.clear(self.holding)
 										rank_up_ammo.z_value=10000*(#self.holding+1)
+										rank_up_ammo.map=self.map
 										table.insert(self.holding,{rank_up_ammo,vector3(0,0,0)})
 										table.insert(self.map.actors,1,rank_up_ammo)
 									else

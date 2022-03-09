@@ -34,6 +34,7 @@ function ammo:destroy()
         --Add self back to the tank's pool of ammo
         self.pool.push(self)
     end
+    
     local actor_idx=table.index_of(self.map.actors,self)
     if(actor_idx~=nil) then
         print("Found self in map actors")
