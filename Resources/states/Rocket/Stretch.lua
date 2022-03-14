@@ -10,6 +10,8 @@ local fully_charged=false
 local last_vector
 local released_jump=false
 local curScale
+local now,endtime
+
 State.Enter=function(owner)
     owner:load_tree("stretch",false)
     owner.scale=startScale
@@ -20,7 +22,6 @@ State.Enter=function(owner)
     last_vector=owner.move_vector
     released_jump=false
 end
-
 State.Update=function(owner,dt)
     --[[
         Elastoblast timer in the DS game is 1 second. It starts in memory as 0x3C (60 in decimal) and decreases 1 every frame 
@@ -43,7 +44,7 @@ State.Update=function(owner,dt)
         end
         scaleProper=vector.new(owner.scale.x,(owner.scale.y+.5)*32)
         distance=owner.scale.dist(owner.scale,endScale);
-        newSpeed = 1.5;
+        newSpeed = 1.68;
         finalSpeed = (distance / newSpeed);
         target= owner.planar_position+owner.move_vector;
         -- get the angle
@@ -70,11 +71,13 @@ State.Update=function(owner,dt)
 
         if(not obstruction) then
             owner.current_tree:set_vector(owner.move_vector)
-            owner.scale = vector.Lerp(owner.scale, endScale, dt/finalSpeed);
+                owner.scale = vector.Lerp(owner.scale, endScale, dt/finalSpeed);
             -- rotate to angle
         end
         last_vector=owner.move_vector
     else
+        now=nil
+        endtime=nil                
         --Shrink player sprite
         local distance = owner.scale.dist(owner.scale,startScale);
         local newSpeed = 1.5;
@@ -103,6 +106,8 @@ State.Update=function(owner,dt)
             end
         end
     end
+
+
     if (owner.input:released("jump"))then
         if (owner.scale.dist(owner.scale,startScale)<=.25) then
             owner.rotation=0
@@ -132,6 +137,8 @@ State.Exit=function(owner)
         owner.rotation=0
         owner.scale=vector.new(1,1)
     end
+    now=nil
+    endtime=nil
     charge_timer=1
     owner.head_collider:moveTo(-1000000,-10000000)
 end
