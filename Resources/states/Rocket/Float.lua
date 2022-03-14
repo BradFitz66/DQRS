@@ -22,8 +22,9 @@ State.Update=function(owner,dt)
     float_time=float_time+1
 
     if(owner.position.y>0) then
+        print(height/8)
         --gross magic numbers
-        local magic_formulae=(height/80)+(sin(float_time*0.1))-(love.math.random(1,10)/10)
+        local magic_formulae=(height/80)+(sin(float_time*0.1))-(love.math.random(1,10-(height/12))/10)
         --[[For the hovering effect in DQRS, it seems the player is being pulled down while a random force is being applied upwards. 
             Unsure if this is a sine wave, or some sort of noise.]] 
         owner.physics_data.velocity.y = magic_formulae

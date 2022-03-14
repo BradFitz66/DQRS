@@ -4,7 +4,7 @@ local endScale=vector.new(1,1)
 local angle,normamlTar,target,finalSpeed,newSpeed,distance,rX,rY
 local obstruction=false;
 local math_utils=require("Resources.lib.Rocket_Engine.Utils.MathUtils")
-local charge_timer=0;
+local charge_timer=1;
 local curScale=startScale
 local fully_charged=false
 local last_vector
@@ -22,9 +22,13 @@ State.Enter=function(owner)
 end
 
 State.Update=function(owner,dt)
-    if(owner.scale==endScale and charge_timer<1) then
-        charge_timer=charge_timer+dt
-    elseif owner.scale==endScale and charge_timer>=1 and not fully_charged then
+    --[[
+        Elastoblast timer in the DS game is 1 second. It starts in memory as 0x3C (60 in decimal) and decreases 1 every frame 
+        when the player is fully stretched.
+    ]]
+    if(owner.scale==endScale and charge_timer>0) then
+        charge_timer=charge_timer-1*dt
+    elseif owner.scale==endScale and charge_timer<=0 and not fully_charged then
         owner:load_tree("elastoblast")
         fully_charged=true;
     elseif owner.scale~=endScale and fully_charged==true then
@@ -35,7 +39,7 @@ State.Update=function(owner,dt)
         obstruction=false
         if(last_vector~=owner.move_vector)  then
             owner.scale=startScale
-            charge_timer=0
+            charge_timer=1
         end
         scaleProper=vector.new(owner.scale.x,(owner.scale.y+.5)*32)
         distance=owner.scale.dist(owner.scale,endScale);
@@ -128,7 +132,7 @@ State.Exit=function(owner)
         owner.rotation=0
         owner.scale=vector.new(1,1)
     end
-    charge_timer=0
+    charge_timer=1
     owner.head_collider:moveTo(-1000000,-10000000)
 end
 

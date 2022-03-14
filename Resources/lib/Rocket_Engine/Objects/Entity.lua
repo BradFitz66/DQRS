@@ -92,7 +92,7 @@ function entity:update(dt)
         self.z_value=self.position.z+self.position.y
     end
     --#region Bounce physics
-    if(self.physics_data.in_air and (self.physics_data.bounces_left > 0 and self.physics_data.velocity.y ~= 0)) then
+    if(self.physics_data.in_air and self.physics_data.bounces_left > 0) then
         self.physics_data.velocity = self.physics_data.velocity + vector3(0, -9.81, 0) * dt;
         self.position = self.position + vector3(self.physics_data.velocity.x*dt,self.physics_data.velocity.y,self.physics_data.velocity.z*dt);
         if ((self.position).y <= 0) then
@@ -116,6 +116,7 @@ function entity:update(dt)
         if(not self.going_into_cannon and self.position.y~=0) then
             self.position.y=0
         end
+        self.physics_data.bounces_left=self.physics_data.max_bounces
     end
     --#endregion
 end
