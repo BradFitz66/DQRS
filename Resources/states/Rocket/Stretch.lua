@@ -1,5 +1,5 @@
 local State = require("Resources.lib.Rocket_Engine.State Machine.State").new("Stretch")
-local startScale=vector.new(1.1,.37);
+local startScale=vector.new(1.1,.32);
 local endScale=vector.new(1,1)
 local angle,normamlTar,target,finalSpeed,newSpeed,distance,rX,rY
 local obstruction=false;
@@ -22,9 +22,9 @@ State.Enter=function(owner)
 end
 
 State.Update=function(owner,dt)
-    if(owner.scale==endScale and charge_timer<2) then
+    if(owner.scale==endScale and charge_timer<1) then
         charge_timer=charge_timer+dt
-    elseif owner.scale==endScale and charge_timer>=2 and not fully_charged then
+    elseif owner.scale==endScale and charge_timer>=1 and not fully_charged then
         owner:load_tree("elastoblast")
         fully_charged=true;
     elseif owner.scale~=endScale and fully_charged==true then
