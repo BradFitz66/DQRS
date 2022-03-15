@@ -50,6 +50,7 @@ function love.load(args)
 	imgui.Init()
 	input_provider:add_state(require("Resources.lib.Rocket_Engine.Systems.Input.PlayerInput"))
 	tick.rate=.016
+	tick.framerate=60
 	love.graphics.setDefaultFilter("nearest")
 	tick.sleep=0.001
 	control_scheme=Input.new {

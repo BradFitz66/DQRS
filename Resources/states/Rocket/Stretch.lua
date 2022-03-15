@@ -101,8 +101,6 @@ State.Update=function(owner,dt)
             owner.scale=vector.new(1,1)
             if(not released_jump) then
                 owner:change_state("Squished")
-            else
-                owner:change_state("Blasting")
             end
         end
     end
@@ -127,7 +125,12 @@ State.Update=function(owner,dt)
         maxPowerAligned = -maxPowerAligned;
         owner.full_charge_elastoblast=fully_charged
         owner.blast_velocity = vector.Lerp(vector.new(0,0), maxPowerAligned, (owner.scale - startScale):len() / (endScale - startScale):len());
+        local timer_scalar=(vector.Lerp(vector.new(0,0), maxPowerAligned, (owner.scale - startScale):len() / (endScale - startScale):len()):len()/150)
+        print("Timer scalar: ",timer_scalar)
+        owner.blast_timer=.5*timer_scalar
         --print("Blast velocity: "..tostring(owner.blast_velocity))
+        owner:change_state("Blasting")
+
     end
 end
 

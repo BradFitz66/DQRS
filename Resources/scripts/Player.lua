@@ -297,6 +297,7 @@ function Player:initialize(start_pos,collider_pos,collider_size)
 	self.scale=vector.new(1,1)
 	self.wall_hit_normal=vector.new(0,0)
 	self.blast_velocity=vector.new(0,0)
+	self.blast_timer=1.6
 	self.can_throw=true;
 	self.can_float=true;
 	self.map=nil

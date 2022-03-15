@@ -24,12 +24,13 @@ State.Enter=function(owner)
 end
 
 State.Update=function(owner,dt)
-    if-(distanceTravelled-distance)>.04 then
+    if owner.blast_timer>0 then
         owner:set_position_planar(vector.new(owner.position.x + (endPosDiff.x*speed*dt), owner.position.z + (endPosDiff.y*speed*dt)))
         
         distanceTravelled=distanceTravelled + vector.new(owner.position.x,owner.position.z).dist(vector.new(owner.position.x,owner.position.z),lastPos)
         lastPos=vector.new(owner.position.x,owner.position.z)
-        owner.blast_velocity=owner.blast_velocity*(1-((distanceTravelled/distance)*.25))
+        owner.blast_timer=owner.blast_timer-1*dt
+        print(owner.blast_timer)
     else
         owner.blast_velocity=vector.new(0,0)
         if(owner.full_charge_elastoblast) then
